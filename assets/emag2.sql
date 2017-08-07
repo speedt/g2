@@ -1,16 +1,16 @@
 /*
 Navicat MySQL Data Transfer
 
-Source Server         : 127.0.0.1
+Source Server         : g-1
 Source Server Version : 50623
-Source Host           : 127.0.0.1:12306
+Source Host           : 127.0.0.01:12306
 Source Database       : emag2
 
 Target Server Type    : MYSQL
 Target Server Version : 50623
 File Encoding         : 65001
 
-Date: 2017-08-07 18:01:56
+Date: 2017-08-07 23:20:51
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -263,11 +263,11 @@ INSERT INTO `s_user` VALUES ('4', 'wy', 'e10adc3949ba59abbe56e057f20f883e', '1',
 INSERT INTO `s_user` VALUES ('5', 't1', 'e10adc3949ba59abbe56e057f20f883e', '1', 't1', null, null, null, null, null, null, '19394', '123', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null);
 INSERT INTO `s_user` VALUES ('6', 't2', 'e10adc3949ba59abbe56e057f20f883e', '1', 't2', null, null, null, null, null, null, '41600', '89', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null);
 INSERT INTO `s_user` VALUES ('7', 't3', 'e10adc3949ba59abbe56e057f20f883e', '1', 't3', null, null, null, null, null, null, '122862147', '87', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null);
-INSERT INTO `s_user` VALUES ('9c012a33aa8b4ecc8aaf20ea149a6f25', 'mega', 'e10adc3949ba59abbe56e057f20f883e', '1', '马六', null, null, null, '12341', null, null, '34729042', '123123', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null);
+INSERT INTO `s_user` VALUES ('9c012a33aa8b4ecc8aaf20ea149a6f25', 'mega', 'e10adc3949ba59abbe56e057f20f883e', '1', '马六', null, null, null, '12341', null, null, '34720042', '123123', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null);
 INSERT INTO `s_user` VALUES ('9fe2a410777c11e7bdc4fd3c0cd2bc87', '猫4', '96e79218965eb72c92a549dd5a330112', '0', '猫4123123', '1', '2017-08-02 20:18:00', '', '', '', '', '10065', '0', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null);
 INSERT INTO `s_user` VALUES ('b5780670775f11e7831c0d095411373b', '猫2', '96e79218965eb72c92a549dd5a330112', '1', '猫2', '1', '2017-08-02 16:51:01', '', '', '', '', '43280', '0', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null);
 INSERT INTO `s_user` VALUES ('c2fe9bb076ba11e7ad1a29fa785dd421', '雪箭轩', 'bde0814411dcea94c5e0d9b29e635510', '1', '雪箭轩', '1', '2017-08-01 21:10:17', '', '', '', '', '9570499', '0', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null);
-INSERT INTO `s_user` VALUES ('e5e252b0776011e7831c0d095411373b', '猫3', 'e10adc3949ba59abbe56e057f20f883e', '1', '猫3', '1', '2017-08-02 16:59:32', '', '', '', '', '2000', '0', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null);
+INSERT INTO `s_user` VALUES ('e5e252b0776011e7831c0d095411373b', '猫3', 'e10adc3949ba59abbe56e057f20f883e', '1', '猫34', '1', '2017-08-02 16:59:32', '', '', '', '', '1800023', '0', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null);
 
 -- ----------------------------
 -- Table structure for `w_game_prop`
@@ -286,6 +286,7 @@ CREATE TABLE `w_game_prop` (
 -- ----------------------------
 INSERT INTO `w_game_prop` VALUES ('1', '冰冻', null, '2017-07-11 17:49:43');
 INSERT INTO `w_game_prop` VALUES ('2', '锁定', null, '2017-06-06 10:29:31');
+INSERT INTO `w_game_prop` VALUES ('3', '金币', '以个为单位', '2017-08-07 20:28:35');
 
 -- ----------------------------
 -- Table structure for `w_gift`
@@ -298,14 +299,17 @@ CREATE TABLE `w_gift` (
   `receive_time` datetime DEFAULT NULL COMMENT '领取时间',
   `goods_id` int(11) DEFAULT NULL COMMENT '商品id',
   `gift_type` int(11) DEFAULT NULL,
+  `game_prop_id` varchar(32) DEFAULT NULL,
+  `num` int(11) DEFAULT NULL,
+  `user_vip` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of w_gift
 -- ----------------------------
-INSERT INTO `w_gift` VALUES ('5ff876807a8411e7bed62189316c9a34', '7', '2017-08-06 16:51:02', null, '1', '1');
-INSERT INTO `w_gift` VALUES ('60b526e07a7011e7a2ac09d69666beda', '9c012a33aa8b4ecc8aaf20ea149a6f25', '2017-08-06 14:27:54', null, '2', '1');
+INSERT INTO `w_gift` VALUES ('5ff876807a8411e7bed62189316c9a34', '9c012a33aa8b4ecc8aaf20ea149a6f25', '2017-08-06 16:51:02', null, '3', '1', '2', '1', '2');
+INSERT INTO `w_gift` VALUES ('60b526e07a7011e7a2ac09d69666beda', '9c012a33aa8b4ecc8aaf20ea149a6f25', '2017-08-06 14:27:54', null, '2', '1', '3', '2123123', '2');
 
 -- ----------------------------
 -- Table structure for `w_gift_type`
@@ -320,7 +324,7 @@ CREATE TABLE `w_gift_type` (
 -- ----------------------------
 -- Records of w_gift_type
 -- ----------------------------
-INSERT INTO `w_gift_type` VALUES ('1', '登陆');
+INSERT INTO `w_gift_type` VALUES ('1', '每日登陆');
 INSERT INTO `w_gift_type` VALUES ('2', '退出');
 
 -- ----------------------------
@@ -342,10 +346,10 @@ CREATE TABLE `w_goods` (
 -- ----------------------------
 -- Records of w_goods
 -- ----------------------------
-INSERT INTO `w_goods` VALUES ('1', '商品1', null, '2017-07-11 17:49:43', '1', '123123123', '1', '0');
-INSERT INTO `w_goods` VALUES ('2', '商品2', null, '2017-06-06 10:29:31', '2', null, null, null);
-INSERT INTO `w_goods` VALUES ('3', '商品3', null, '2017-07-11 17:47:41', '3', null, null, null);
-INSERT INTO `w_goods` VALUES ('4', '商品4', null, '2017-08-01 21:39:34', '4', '123123', '1', '123123');
+INSERT INTO `w_goods` VALUES ('1', '商品1', '1', '2017-07-11 17:49:43', '1123', '123123123', '1', '2012');
+INSERT INTO `w_goods` VALUES ('2', '商品2', '2', '2017-06-06 10:29:31', '1234', 'null', '0', '10');
+INSERT INTO `w_goods` VALUES ('3', '商品3', '3', '2017-07-11 17:47:41', '3123123', null, '0', '0');
+INSERT INTO `w_goods` VALUES ('4', '商品41', '42', '2017-08-01 21:39:34', '4173', '12312334', '0', '30');
 
 -- ----------------------------
 -- Table structure for `w_goods_detail`
@@ -367,6 +371,7 @@ INSERT INTO `w_goods_detail` VALUES ('1', '1', '1', '1', '2017-08-07 17:16:58');
 INSERT INTO `w_goods_detail` VALUES ('2', '1', '2', '2', '2017-08-07 17:17:01');
 INSERT INTO `w_goods_detail` VALUES ('3', '2', '1', '3', '2017-08-07 17:17:03');
 INSERT INTO `w_goods_detail` VALUES ('4', '2', '2', '4', '2017-08-07 17:17:06');
+INSERT INTO `w_goods_detail` VALUES ('5', '1', '3', '10000', '2017-08-07 20:30:30');
 
 -- ----------------------------
 -- Table structure for `w_notice`
@@ -388,7 +393,7 @@ CREATE TABLE `w_notice` (
 INSERT INTO `w_notice` VALUES ('bullet_level_consume', '10', '子弹消耗倍数', '2017-07-11 17:49:43', '1', '2017-07-27 20:03:45');
 INSERT INTO `w_notice` VALUES ('bullet_level_max', '100', '子弹最大等级', '2017-06-06 10:29:31', '1', null);
 INSERT INTO `w_notice` VALUES ('bullet_level_min', '1', '子弹最小等级', '2017-07-11 17:47:41', '1', null);
-INSERT INTO `w_notice` VALUES ('da426e6076be11e7ad1a29fa785dd421', '111', '杨光在游戏<b><font color=\"#fbe983\">中已充值99</font></b>99999', '2017-08-01 21:39:34', '1', null);
+INSERT INTO `w_notice` VALUES ('da426e6076be11e7ad1a29fa785dd421', '111', '杨光在游戏<b><font color=\"#fbe983\">中已充值99</font></b>99<strike><font color=\"#f83a22\">999</font></strike>', '2017-08-01 21:39:34', '1', null);
 
 -- ----------------------------
 -- Table structure for `w_order`
