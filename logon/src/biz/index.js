@@ -5,11 +5,12 @@
  */
 'use strict';
 
-exports.gift         = require('./gift');
-exports.user         = require('./user');
-exports.group        = require('./group');
-exports.backend      = require('./backend');
-exports.frontend     = require('./frontend');
-exports.manager      = require('./manager');
-exports.cfg          = require('./cfg');
-exports.notice       = require('./notice');
+exports.goods    = require('./goods');
+exports.gift     = require('./gift');
+exports.user     = require('./user');
+exports.group    = require('./group');
+exports.backend  = require('./backend');
+exports.frontend = require('./frontend');
+exports.manager  = require('./manager');
+exports.cfg      = require('./cfg');
+exports.notice   = require('./notice');

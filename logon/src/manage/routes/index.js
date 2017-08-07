@@ -5,6 +5,7 @@
  */
 'use strict';
 
+const goods   = require('../controllers/goods');
 const user    = require('../controllers/user');
 const notice  = require('../controllers/notice');
 const cfg     = require('../controllers/cfg');
@@ -12,6 +13,13 @@ const manager = require('../controllers/manager');
 const site    = require('../controllers/site');
 
 module.exports = function(app){
+
+  app.post('/goods/edit', manager.login_validate, goods.edit);
+  app.get ('/goods/edit', manager.login_validate, goods.editUI);
+  app.post('/goods/add',  manager.login_validate, goods.add);
+  app.get ('/goods/add',  manager.login_validate, goods.addUI);
+  app.post('/goods/del',  manager.login_validate, goods.del);
+  app.get ('/goods/',     manager.login_validate, goods.indexUI);
 
   app.get ('/user/gift',      manager.login_validate, user.giftUI);
   app.post('/user/resetPwd$', manager.login_validate, user.resetPwd);

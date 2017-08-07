@@ -39,7 +39,7 @@ exports.findAll = function(status, cb){
 };
 
 (() => {
-  var sql = 'INSERT INTO s_cfg (type_, key_, value_, title, create_time, comment, status) values (?, ?, ?, ?, ?, ?, ?)';
+  var sql = 'INSERT INTO s_cfg (type_, key_, value_, title, create_time, comment, status) VALUES (?, ?, ?, ?, ?, ?, ?)';
 
   /**
    * 新增配置表

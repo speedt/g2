@@ -13,26 +13,26 @@ const utils = require('speedt-utils').utils;
 
 exports.indexUI = function(req, res, next){
 
-  biz.notice.findAll(function (err, docs){
+  biz.goods.findAll(function (err, docs){
     if(err) return next(err);
 
-    res.render('notice/index', {
+    res.render('goods/index', {
       conf: conf,
       data: {
-        list_notice:  docs,
+        list_goods:  docs,
         session_user: req.session.user,
-        nav_choose:   ',04,0401,'
+        nav_choose:   ',04,0402,'
       }
     });
   });
 };
 
 exports.addUI = function(req, res, next){
-  res.render('notice/add', {
+  res.render('goods/add', {
     conf: conf,
     data: {
       session_user: req.session.user,
-      nav_choose:   ',04,0401,'
+      nav_choose:   ',04,0402,'
     }
   });
 };
@@ -42,7 +42,7 @@ exports.add = function(req, res, next){
 
   query.user_id = req.session.userId;
 
-  biz.notice.saveNew(query, function (err, status){
+  biz.goods.saveNew(query, function (err, status){
     if(err) return next(err);
     res.send({});
   });
@@ -51,16 +51,16 @@ exports.add = function(req, res, next){
 exports.editUI = function(req, res, next){
   var id = req.query.id;
 
-  biz.notice.getById(id, function (err, doc){
+  biz.goods.getById(id, function (err, doc){
     if(err)  return next(err);
     if(!doc) return next(new Error('Not Found'));
 
-    res.render('notice/edit', {
+    res.render('goods/edit', {
       conf: conf,
       data: {
-        notice:       doc,
+        goods:       doc,
         session_user: req.session.user,
-        nav_choose:   ',04,0401,'
+        nav_choose:   ',04,0402,'
       }
     });
   });
@@ -69,7 +69,7 @@ exports.editUI = function(req, res, next){
 exports.edit = function(req, res, next){
   var query = req.body;
 
-  biz.notice.editInfo(query, function (err, status){
+  biz.goods.editInfo(query, function (err, status){
     if(err) return next(err);
     res.send({});
   });
@@ -78,7 +78,7 @@ exports.edit = function(req, res, next){
 exports.del = function(req, res, next){
   var query = req.body;
 
-  biz.notice.del(query.id, function (err, status){
+  biz.goods.del(query.id, function (err, status){
     if(err) return next(err);
     res.send({});
   });

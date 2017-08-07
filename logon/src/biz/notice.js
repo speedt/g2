@@ -27,7 +27,7 @@ const redis = require('emag.db').redis;
 })();
 
 (() => {
-  const sql = 'INSERT INTO w_notice (id, title, content, create_time, user_id) values (?, ?, ?, ?, ?)';
+  const sql = 'INSERT INTO w_notice (id, title, content, create_time, user_id) VALUES (?, ?, ?, ?, ?)';
 
   /**
    *
