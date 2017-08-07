@@ -14,7 +14,7 @@
 		<label class='control-label'>公告内容</label>
 
 		<div class='controls'>
-			<div class='wysiwyg-editor' id='frm_content' name='content'>#formatHTML($!{doc.content})</div>
+			<div class='wysiwyg-editor' id='frm_content' name='content'>#formatHtml($!{doc.content})</div>
 		</div>
 	</div>
 
@@ -23,7 +23,6 @@
 			<i class='icon-ok bigger-110'></i>
 			提交
 		</button>
-
 		&nbsp; &nbsp;
 		<button class='btn' type='reset'>
 			<i class='icon-undo bigger-110'></i>
@@ -32,32 +31,29 @@
 	</div>
 </form>
 <!--page specific plugin scripts-->
-
 <script src='$!{conf.html.cdn}js/ace/1.1.2/assets/js/markdown/markdown.min.js'></script>
 <script src='$!{conf.html.cdn}js/ace/1.1.2/assets/js/markdown/bootstrap-markdown.min.js'></script>
 <script src='$!{conf.html.cdn}js/ace/1.1.2/assets/js/jquery.hotkeys.min.js'></script>
 <script src='$!{conf.html.cdn}js/ace/1.1.2/assets/js/bootstrap-wysiwyg.min.js'></script>
-
 <!--ace scripts-->
-
 <script src='$!{conf.html.cdn}js/ace/1.1.2/assets/js/ace-elements.min.js'></script>
 
 <script>
 $(function(){
-	$('#frm_content').ace_wysiwyg({
-		toolbar:
-		[
-			{ name: 'bold', className: 'btn-info'},
-			{ name: 'italic', className: 'btn-info'},
-			{ name: 'strikethrough', className: 'btn-info'},
-			{ name: 'underline', className: 'btn-info'},
-			null,
-			'foreColor',
-			null,
-			{ name: 'undo', className: 'btn-grey'},
-			{ name: 'redo', className: 'btn-grey'}
-		],
-		'wysiwyg': {}
-	}).prev().addClass('wysiwyg-style2');
+  $('#frm_content').ace_wysiwyg({
+    toolbar:
+    [
+      { name: 'bold',          className: 'btn-info'},
+      { name: 'italic',        className: 'btn-info'},
+      { name: 'strikethrough', className: 'btn-info'},
+      { name: 'underline',     className: 'btn-info'},
+      null,
+      'foreColor',
+      null,
+      { name: 'undo', className: 'btn-grey'},
+      { name: 'redo', className: 'btn-grey'}
+    ],
+    'wysiwyg': {}
+  }).prev().addClass('wysiwyg-style2');
 })
 </script>
