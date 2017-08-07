@@ -5,12 +5,19 @@
  */
 'use strict';
 
+const user    = require('../controllers/user');
 const notice  = require('../controllers/notice');
 const cfg     = require('../controllers/cfg');
 const manager = require('../controllers/manager');
 const site    = require('../controllers/site');
 
 module.exports = function(app){
+
+  app.post('/user/resetPwd$', manager.login_validate, user.resetPwd);
+  app.post('/user/edit',      manager.login_validate, user.edit);
+  app.get ('/user/edit',      manager.login_validate, user.editUI);
+  app.post('/user/del',       manager.login_validate, user.del);
+  app.get ('/user/',          manager.login_validate, user.indexUI);
 
   app.post('/notice/edit', manager.login_validate, notice.edit);
   app.get ('/notice/edit', manager.login_validate, notice.editUI);
