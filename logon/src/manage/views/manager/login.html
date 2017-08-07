@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang='zh-CN'>
 	<head>
-		<title>管理登陆 | $!conf.corp.name</title>
+		<title>管理登陆 | $!conf.app.name</title>
 		#parse('_pagelet/header.html')
 	</head>
 	<body>
@@ -64,7 +64,6 @@
 		#parse('_pagelet/js.html')
 
 <script type='text/javascript'>
-
   function ser(frmObj){
     var __a = frmObj.serializeArray();
     var __b = _.pluck(__a, "name");
@@ -76,13 +75,13 @@
   function push(){
     var data = ser($('#logFrm'));
       $.ajax({
-        url: '/manage/manager/login',
+        url: $!conf.html.virtualPath +'manager/login',
         type: 'POST',
         dataType: 'JSON',
         data: data,
         success: function(data){
-          if(data.error) return alert(data.error.msg);
-          location.href = #if('' == $!{data.refererUrl})'/manage/'#else'$!{data.refererUrl}'#end;
+          if(data.error) return alert(data.error.code);
+          location.href = #if('' == $!{data.refererUrl})$!conf.html.virtualPath#else'$!{data.refererUrl}'#end;
         },
         error: function(){
           alert(arguments[2]);
