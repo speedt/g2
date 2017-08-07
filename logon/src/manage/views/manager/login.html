@@ -64,31 +64,31 @@
 		#parse('_pagelet/js.html')
 
 <script type='text/javascript'>
-  function ser(frmObj){
-    var __a = frmObj.serializeArray();
-    var __b = _.pluck(__a, "name");
-    var __c = _.pluck(__a, "value");
-    var __d = _.object(__b, __c);
-    return __d;
-  }
+function ser(frmObj){
+  var __a = frmObj.serializeArray();
+  var __b = _.pluck(__a, 'name');
+  var __c = _.pluck(__a, 'value');
+  var __d = _.object(__b, __c);
+  return __d;
+}
 
-  function push(){
-    var data = ser($('#logFrm'));
-      $.ajax({
-        url: $!conf.html.virtualPath +'manager/login',
-        type: 'POST',
-        dataType: 'JSON',
-        data: data,
-        success: function(data){
-          if(data.error) return alert(data.error.code);
-          location.href = #if('' == $!{data.refererUrl})$!conf.html.virtualPath#else'$!{data.refererUrl}'#end;
-        },
-        error: function(){
-          alert(arguments[2]);
-        }
-    });
-    return false;
-  }
+function push(){
+  var data = ser($('#logFrm'));
+  $.ajax({
+    url: $!conf.html.virtualPath +'manager/login',
+    type: 'POST',
+    dataType: 'JSON',
+    data: data,
+    success: function(data){
+      if(data.error) return alert(data.error.code);
+      location.href = #if('' == $!{data.refererUrl})$!conf.html.virtualPath#else'$!{data.refererUrl}'#end;
+    },
+    error: function(){
+      alert(arguments[2]);
+    }
+  });
+  return false;
+}
 </script>
 
 	</body>

@@ -160,7 +160,7 @@
 
 						<li>
 							<a href='javascript:;'>
-								<img src="http://www.foreworld.net/js/ace/1.1.2/assets/avatars/avatar.png" class="msg-photo" alt="Alex's Avatar" />
+								<img src="$!{conf.html.cdn}js/ace/1.1.2/assets/avatars/avatar.png" class="msg-photo" alt="Alex's Avatar" />
 								<span class="msg-body">
 									<span class="msg-title">
 										<span class="blue">Alex:</span>
@@ -177,7 +177,7 @@
 
 						<li>
 							<a href='javascript:;'>
-								<img src="http://www.foreworld.net/js/ace/1.1.2/assets/avatars/avatar3.png" class="msg-photo" alt="Susan's Avatar" />
+								<img src="$!{conf.html.cdn}js/ace/1.1.2/assets/avatars/avatar3.png" class="msg-photo" alt="Susan's Avatar" />
 								<span class="msg-body">
 									<span class="msg-title">
 										<span class="blue">Susan:</span>
@@ -194,7 +194,7 @@
 
 						<li>
 							<a href='javascript:;'>
-								<img src="http://www.foreworld.net/js/ace/1.1.2/assets/avatars/avatar4.png" class="msg-photo" alt="Bob's Avatar" />
+								<img src="$!{conf.html.cdn}js/ace/1.1.2/assets/avatars/avatar4.png" class="msg-photo" alt="Bob's Avatar" />
 								<span class="msg-body">
 									<span class="msg-title">
 										<span class="blue">Bob:</span>
@@ -220,7 +220,7 @@
 
 				<li class="light-blue">
 					<a data-toggle="dropdown" href='javascript:;' class="dropdown-toggle">
-						<img class="nav-user-photo" src="http://www.foreworld.net/js/ace/1.1.2/assets/avatars/user.jpg" alt="Jason's Photo" />
+						<img class="nav-user-photo" src="$!{conf.html.cdn}js/ace/1.1.2/assets/avatars/user.jpg" alt="Jason's Photo" />
 						<span class="user-info">
 							<small>欢迎您,</small>
 							$!data.session_user.user_name
@@ -238,14 +238,14 @@
 						</li>
 
 						#*<!-- <li>
-							<a href="/manage/manager/profile">
+							<a href="$!{conf.html.virtualPath}manager/profile">
 								<i class="icon-user"></i>
 								修改资料 Profile
 							</a>
 						</li> -->*#
 
 						<li>
-							<a href="/manage/manager/changePwd">
+							<a href="$!{conf.html.virtualPath}manager/changePwd">
 								<i class="icon-user"></i>
 								修改密码 Password
 							</a>
@@ -254,7 +254,7 @@
 						<li class="divider"></li>
 
 						<li>
-							<a href="/manage/manager/logout">
+							<a href="$!{conf.html.virtualPath}manager/logout">
 								<i class="icon-off"></i>
 								安全退出 Logout
 							</a>
