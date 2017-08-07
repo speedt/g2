@@ -85,18 +85,51 @@
 							<div class="row-fluid">
 								<div class="span12">
 									<div class="tabbable">
-										<ul class="nav nav-tabs" id="myTab">
+										<ul class="nav nav-tabs">
 											<li class="active">
 												<a data-toggle="tab" href="#info">
 													<i class="green icon-edit bigger-110"></i>
 													商品信息
 												</a>
 											</li>
+
+											<li>
+												<a data-toggle="tab" href="#game_prop">
+													<i class="green icon-gift bigger-110"></i>
+													道具信息
+												</a>
+											</li>
 										</ul>
 
 										<div class="tab-content">
-											<div id="home" class="tab-pane in active">
+											<div id="info" class="tab-pane in active">
 												#parse('goods/_pagelet/form.html')
+											</div>
+
+											<div id="game_prop" class="tab-pane">
+
+												<div class="row-fluid">
+													<p>
+														<a href='javascript:;' class="btn btn-app btn-info btn-mini">
+															<i class="icon-save bigger-200"></i>
+															添加
+															<span class="label label-inverse arrowed-in">6+</span>
+														</a>
+
+														<a href='javascript:;' class="btn btn-app btn-primary btn-mini">
+															<i class="icon-edit bigger-230"></i>
+															修改
+															<span class="badge badge-warning badge-right">11</span>
+														</a>
+
+														<a href='javascript:;' class="btn btn-app btn-danger btn-mini">
+															<i class="icon-trash bigger-200"></i>
+															删除
+														</a>
+													</p>
+												</div><!-- buttons -->
+
+												#parse('goods/_pagelet/goods_detail.html')
 											</div>
 										</div>
 									</div>

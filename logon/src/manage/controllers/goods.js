@@ -19,7 +19,7 @@ exports.indexUI = function(req, res, next){
     res.render('goods/index', {
       conf: conf,
       data: {
-        list_goods:  docs,
+        list_goods:   docs,
         session_user: req.session.user,
         nav_choose:   ',04,0402,'
       }
@@ -51,19 +51,35 @@ exports.add = function(req, res, next){
 exports.editUI = function(req, res, next){
   var id = req.query.id;
 
-  biz.goods.getById(id, function (err, doc){
-    if(err)  return next(err);
-    if(!doc) return next(new Error('Not Found'));
+  var p1 = new Promise((resolve, reject) => {
+
+    biz.goods.getById(id, function (err, doc){
+      if(err)  return reject(err);
+      if(!doc) return reject(new Error('Not Found'));
+      resolve(doc);
+    });
+  });
+
+  var p2 = new Promise((resolve, reject) => {
+
+    biz.goods.findDetailById(id, function (err, docs){
+      if(err) return reject(err);
+      resolve(docs);
+    });
+  });
+
+  Promise.all([p1, p2]).then(values => {
 
     res.render('goods/edit', {
       conf: conf,
       data: {
-        goods:       doc,
-        session_user: req.session.user,
-        nav_choose:   ',04,0402,'
+        goods:             values[0],
+        list_goods_detail: values[1],
+        session_user:      req.session.user,
+        nav_choose:        ',04,0402,'
       }
     });
-  });
+  }).catch(next);
 };
 
 exports.edit = function(req, res, next){

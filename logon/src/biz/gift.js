@@ -26,7 +26,7 @@ const logger = require('log4js').getLogger('biz.gift');
 
 (() => {
   var sql = 'SELECT '+
-              'e.prop_name, d.type_name gift_type_name, c.goods_name, b.user_name, b.vip user_vip, a.* '+
+              'e.prop_name game_prop_name, d.type_name gift_type_name, c.goods_name, b.user_name, b.vip user_vip, a.* '+
                 'FROM (SELECT * FROM w_gift WHERE user_id=?) a '+
                   'LEFT JOIN s_user b ON (a.user_id=b.id) '+
                   'LEFT JOIN w_goods c ON (a.goods_id=c.id) '+
