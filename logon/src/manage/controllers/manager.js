@@ -1,11 +1,9 @@
 /*!
- * emag.login
+ * emag.manage
  * Copyright(c) 2016 huangxin <3203317@qq.com>
  * MIT Licensed
  */
 'use strict';
-
-const URL = require('url');
 
 const conf = require('../settings');
 const utils = require('speedt-utils').utils;
@@ -17,9 +15,9 @@ exports.changePwd = function(req, res, next){
 
   query.id = req.session.userId;
 
-  biz.manager.changePwd(query, function (err, warn, status){
-    if(err) return next(err);
-    if(warn) return res.send({ error: { msg: warn } });
+  biz.manager.changePwd(query, function (err, code, status){
+    if(err)  return next(err);
+    if(code) return res.send({ error: { code: code } });
     res.send({});
   });
 };
@@ -57,7 +55,7 @@ exports.login = function(req, res, next){
 
   biz.manager.login(query, (err, code, doc) => {
     if(err)  return next(err);
-    if(code) return res.send({ error: { msg: code } });
+    if(code) return res.send({ error: { code: code } });
 
     // session
     req.session.userId = doc.id;
@@ -70,10 +68,10 @@ exports.login = function(req, res, next){
 exports.login_validate = function(req, res, next){
   if(req.session.userId) return next();
   if(req.xhr) return res.send({ error: { msg: '无权访问' } });
-  res.redirect('/manage/manager/login?refererUrl='+ escape(req.url));
+  res.redirect(conf.html.virtualPath +'manager/login?refererUrl='+ escape(req.url));
 };
 
 exports.logoutUI = function(req, res, next){
   req.session.destroy();
-  res.redirect('/manage/manager/login');
+  res.redirect(conf.html.virtualPath +'manager/login');
 };

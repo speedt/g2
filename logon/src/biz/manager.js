@@ -52,10 +52,11 @@ const cfg   = require('emag.cfg');
 
 /**
  *
- * @return
  * @code 01 用户不存在
  * @code 02 禁止登陆
  * @code 03 用户名或密码输入错误
+ *
+ * @return
  */
 exports.login = function(logInfo /* 用户名及密码 */, cb){
   var self = this;
@@ -80,6 +81,11 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
 
   /**
    *
+   * @code 01 新密码不能为空
+   * @code 02 用户不存在
+   * @code 03 原始密码错误
+   *
+   * @return
    */
   exports.changePwd = function(newInfo, cb){
     newInfo.user_pass = utils.isEmpty(newInfo.user_pass);

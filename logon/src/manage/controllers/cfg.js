@@ -12,6 +12,7 @@ const conf = require('../settings');
 exports.indexUI = function(req, res, next){
 
   biz.cfg.findAll(1, function (err, docs){
+    if(err) return next(err);
 
     res.render('settings/index', {
       conf: conf,
