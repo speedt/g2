@@ -1,5 +1,5 @@
 /*!
- * emag.login
+ * emag.manage
  * Copyright(c) 2016 huangxin <3203317@qq.com>
  * MIT Licensed
  */
@@ -13,11 +13,11 @@ module.exports = {
     name: 'foreworld.net',
   },
   cookie: {
-    key: 'backend',
-    secret: 'login'
+    key: 'web',
+    secret: 'manage'
   },
   html: {
-    virtualPath: '/client/',
+    virtualPath: '/manage/',
     cdn: 'http://www.foreworld.net/'
   },
   activemq: {
