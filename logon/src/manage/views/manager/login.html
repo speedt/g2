@@ -65,17 +65,17 @@
 
 <script type='text/javascript'>
 function ser(frmObj){
-  var __a = frmObj.serializeArray();
-  var __b = _.pluck(__a, 'name');
-  var __c = _.pluck(__a, 'value');
-  var __d = _.object(__b, __c);
-  return __d;
+  var _a = frmObj.serializeArray();
+  var _b = _.pluck(_a, 'name');
+  var _c = _.pluck(_a, 'value');
+  var _d = _.object(_b, _c);
+  return _d;
 }
 
 function push(){
   var data = ser($('#logFrm'));
   $.ajax({
-    url: $!conf.html.virtualPath +'manager/login',
+    url: '$!{conf.html.virtualPath}manager/login',
     type: 'POST',
     dataType: 'JSON',
     data: data,
