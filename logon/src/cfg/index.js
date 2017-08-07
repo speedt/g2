@@ -7,16 +7,12 @@
 
 const path  = require('path');
 const cwd   = process.cwd();
-
 const conf  = require(path.join(cwd, 'settings'));
-
 const http  = require('http');
-
 const ajax  = require('speedt-utils').ajax;
+const _     = require('underscore');
 
 const log4js = require('log4js');
-
-const _ = require('underscore');
 
 // log4js.configure({
 //   appenders: {
@@ -44,7 +40,7 @@ var p1 = new Promise((resolve, reject) => {
   ajax(http.request, {
     host: conf.app.resHost,
     port: 80,
-    path: '/assets/fish.trail.json',
+    path: '/assets/cfg/fish.trail.json',
     method: 'GET',
   }, null, null).then(html => {
     resolve(JSON.parse(html));
@@ -55,7 +51,7 @@ var p2 = new Promise((resolve, reject) => {
   ajax(http.request, {
     host: conf.app.resHost,
     port: 80,
-    path: '/assets/fish.type.json',
+    path: '/assets/cfg/fish.type.json',
     method: 'GET',
   }, null, null).then(html => {
     resolve(JSON.parse(html));
@@ -66,7 +62,7 @@ var p3 = new Promise((resolve, reject) => {
   ajax(http.request, {
     host: conf.app.resHost,
     port: 80,
-    path: '/assets/fish.fixed.json',
+    path: '/assets/cfg/fish.fixed.json',
     method: 'GET',
   }, null, null).then(html => {
     resolve(JSON.parse(html));
@@ -80,29 +76,21 @@ Promise.all([p1, p2, p3]).then(values => {
 
   const biz = require('emag.biz');
 
-  biz.cfg.findAll(null, function (err, docs){
-    if(err) return logger.error('load config:', err);
+  biz.cfg.findAll(null, (err, docs) => {
+    if(err) return logger.error('load dynamic config:', err);
 
-    var sys = exports.sys = {};
+    var dynamic = exports.dynamic = {};
 
     for(let i of docs){
-      sys[i.type_ +'_'+ i.key_] = i.value_;
+      if(!dynamic[i.type_]) dynamic[i.type_] = {};
+      dynamic[i.type_][i.key_] = i.value_;
     }
 
-    logger.info('load config: success');
+    logger.debug('loaded dynamic config: %j', dynamic);
+    logger.info('loaded all config: success');
   });
 
-}).catch(function (err){
+}).catch(err => {
   logger.error('load config:', err);
   process.exit(1);
 });
-
-exports.arrayToObject = function(arr){
-  if(!_.isArray(arr)) return;
-
-  let obj = {};
-  for(let i=0, j=arr.length; i<j; i++){
-    obj[arr[i]] = arr[++i];
-  }
-  return obj;
-};

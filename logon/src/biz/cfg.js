@@ -6,29 +6,22 @@
 'use strict';
 
 const path = require('path');
-const cwd = process.cwd();
-
+const cwd  = process.cwd();
 const conf = require(path.join(cwd, 'settings'));
 
 const EventProxy = require('eventproxy');
-const uuid = require('node-uuid');
 
 const utils = require('speedt-utils').utils;
+const _     = require('underscore');
 
 const mysql = require('emag.db').mysql;
 const redis = require('emag.db').redis;
-
-const _ = require('underscore');
 
 (() => {
   var sql = 'SELECT a.* FROM s_cfg a WHERE a.type_=? ORDER BY a.title ASC';
 
   exports.findByType = function(type, cb){
-
-    mysql.query(sql, [type], (err, docs) => {
-      if(err) return cb(err);
-      cb(null, docs);
-    });
+    mysql.query(sql, [type], cb);
   };
 })();
 
@@ -39,17 +32,10 @@ const _ = require('underscore');
 exports.findAll = function(status, cb){
 
   var sql = 'SELECT a.* FROM s_cfg a';
-
-  if(null !== status){
-    sql += ' WHERE a.status=?';
-  }
-
+  if(null !== status){ sql += ' WHERE a.status=?'; }
   sql += ' ORDER BY a.title ASC';
 
-  mysql.query(sql, [status], (err, docs) => {
-    if(err) return cb(err);
-    cb(null, docs);
-  });
+  mysql.query(sql, [status], cb);
 };
 
 (() => {
@@ -60,17 +46,17 @@ exports.findAll = function(status, cb){
     var postData = [
       newInfo.value_,
       newInfo.key_,
-      newInfo.type_
+      newInfo.type_,
     ];
 
-    mysql.query(sql, postData, function (err, status){
-      if(err) return cb(err);
-      cb(null, status);
-    });
+    mysql.query(sql, postData, cb);
   };
 })();
 
 /**
+ * 后台管理服务器启动时加载
+ *
+ * mysql cfg 写入 redis cfg
  *
  * @return
  */
@@ -79,19 +65,15 @@ exports.init = function(cb){
   this.findAll(null, function (err, docs){
     if(err) return cb(err);
 
-    var info = {};
-
-    for(let i of docs){
-      info[i.type_ +'_'+ i.key_] = i.value_;
-    }
-
     redis.select(conf.redis.database, function (err){
       if(err) return cb(err);
 
-      redis.hmset('cfg', info, function (err, res){
-        if(err) return cb(err);
-        cb(null, res);
-      });
+      for(let i of docs){
+        redis.hset('cfg::'+ i.type_, i.key_, i.value_, redis.print);
+      }
+
+      cb(null, 'OK');
     });
+
   });
 };
