@@ -70,3 +70,20 @@ exports.edit = function(req, res, next){
     res.send({});
   });
 };
+
+exports.giftUI = function(req, res, next){
+  var id = req.query.id;
+
+  biz.gift.findAll(id, function (err, docs){
+    if(err) return next(err);
+
+    res.render('user/gift', {
+      conf: conf,
+      data: {
+        list_gift:    docs,
+        session_user: req.session.user,
+        nav_choose:   ',03,0301,'
+      }
+    });
+  });
+};

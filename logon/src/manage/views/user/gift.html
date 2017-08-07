@@ -121,13 +121,11 @@
 													<i class="icon-time bigger-110 hidden-phone"></i>
 													注册时间
 												</th>
-
-												<th>操作</th>
 											</tr>
 										</thead>
 
 										<tbody>#set ($i=1)
-										#foreach($doc in $!{data.list_user})
+										#foreach($doc in $!{data.list_gift})
 											<tr>
 												<td class="center">
 													<label>
@@ -142,84 +140,6 @@
 												<td>#defVal($!{doc.vip}, 0)</td>
 												#*<!-- <td class="hidden-480">$!{doc.bullet_level}</td> -->*#
 												<td class="hidden-phone">#formatDate($!{doc.create_time})</td>
-
-												<td>
-													<div class="hidden-phone visible-desktop btn-group">
-
-														<a class="btn btn-mini btn-info" title='编辑' href='./edit?id=$!{doc.id}'>
-															<i class="icon-edit bigger-120"></i>
-														</a>
-
-														<a class="btn btn-mini btn-danger" title='删除' href='javascript:del("$!{doc.id}")'>
-															<i class="icon-trash bigger-120"></i>
-														</a>
-
-														<a class="btn btn-mini btn-primary" title='奖励记录' href='./gift?id=$!{doc.id}'>
-															<i class="icon-gift bigger-120"></i>
-														</a>
-
-														<a class="btn btn-mini btn-danger" title='重置密码' href='javascript:resetPwd("$!{doc.id}")'>
-															<i class="icon-asterisk bigger-120"></i>
-														</a>
-
-														<a class="btn btn-mini btn-primary" title='充值记录' href='./recharge/?id=$!{doc.id}'>
-															<i class="icon-info-sign bigger-120"></i>
-														</a>
-
-													</div>
-
-													<div class="hidden-desktop visible-phone">
-														<div class="inline position-relative">
-															<button class="btn btn-minier btn-primary dropdown-toggle" data-toggle="dropdown">
-																<i class="icon-cog icon-only bigger-110"></i>
-															</button>
-
-															<ul class="dropdown-menu dropdown-icon-only dropdown-yellow pull-right dropdown-caret dropdown-close">
-
-																<li>
-																	<a href='./edit?id=$!{doc.id}' class="tooltip-success" data-rel="tooltip" title="编辑">
-																		<span class="blue">
-																			<i class="icon-edit bigger-120"></i>
-																		</span>
-																	</a>
-																</li>
-
-																<li>
-																	<a href='javascript:del("$!{doc.id}")' class="tooltip-error" data-rel="tooltip" title="删除">
-																		<span class="red">
-																			<i class="icon-trash bigger-120"></i>
-																		</span>
-																	</a>
-																</li>
-
-																<li>
-																	<a href='./gift?id=$!{doc.id}' class="tooltip-error" data-rel="tooltip" title="奖励记录">
-																		<span class="blue">
-																			<i class="icon-gift bigger-120"></i>
-																		</span>
-																	</a>
-																</li>
-
-																<li>
-																	<a href='javascript:resetPwd("$!{doc.id}")' class="tooltip-error" data-rel="tooltip" title="重置密码">
-																		<span class="red">
-																			<i class="icon-asterisk bigger-120"></i>
-																		</span>
-																	</a>
-																</li>
-
-																<li>
-																	<a href='./recharge/?id=$!{doc.id}' class="tooltip-error" data-rel="tooltip" title="充值记录">
-																		<span class="blue">
-																			<i class="icon-info-sign bigger-120"></i>
-																		</span>
-																	</a>
-																</li>
-
-															</ul>
-														</div>
-													</div>
-												</td>
 											</tr>
 										#end
 
@@ -264,42 +184,6 @@
 		#parse('_pagelet/js2.html')
 
 <script>
-function resetPwd(id){
-  if(confirm("确认要执行此操作吗？")){
-    $.ajax({
-      url: '$!{conf.html.virtualPath}user/resetPwd',
-      type: 'POST',
-      dataType: 'JSON',
-      data: { id: id },
-      success: function(data){
-        if(data.error) return alert(data.error.msg);
-        alert('操作成功');
-      },
-      error: function(){
-        alert(arguments[2]);
-      }
-    });
-  }
-}
-
-function del(id){
-  if(confirm("确认要删除数据吗？")){
-    $.ajax({
-      url: '$!{conf.html.virtualPath}user/del',
-      type: 'POST',
-      dataType: 'JSON',
-      data: { id: id },
-      success: function(data){
-        if(data.error) return alert(data.error.msg);
-        alert('删除成功');
-        location.reload();
-      },
-      error: function(){
-        alert(arguments[2]);
-      }
-    });
-  }
-}
 </script>
 	</body>
 </html>
