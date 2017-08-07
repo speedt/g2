@@ -45,7 +45,7 @@ const logger = log4js.getLogger('app');
 const app = express();
 
 /* all environments */
-app.set('port', process.env.PORT || 8888)
+app.set('port', process.env.PORT || conf.app.port)
    .set('views', path.join(__dirname, 'views'))
    .set('view engine', 'html')
    /* use */

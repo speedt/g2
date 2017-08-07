@@ -7,10 +7,8 @@
 
 module.exports = {
   app: {
-    resHost: '127.0.0.1'
-  },
-  corp: {
     name: 'foreworld.net',
+    port: 9999,
   },
   cookie: {
     key: 'web',
