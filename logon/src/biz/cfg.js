@@ -39,8 +39,53 @@ exports.findAll = function(status, cb){
 };
 
 (() => {
+  var sql = 'INSERT INTO s_cfg (type_, key_, value_, title, create_time, comment, status) values (?, ?, ?, ?, ?, ?, ?)';
+
+  /**
+   * 新增配置表
+   * 调用后应该群发给所有后置机新增此值
+   *
+   * mysql cfg 写入 redis cfg
+   *
+   * @return
+   */
+  exports.saveNew = function(newInfo, cb){
+
+    var postData = [
+      newInfo.type_,
+      newInfo.key_,
+      newInfo.value_,
+      newInfo.title,
+      new Date(),
+      newInfo.comment,
+      newInfo.status || 0,
+    ];
+
+    mysql.query(sql, postData, function (err, status){
+      if(err) return cb(err);
+
+      redis.select(conf.redis.database, function (err){
+        if(err) return cb(err);
+        redis.hset('cfg::'+ newInfo.type_, newInfo.key_, newInfo.value_, redis.print);
+        cb(null, newInfo);
+      });
+
+    });
+  };
+})();
+
+(() => {
   var sql = 'UPDATE s_cfg SET value_=? WHERE key_=? AND type_=?';
 
+  /**
+   * 修改配置表
+   * redis cfg 直接在此修改
+   * 调用后应该群发给所有后置机更新此值
+   *
+   * mysql cfg 写入 redis cfg
+   *
+   * @return
+   */
   exports.editInfo = function(newInfo, cb){
 
     var postData = [
@@ -49,7 +94,16 @@ exports.findAll = function(status, cb){
       newInfo.type_,
     ];
 
-    mysql.query(sql, postData, cb);
+    mysql.query(sql, postData, function (err, status){
+      if(err) return cb(err);
+
+      redis.select(conf.redis.database, function (err){
+        if(err) return cb(err);
+        redis.hset('cfg::'+ newInfo.type_, newInfo.key_, newInfo.value_, redis.print);
+        cb(null, newInfo);
+      });
+
+    });
   };
 })();
 
