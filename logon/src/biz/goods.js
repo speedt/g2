@@ -6,33 +6,28 @@
 'use strict';
 
 const path = require('path');
-const cwd = process.cwd();
-
+const cwd  = process.cwd();
 const conf = require(path.join(cwd, 'settings'));
 
 const EventProxy = require('eventproxy');
-const uuid = require('node-uuid');
 
 const utils = require('speedt-utils').utils;
+const _     = require('underscore');
+const uuid  = require('node-uuid');
 
 const mysql = require('emag.db').mysql;
 const redis = require('emag.db').redis;
-
-const _ = require('underscore');
 
 (() => {
   var sql = 'SELECT a.* FROM w_goods a ORDER BY a.create_time DESC';
 
   exports.findAll = function(cb){
-    mysql.query(sql, null, (err, docs) => {
-      if(err) return cb(err);
-      cb(null, docs);
-    });
+    mysql.query(sql, null, cb);
   };
 })();
 
 (() => {
-  const sql = 'INSERT INTO w_goods (id, goods_name, goods_desc, create_time, game_currency, cost, payment_id, disposable, interval_time) values (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+  const sql = 'INSERT INTO w_goods (id, title, content, create_time, user_id) values (?, ?, ?, ?, ?)';
 
   /**
    *
@@ -42,47 +37,51 @@ const _ = require('underscore');
 
     var postData = [
       utils.replaceAll(uuid.v1(), '-', ''),
-      newInfo.goods_name,
-      newInfo.goods_desc,
+      newInfo.title,
+      newInfo.content,
       new Date(),
-      newInfo.game_currency || 0,
-      newInfo.cost          || 0,
-      newInfo.payment_id    || '',
-      newInfo.disposable    || 1,
-      newInfo.interval_time || 8,
+      newInfo.user_id,
     ];
 
-    mysql.query(sql, postData, function (err, status){
-      if(err) return cb(err);
-      cb(null, status);
-    });
+    mysql.query(sql, postData, cb);
   };
 })();
 
 (() => {
-  const sql = 'UPDATE w_goods SET goods_name=?, goods_desc=?, game_currency=?, cost=?, payment_id=?, disposable=?, interval_time=? WHERE id=?';
+  const sql = 'UPDATE w_goods SET title=?, content=? WHERE id=?';
 
   /**
    *
    * @return
    */
-  exports.saveInfo = function(newInfo, cb){
+  exports.editInfo = function(newInfo, cb){
 
     var postData = [
-      newInfo.goods_name,
-      newInfo.goods_desc,
-      newInfo.game_currency,
-      newInfo.cost,
-      newInfo.payment_id,
-      newInfo.disposable,
-      newInfo.interval_time,
+      newInfo.title,
+      newInfo.content,
       newInfo.id,
     ];
 
-    mysql.query(sql, postData, function (err, status){
-      if(err) return cb(err);
-      cb(null, status);
-    });
+    mysql.query(sql, postData, cb);
+  };
+})();
+
+(() => {
+  const sql = 'UPDATE w_goods SET last_time=? WHERE id=?';
+
+  /**
+   * 编辑本次发送消息时间
+   *
+   * @return
+   */
+  exports.editLastTime = function(id, cb){
+
+    var postData = [
+      new Date(),
+      id,
+    ];
+
+    mysql.query(sql, postData, cb);
   };
 })();
 
@@ -109,9 +108,6 @@ const _ = require('underscore');
    * @return
    */
   exports.del = function(id, cb){
-    mysql.query(sql, [id], (err, status) => {
-      if(err) return cb(err);
-        cb(null, status);
-    });
+    mysql.query(sql, [id], cb);
   };
 })();
