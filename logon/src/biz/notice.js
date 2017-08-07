@@ -6,28 +6,23 @@
 'use strict';
 
 const path = require('path');
-const cwd = process.cwd();
-
+const cwd  = process.cwd();
 const conf = require(path.join(cwd, 'settings'));
 
 const EventProxy = require('eventproxy');
-const uuid = require('node-uuid');
 
 const utils = require('speedt-utils').utils;
+const _     = require('underscore');
+const uuid  = require('node-uuid');
 
 const mysql = require('emag.db').mysql;
 const redis = require('emag.db').redis;
-
-const _ = require('underscore');
 
 (() => {
   var sql = 'SELECT a.*, b.user_name FROM (SELECT * FROM w_notice) a LEFT JOIN s_manager b ON (a.user_id=b.id) WHERE b.id IS NOT NULL ORDER BY a.create_time DESC';
 
   exports.findAll = function(cb){
-    mysql.query(sql, null, (err, docs) => {
-      if(err) return cb(err);
-      cb(null, docs);
-    });
+    mysql.query(sql, null, cb);
   };
 })();
 
@@ -45,35 +40,48 @@ const _ = require('underscore');
       newInfo.title,
       newInfo.content,
       new Date(),
-      newInfo.user_id
+      newInfo.user_id,
     ];
 
-    mysql.query(sql, postData, function (err, status){
-      if(err) return cb(err);
-      cb(null, status);
-    });
+    mysql.query(sql, postData, cb);
   };
 })();
 
 (() => {
-  const sql = 'UPDATE w_notice SET TITLE=?, CONTENT=? WHERE id=?';
+  const sql = 'UPDATE w_notice SET title=?, content=? WHERE id=?';
 
   /**
    *
    * @return
    */
-  exports.saveInfo = function(newInfo, cb){
+  exports.editInfo = function(newInfo, cb){
 
     var postData = [
       newInfo.title,
       newInfo.content,
-      newInfo.id
+      newInfo.id,
     ];
 
-    mysql.query(sql, postData, function (err, status){
-      if(err) return cb(err);
-      cb(null, status);
-    });
+    mysql.query(sql, postData, cb);
+  };
+})();
+
+(() => {
+  const sql = 'UPDATE w_notice SET last_time=? WHERE id=?';
+
+  /**
+   * 编辑本次发送消息时间
+   *
+   * @return
+   */
+  exports.editLastTime = function(id, cb){
+
+    var postData = [
+      new Date(),
+      id,
+    ];
+
+    mysql.query(sql, postData, cb);
   };
 })();
 
@@ -100,9 +108,6 @@ const _ = require('underscore');
    * @return
    */
   exports.del = function(id, cb){
-    mysql.query(sql, [id], (err, status) => {
-      if(err) return cb(err);
-        cb(null, status);
-    });
+    mysql.query(sql, [id], cb);
   };
 })();
