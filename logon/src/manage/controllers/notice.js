@@ -5,20 +5,18 @@
  */
 'use strict';
 
-const URL = require('url');
-
-const conf = require('../settings');
-const utils = require('speedt-utils').utils;
-
 const biz = require('emag.biz');
+const _   = require('underscore');
 
-const _ = require('underscore');
+const conf  = require('../settings');
+const utils = require('speedt-utils').utils;
 
 const logger = require('log4js').getLogger('notice');
 
 exports.indexUI = function(req, res, next){
 
   biz.notice.findAll(function (err, docs){
+    if(err) return next(err);
 
     res.render('notice/index', {
       conf: conf,
@@ -53,11 +51,11 @@ exports.add = function(req, res, next){
 };
 
 exports.editUI = function(req, res, next){
-
   var id = req.query.id;
 
   biz.notice.getById(id, function (err, doc){
-    if(err) return next(err);
+    if(err)  return next(err);
+    if(!doc) return next(new Error('Not Found'));
 
     res.render('notice/edit', {
       conf: conf,
@@ -73,7 +71,7 @@ exports.editUI = function(req, res, next){
 exports.edit = function(req, res, next){
   var query = req.body;
 
-  biz.notice.saveInfo(query, function (err, status){
+  biz.notice.editInfo(query, function (err, status){
     if(err) return next(err);
     res.send({});
   });

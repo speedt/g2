@@ -2,26 +2,26 @@
 <!DOCTYPE html>
 <html lang="zh">
 	<head>
-		<title>网站公告 | 交流中心 | $!conf.corp.name</title>
+		<title>网站公告 | 交流中心 | $!conf.app.name</title>
 		#parse('_pagelet/header2.html')
 	</head>
 
 	<body>
-		#parse('back/_pagelet/nav.html')
+		#parse('site/_pagelet/nav.html')
 
 		<div class="main-container container-fluid">
 			<a class="menu-toggler" id="menu-toggler" href="#">
 				<span class="menu-text"></span>
 			</a>
 
-			#parse('back/_pagelet/sidebar.html')
+			#parse('site/_pagelet/sidebar.html')
 
 			<div class="main-content">
 				<div class="breadcrumbs" id="breadcrumbs">
 					<ul class="breadcrumb">
 						<li>
 							<i class="icon-home home-icon"></i>
-							<a href="/manage/">首页</a>
+							<a href="$!{conf.html.virtualPath}">首页</a>
 
 							<span class="divider">
 								<i class="icon-angle-right arrow-icon"></i>
@@ -189,7 +189,7 @@
 												</td>
 											</tr>
 											<tr>
-												<td colspan='6'>#formatHTML($!{doc.content})</td>
+												<td colspan='6'>#formatHtml($!{doc.content})</td>
 											</tr>
 										#end
 
@@ -233,45 +233,32 @@
 		#parse('_pagelet/footer2.html')
 		#parse('_pagelet/js2.html')
 
-		<script>
+<script>
+function send(id){
+  if(confirm("频繁操作将影响服务器性能，确认执行吗？")){
+    // todo
+  }
+}
 
-		function send(id){
-			if(confirm("频繁操作将影响服务器性能，确认执行吗？")){
-				$.ajax({
-					url: '/manage/notice/send',
-					type: 'POST',
-					dataType: 'JSON',
-					data: { id: id },
-					success: function(data){
-						if(data.error) return alert(data.error.msg);
-						alert('发送成功');
-					},
-					error: function(){
-						alert(arguments[2]);
-					}
-				});
-			}
-		}
-
-		function del(id){
-			if(confirm("确认要删除数据吗？")){
-		      $.ajax({
-		        url: '/manage/notice/del',
-		        type: 'POST',
-		        dataType: 'JSON',
-		        data: { id: id },
-		        success: function(data){
-		          if(data.error) return alert(data.error.msg);
-		          console.log(data)
-		          alert('删除成功');
-		          location.reload();
-		        },
-		        error: function(){
-		          alert(arguments[2]);
-		        }
-			});
-		  }
-		}
-		</script>
+function del(id){
+  if(confirm("确认要删除数据吗？")){
+    $.ajax({
+      url: '$!{conf.html.virtualPath}notice/del',
+      type: 'POST',
+      dataType: 'JSON',
+      data: { id: id },
+      success: function(data){
+        if(data.error) return alert(data.error.msg);
+        console.log(data)
+        alert('删除成功');
+        location.reload();
+      },
+      error: function(){
+        alert(arguments[2]);
+      }
+    });
+  }
+}
+</script>
 	</body>
 </html>
