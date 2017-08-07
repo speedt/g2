@@ -1,0 +1,30 @@
+#parse('_pagelet/constant.html')
+<!DOCTYPE html>
+<html lang='zh-CN'>
+	<head>
+		#parse('_pagelet/header.html')
+	</head>
+	<body>
+
+    <input type='button' id='fishjoy' value='捕鱼'><p></p>
+    <input type='button' id='mahjong' value='麻将'><p></p>
+
+		#parse('_pagelet/js.html')
+
+<script type='text/javascript'>
+
+$(function(){
+
+  $('#fishjoy').click(function(){
+    console.log('fishjoy')
+  })
+
+  $('#mahjong').click(function(){
+    console.log('mahjong')
+  })
+})
+
+</script>
+
+	</body>
+</html>
