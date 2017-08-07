@@ -83,18 +83,18 @@
 											data-olx-type='olx.grid' data-current='1' data-pagesize='20' data-count='561'>
 										<thead>
 											<tr>
-												<th class="center">
+												<th class="center hidden-480">
 													<label>
 														<input type="checkbox" />
 														<span class="lbl"></span>
 													</label>
 												</th>
-												<th class="hidden-480">#</th>
+												<th>#</th>
 												<th>用户名</th>
-												<th>VIP</th>
+												<th class="hidden-480">VIP</th>
 
-												<th>商品</th>
-												<th>礼品</th>
+												<th class="hidden-480">商品</th>
+												<th>获得方式</th>
 												<th>道具</th>
 												<th>数量</th>
 
@@ -113,17 +113,17 @@
 										<tbody>#set ($i=1)
 										#foreach($doc in $!{data.list_gift})
 											<tr>
-												<td class="center">
+												<td class="center hidden-480">
 													<label>
 														<input type="checkbox" value='$!{doc.id}' />
 														<span class="lbl"></span>
 													</label>
 												</td>
-												<td class="hidden-480">$i#set($i=$i+1)</td>
+												<td>$i#set($i=$i+1)</td>
 
 												<td>$!{doc.user_name}</td>
-												<td>$!{doc.user_vip}</td>
-												<td>$!{doc.goods_name}</td>
+												<td class="hidden-480">$!{doc.user_vip}</td>
+												<td class="hidden-480">$!{doc.goods_name}</td>
 												<td>$!{doc.gift_type_name}</td>
 												<td>$!{doc.prop_name}</td>
 												<td>#num2Money($!{doc.num})</td>
