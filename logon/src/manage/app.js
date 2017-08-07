@@ -1,5 +1,5 @@
 /*!
- * emag.login
+ * emag.manage
  * Copyright(c) 2016 huangxin <3203317@qq.com>
  * MIT Licensed
  */
