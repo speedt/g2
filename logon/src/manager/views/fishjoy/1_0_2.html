@@ -1,0 +1,221 @@
+#parse('_pagelet/constant.html')
+<!DOCTYPE html>
+<html lang='zh-CN'>
+	<head>
+		#parse('_pagelet/header.html')
+	</head>
+	<body>
+
+    <input type='button' id='logout' value='logout'><p></p>
+
+    <input type='button' onclick='searchGroup("qingtong")' value='8人场'>
+    <input type='button' onclick='searchGroup("baiyin")' value='5人场'>
+    <input type='button' onclick='searchGroup("huangjin")' value='快速场'><p></p>
+
+    加入群组：
+    <input type='text' id='group_id' />
+    <input type='button' id='entryGroup' value='entryGroup'><p></p>
+
+    <textarea rows='8' cols='50'></textarea>
+    <textarea rows='8' cols='50'></textarea><p></p>
+
+    <input type='button' id='shot' value='shot'><p></p>
+
+    发送给：
+    <input type='text' id='user_id' placeholder='ALL,GROUP,PERSON,...' />
+    <input type='text' id='msg' />
+    <input type='button' id='send' value='send'><p></p>
+
+		#parse('_pagelet/js.html')
+
+<script type='text/javascript'>
+var exports = {};
+</script>
+
+<script type='text/javascript' src='$!{conf.html.cdn}js/google-protobuf/3.3.0/google-protobuf.js'></script>
+<script type='text/javascript' src='/assets/js/emag/common.js'></script>
+<script type='text/javascript' src='/assets/js/emag/user.js'></script>
+<script type='text/javascript' src='/assets/js/emag/chat.js'></script>
+<script type='text/javascript' src='/assets/js/emag/group.js'></script>
+
+<script type='text/javascript'>
+
+</script>
+
+<script type='text/javascript'>
+
+var socket = null;
+var gws = proto.gws;
+
+function searchGroup(group_type){
+
+  var data = new gws.GroupSearchProtobuf();
+  data.setGroupType(group_type);
+
+  var req = new gws.RequestProtobuf();
+  req.setVersion(102);
+  req.setMethod(3001);
+  req.setSeqid(parseInt(Math.random() * 1000));
+  req.setTimestamp(new Date().getTime());
+  req.setData(data.serializeBinary());
+
+  var binary = req.serializeBinary();
+  socket.send(binary);
+}
+
+$(function(){
+
+  $('#entryGroup').click(function(){
+
+    var data = new gws.GroupEntryProtobuf();
+    data.setGroupId($('#group_id').val());
+
+    var req = new gws.RequestProtobuf();
+    req.setVersion(102);
+    req.setMethod(3003);
+    req.setSeqid(parseInt(Math.random() * 1000));
+    req.setTimestamp(new Date().getTime());
+    req.setData(data.serializeBinary());
+
+    var binary = req.serializeBinary();
+    socket.send(binary);
+  });
+
+  $('#send').click(function(){
+
+    var send = new gws.ChatMsgProtobuf();
+    send.setReceiver($('#user_id').val())
+    send.setMessage($('#msg').val());
+
+    var req = new gws.RequestProtobuf();
+    req.setVersion(102);
+    req.setMethod(2001);
+    req.setSeqid(parseInt(Math.random() * 1000));
+    req.setTimestamp(new Date().getTime());
+    req.setData(send.serializeBinary());
+
+    var binary = req.serializeBinary();
+    socket.send(binary);
+  });
+
+  (function(){
+
+    socket = new WebSocket('ws://'+ window.location.hostname +'/s/'+ (location.search.match(/s=([\w\-]+)/) ? RegExp.$1 : '') +'/');
+    socket.binaryType = 'arraybuffer';
+
+    socket.onopen = function(evt){
+
+      socket.onmessage = function(evt){
+        var data = evt.data;
+        var type = typeof data;
+
+        console.log(data)
+        console.log('++++')
+
+        var result = gws.ResponseProtobuf.deserializeBinary(data);
+
+        console.log(result.getVersion());
+        console.log(result.getMethod());
+        console.log(result.getSeqid());
+        console.log(result.getTimestamp());
+        console.log('----');
+
+        var err = result.getError();
+        if(err) return console.error(err.getCode(), err.getMsg());
+
+        switch(result.getMethod()){
+          case 95:{
+            (function(){
+              var data = gws.UserLoginResultProtobuf.deserializeBinary(result.getData());
+              console.log(data.getToken());
+            })();
+            break;
+          }
+          case 2002:{
+            (function(){
+              var data = gws.ChatMsgProtobuf.deserializeBinary(result.getData());
+              console.log(data.getMessage());
+            })();
+            break;
+          }
+          case 3002:{
+            (function(){
+              var data = gws.DataProtobuf.deserializeBinary(result.getData());
+              console.log(data.getBody());
+            })();
+            break;
+          }
+          case 1001:{
+            console.info(1001);
+            break;
+          }
+          case 1002:{
+            console.info(1002);
+            break;
+          }
+        }
+      };
+
+      // first
+      var req = new gws.RequestProtobuf();
+      req.setVersion(101);
+      req.setMethod(95);
+      req.setSeqid(parseInt(Math.random() * 1000));
+      req.setTimestamp(new Date().getTime());
+
+      var login = new gws.UserLoginProtobuf();
+      login.setCode(location.search.match(/code=([\w\-]+)/) ? RegExp.$1 : '');
+      req.setData(login.serializeBinary());
+
+      var binary = req.serializeBinary();
+      console.log(binary);
+      socket.send(binary);
+    };
+
+
+    socket.onclose = function(evt){
+      console.log(evt);
+
+      setTimeout(function(){
+        location.href = '/client/user/login?t='+ new Date().getTime();
+      }, 1000);
+    };
+
+    socket.onerror = function(evt){
+      console.error(evt);
+
+      setTimeout(function(){
+        location.href = '/client/user/login?t='+ new Date().getTime();
+      }, 1000);
+    };
+
+  })();
+
+  $('#logout').click(function(){
+    socket.close();
+  });
+
+  $('#shot').click(function(){
+
+    var req = new gws.RequestProtobuf();
+    req.setVersion(102);
+    req.setMethod(1001);
+    req.setSeqid(parseInt(Math.random() * 1000));
+    req.setTimestamp(new Date().getTime());
+
+    var user = new gws.UserProtobuf();
+    user.setNickname('八一猫')
+    user.setUserPass('123456');
+    req.setData(user.serializeBinary());
+
+    var binary = req.serializeBinary();
+    console.log(binary);
+    socket.send(binary);
+  });
+
+});
+
+</script>
+
+	</body>
+</html>
