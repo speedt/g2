@@ -1,1 +1,1 @@
-del logs\*.log /q & npm install & npm install ..\db & npm install ..\cfg & npm install ..\model & npm install ..\biz
+del logs\*.log /q & npm install & npm install ..\db & npm install ..\biz

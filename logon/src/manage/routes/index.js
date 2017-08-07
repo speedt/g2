@@ -5,20 +5,11 @@
  */
 'use strict';
 
-const notice  = require('../controllers/notice');
 const cfg     = require('../controllers/cfg');
 const manager = require('../controllers/manager');
 const site    = require('../controllers/site');
 
 module.exports = function(app){
-
-  app.post('/notice/send$', manager.login_validate, notice.send);
-  app.post('/notice/del$',  manager.login_validate, notice.del);
-  app.post('/notice/edit$', manager.login_validate, notice.edit);
-  app.get ('/notice/edit$', manager.login_validate, notice.editUI);
-  app.post('/notice/add$',  manager.login_validate, notice.add);
-  app.get ('/notice/add$',  manager.login_validate, notice.addUI);
-  app.get ('/notice/',      manager.login_validate, notice.indexUI);
 
   app.get ('/settings/',     manager.login_validate, cfg.indexUI);
   app.post('/settings/edit', manager.login_validate, cfg.edit);
