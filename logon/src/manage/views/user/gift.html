@@ -91,9 +91,12 @@
 												</th>
 												<th class="hidden-480">#</th>
 												<th>用户名</th>
+												<th>VIP</th>
 
-												<th>商品名称</th>
-												<th>礼品类型</th>
+												<th>商品</th>
+												<th>礼品</th>
+												<th>道具</th>
+												<th>数量</th>
 
 												<th class="hidden-phone">
 													<i class="icon-time bigger-110 hidden-phone"></i>
@@ -119,8 +122,11 @@
 												<td class="hidden-480">$i#set($i=$i+1)</td>
 
 												<td>$!{doc.user_name}</td>
+												<td>$!{doc.user_vip}</td>
 												<td>$!{doc.goods_name}</td>
 												<td>$!{doc.gift_type_name}</td>
+												<td>$!{doc.prop_name}</td>
+												<td>#num2Money($!{doc.num})</td>
 
 												<td class="hidden-phone">#formatDate($!{doc.create_time})</td>
 												<td class="hidden-phone">#formatDate($!{doc.receive_time})</td>
