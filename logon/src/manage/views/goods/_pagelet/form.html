@@ -20,15 +20,7 @@
 	</div>
 
 	<div class='control-group'>
-		<label class='control-label'>游戏币</label>
-
-		<div class='controls'>
-			<input type='text' class='input-large' name='game_currency' id='frm_game_currency' value='$!doc.game_currency' />
-		</div>
-	</div>
-
-	<div class='control-group'>
-		<label class='control-label'>人民币</label>
+		<label class='control-label'>¥人民币</label>
 
 		<div class='controls'>
 			<input type='text' class='input-large' name='cost' id='frm_cost' value='$!doc.cost' />
@@ -48,8 +40,8 @@
 
 		<div class='controls'>
 			<select name='disposable' id='frm_disposable'>
-				<option value='1' #if(1 == $!doc.disposable)selected#end />是
-				<option value='0' #if(0 == $!doc.disposable)selected#end />否
+				<option value='1'#if(1 == $!doc.disposable) selected#end />是
+				<option value='0'#if(0 == $!doc.disposable) selected#end />否
 			</select>
 		</div>
 	</div>
@@ -81,7 +73,7 @@ $(function(){
     value: #defVal($!doc.interval_time, 0),
     min: 0,
     max: 10000,
-    step: 1,
+    step: 10,
     icon_up: 'icon-plus',
     icon_down: 'icon-minus',
     btn_up_class: 'btn-success' ,
@@ -92,18 +84,7 @@ $(function(){
     value: #defVal($!doc.cost, 0),
     min: 0,
     max: 10000,
-    step: 100,
-    icon_up: 'icon-plus',
-    icon_down: 'icon-minus',
-    btn_up_class: 'btn-success' ,
-    btn_down_class: 'btn-danger'
-  });
-
-  $('#frm_game_currency').ace_spinner({
-    value: #defVal($!doc.game_currency, 0),
-    min: 0,
-    max: 10000,
-    step: 100,
+    step: 10,
     icon_up: 'icon-plus',
     icon_down: 'icon-minus',
     btn_up_class: 'btn-success' ,

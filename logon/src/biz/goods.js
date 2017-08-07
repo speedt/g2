@@ -87,3 +87,15 @@ const redis = require('emag.db').redis;
     });
   };
 })();
+
+(() => {
+  var sql = 'DELETE FROM w_goods WHERE id=?';
+
+  /**
+   *
+   * @return
+   */
+  exports.del = function(id, cb){
+    mysql.query(sql, [id], cb);
+  };
+})();

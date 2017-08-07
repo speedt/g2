@@ -121,9 +121,9 @@
 												</td>
 												<td>$i#set($i=$i+1)</td>
 
-												<td>$!{doc.user_name}</td>
+												<td><a href='./edit?id=$!{doc.user_id}'>$!{doc.user_name}</a></td>
 												<td class="hidden-480">$!{doc.user_vip}</td>
-												<td class="hidden-480">$!{doc.goods_name}</td>
+												<td class="hidden-480"><a href='../goods/edit?id=$!{doc.goods_id}'>$!{doc.goods_name}</a></td>
 												<td>$!{doc.gift_type_name}</td>
 												<td>$!{doc.prop_name}</td>
 												<td>#num2Money($!{doc.num})</td>
