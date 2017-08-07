@@ -68,7 +68,7 @@ exports.login = function(req, res, next){
 exports.login_validate = function(req, res, next){
   if(req.session.userId) return next();
   if(req.xhr) return res.send({ error: { msg: '无权访问' } });
-  res.redirect(conf.html.virtualPath +'manager/login?refererUrl='+ escape(req.url));
+  res.redirect(conf.html.virtualPath +'manager/login?refererUrl='+ escape(conf.html.virtualPath + req.url.substr(1)));
 };
 
 exports.logoutUI = function(req, res, next){
