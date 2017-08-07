@@ -15,7 +15,7 @@ const conf = require('../settings');
  * @return
  */
 exports.indexUI = function(req, res, next){
-  res.render('back/index', {
+  res.render('site/index', {
     conf: conf,
     description: '',
     keywords: ',html5',
@@ -32,7 +32,7 @@ exports.indexUI = function(req, res, next){
  * @return
  */
 exports.welcomeUI = function(req, res, next){
-  res.render('back/welcome', {
+  res.render('site/welcome', {
     conf: conf,
     description: '',
     keywords: ',html5'
