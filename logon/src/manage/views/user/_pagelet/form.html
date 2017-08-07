@@ -3,7 +3,7 @@
 	<input type='hidden' name='id' id='frm_id' value='$!doc.id'>
 
 	<div class="control-group">
-		<label class="control-label">用户名</label>
+		<label class="control-label" for='frm_user_name'>用户名</label>
 
 		<div class="controls">
 			<input type="text" class='input-large' id='frm_user_name' value='$!doc.user_name'#if(null != $!doc.id) readonly#end />
@@ -11,7 +11,7 @@
 	</div>
 
 	<div class="control-group">
-		<label class="control-label">昵称</label>
+		<label class="control-label" for='frm_nickname'>昵称</label>
 
 		<div class="controls">
 			<input type="text" class='input-large' id='frm_nickname' name='nickname' value='$!doc.nickname' />
@@ -19,7 +19,7 @@
 	</div>
 
 	<div class="control-group">
-		<label class="control-label">金币数（当前）</label>
+		<label class="control-label" for='frm_current_score'>金币数（当前）</label>
 
 		<div class="controls">
 			<input type="text" class='input-large' name='current_score' id='frm_current_score' value='$!doc.current_score' />

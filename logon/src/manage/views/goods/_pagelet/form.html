@@ -4,7 +4,7 @@
 	<input type='hidden' name='id' id='frm_id' value='$!doc.id'>
 
 	<div class='control-group'>
-		<label class='control-label'>商品名称</label>
+		<label class='control-label' for='frm_goods_name'>商品名称</label>
 
 		<div class='controls'>
 			<input type='text' class='input-large' name='goods_name' id='frm_goods_name' value='$!doc.goods_name' />
@@ -12,7 +12,7 @@
 	</div>
 
 	<div class='control-group'>
-		<label class='control-label'>商品描述</label>
+		<label class='control-label' for='frm_goods_desc'>商品描述</label>
 
 		<div class='controls'>
 			<input type='text' class='input-large' name='goods_desc' id='frm_goods_desc' value='$!doc.goods_desc' />
@@ -20,7 +20,7 @@
 	</div>
 
 	<div class='control-group'>
-		<label class='control-label'>¥人民币</label>
+		<label class='control-label' for='frm_cost'>¥人民币</label>
 
 		<div class='controls'>
 			<input type='text' class='input-large' name='cost' id='frm_cost' value='$!doc.cost' />
@@ -28,7 +28,7 @@
 	</div>
 
 	<div class='control-group'>
-		<label class='control-label'>支付平台ID</label>
+		<label class='control-label' for='frm_payment_id'>支付平台ID</label>
 
 		<div class='controls'>
 			<input type='text' class='input-large' name='payment_id' id='frm_payment_id' value='$!doc.payment_id' />
@@ -36,18 +36,22 @@
 	</div>
 
 	<div class='control-group'>
-		<label class='control-label'>一次性</label>
+		<label class='control-label' for='frm_disposable_1'>一次性</label>
 
 		<div class='controls'>
-			<select name='disposable' id='frm_disposable'>
-				<option value='1'#if(1 == $!doc.disposable) selected#end />是
-				<option value='0'#if(0 == $!doc.disposable) selected#end />否
-			</select>
+			<label>
+				<input name='disposable' value='1' id='frm_disposable_1' type='radio'#if(1 == $!doc.disposable) checked#end />
+				<span class='lbl'> 是</span>
+			</label>
+			<label>
+				<input name='disposable' value='0' id='frm_disposable_0' type='radio'#if(0 == $!doc.disposable) checked#end />
+				<span class='lbl'> 否</span>
+			</label>
 		</div>
 	</div>
 
 	<div class='control-group'>
-		<label class='control-label'>间隔时间（小时）</label>
+		<label class='control-label' for='frm_interval_time'>间隔时间（小时）</label>
 
 		<div class='controls'>
 			<input type='text' class='input-large' name='interval_time' id='frm_interval_time' value='$!doc.interval_time' />

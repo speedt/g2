@@ -54,10 +54,10 @@ const redis = require('emag.db').redis;
       newInfo.goods_name,
       newInfo.goods_desc,
       new Date(),
-      newInfo.cost,
+      newInfo.cost          || 0,
       newInfo.payment_id,
-      newInfo.disposable,
-      newInfo.interval_time,
+      newInfo.disposable    || 0,
+      newInfo.interval_time || 0,
     ];
 
     mysql.query(sql, postData, cb);
@@ -76,10 +76,10 @@ const redis = require('emag.db').redis;
     var postData = [
       newInfo.goods_name,
       newInfo.goods_desc,
-      newInfo.cost,
+      newInfo.cost          || 0,
       newInfo.payment_id,
-      newInfo.disposable,
-      newInfo.interval_time,
+      newInfo.disposable    || 0,
+      newInfo.interval_time || 0,
       newInfo.id,
     ];
 

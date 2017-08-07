@@ -3,7 +3,7 @@
 	<input type='hidden' name='id' id='frm_id' value='$!doc.id'>
 
 	<div class='control-group'>
-		<label class='control-label'>公告标题</label>
+		<label class='control-label' for='frm_title'>公告标题</label>
 
 		<div class='controls'>
 			<input type='text' class='input-large' id='frm_title' name='title' value='$!doc.title' />
@@ -11,7 +11,7 @@
 	</div>
 
 	<div class='control-group'>
-		<label class='control-label'>公告内容</label>
+		<label class='control-label' for='frm_content'>公告内容</label>
 
 		<div class='controls'>
 			<div class='wysiwyg-editor' id='frm_content' name='content'>#formatHtml($!{doc.content})</div>
