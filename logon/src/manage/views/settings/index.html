@@ -115,12 +115,11 @@
 
 <script>
 function changeSetting(type, key){
-  var val = $('#'+ type +'_'+ key).val().trim();
+  var value_ = $('#'+ type +'_'+ key).val().trim();
 
-  if('' === val){
+  if(_.isEmpty(value_)){
     alert('值不能为空');
-    $('#frm')[0].reset();
-    return;
+    return $('#frm')[0].reset();
   }
 
   $.ajax({
@@ -130,7 +129,7 @@ function changeSetting(type, key){
     data: {
       type_: type,
       key_: key,
-      value_: val
+      value_: value_
     },
     success: function(data) {
       if(data.error) return alert(data.error.code);

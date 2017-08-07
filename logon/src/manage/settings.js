@@ -25,7 +25,7 @@ module.exports = {
     password: 'admin',
   },
   mysql: {
-    database: 'emag',
+    database: 'emag2',
     host: '127.0.0.1',
     port: 12306,
     user: 'root',
