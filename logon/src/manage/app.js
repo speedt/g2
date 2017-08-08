@@ -110,5 +110,5 @@ process.on('uncaughtException', err => {
 
 biz.cfg.init((err, docs) => {
   if(err) throw err;
-  logger.debug('init redis:', docs);
+  logger.debug('redis init:', docs);
 });
