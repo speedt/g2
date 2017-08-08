@@ -13,9 +13,9 @@ const express = require('express'),
       path = require('path'),
       cwd = process.cwd();
 
-const macros = require('./lib/macro'),
-      conf = require('./settings');
+const conf = require('./settings');
 
+const macro = require('emag.lib').macro;
 const redis = require('emag.db').redis;
 
 const log4js = require('log4js');
@@ -86,7 +86,7 @@ app.use(app.router)
    .engine('.html', (path, options, fn) => {
       fs.readFile(path, 'utf8', (err, data) => {
         if(err) return fn(err);
-        try{ fn(null, velocity.render(data, options, macros)); }
+        try{ fn(null, velocity.render(data, options, macro)); }
         catch(ex){ fn(ex); }
       });
     });
