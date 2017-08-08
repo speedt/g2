@@ -86,7 +86,7 @@ Promise.all([p1, p2, p3]).then(values => {
       dynamic[i.type_][i.key_] = i.value_;
     }
 
-    logger.debug('loaded dynamic config: %j', dynamic);
+    logger.debug('loaded dynamic config:', dynamic);
     logger.info('loaded all config: success');
   });
 
