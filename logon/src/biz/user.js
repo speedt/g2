@@ -284,3 +284,19 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
       cb);
   };
 })();
+
+(() => {
+  /**
+   * 每日登陆摇奖
+   *
+   * @param 01 今天已经领过奖啦
+   * @return
+   */
+  exports.daily_landing_lottery = function(id, cb){
+
+    biz.gift.findGiftByDate(id, 1, null, function (err, docs){
+      if(err) return cb(err);
+      if(0 < docs.length) return cb(err, '01');
+    });
+  };
+})();

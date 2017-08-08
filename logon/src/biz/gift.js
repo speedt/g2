@@ -40,3 +40,24 @@ const logger = require('log4js').getLogger('biz.gift');
     mysql.query(sql, [user_id || 0], cb);
   };
 })();
+
+(() => {
+  var sql = 'SELECT a.* FROM w_gift a WHERE a.user_id=? AND a.gift_type=? AND DATE(a.create_time)=?';
+
+  /**
+   * 获取当天的礼品列表
+   *
+   * @param curr_date 默认当天
+   * @return
+   */
+  exports.findGiftByDate = function(user_id, gift_type, curr_date, cb){
+
+    var postData = [
+      user_id,
+      gift_type || 1,
+      curr_date || utils.formatDate(new Date(), 'YYYY-MM-dd'),
+    ];
+
+    mysql.query(sql, postData, cb);
+  };
+})();
