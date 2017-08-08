@@ -5,7 +5,6 @@
  */
 'use strict';
 
-exports.server   = require('./server');
 exports.goods    = require('./goods');
 exports.gift     = require('./gift');
 exports.user     = require('./user');

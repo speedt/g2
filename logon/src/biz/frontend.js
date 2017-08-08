@@ -75,3 +75,11 @@ const _ = require('underscore');
     });
   };
 })();
+
+/**
+ *
+ * @return 可用的服务器
+ */
+exports.available = function(cb){
+  cb(null, '68');
+};

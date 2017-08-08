@@ -177,7 +177,7 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
 
     var p2 = new Promise((resolve, reject) => {
       // 服务器可用性
-      biz.server.available((err, info) => {
+      biz.frontend.available((err, info) => {
         if(err) return reject(err);
         resolve(info);
       });
