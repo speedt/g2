@@ -256,13 +256,13 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
       conf.redis.database, conf.app.client_id, doc.id, code,
       seconds,
       JSON.stringify(doc),
-      doc.user_name        || 0,
+      doc.user_name,
       doc.sex              || 0,
-      doc.create_time      || 0,
-      doc.mobile           || 0,
-      doc.qq               || 0,
-      doc.weixin           || 0,
-      doc.email            || 0,
+      doc.create_time,
+      doc.mobile,
+      doc.qq,
+      doc.weixin,
+      doc.email,
       doc.current_score    || 0,  // 当前总分
       doc.tool_1           || 0,
       doc.tool_2           || 0,
@@ -273,7 +273,7 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
       doc.tool_7           || 0,
       doc.tool_8           || 0,
       doc.tool_9           || 0,
-      doc.nickname         || 0,  // 昵称
+      doc.nickname,
       doc.vip              || 0,
       doc.consume_count    || 0,  // 消费（¥）
       doc.win_count        || 0,  // 胜利（次数）
