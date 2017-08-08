@@ -12,4 +12,8 @@ const Redis = require('speedt-redis');
 
 const conf = require(path.join(cwd, 'settings')).redis;
 
-exports = module.exports = new Redis(conf);
+var r = exports = module.exports = new Redis(conf);
+
+process.on('exit', () => {
+  if(r) r.quit();
+});

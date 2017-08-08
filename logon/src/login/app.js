@@ -16,7 +16,6 @@ const express = require('express'),
 const conf = require('./settings');
 
 const macro = require('emag.lib').macro;
-const redis = require('emag.db').redis;
 
 const log4js = require('log4js');
 
@@ -106,8 +105,4 @@ server.listen(app.get('port'), () => {
 
 process.on('uncaughtException', err => {
   logger.error('uncaughtException:', err);
-});
-
-process.on('exit', () => {
-  if(redis) redis.quit();
 });
