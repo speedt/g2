@@ -6,6 +6,7 @@
 'use strict';
 
 const biz = require('emag.biz');
+const cfg = require('emag.cfg');
 
 const conf  = require('../settings');
 const utils = require('speedt-utils').utils;
