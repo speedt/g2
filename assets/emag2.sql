@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50623
 File Encoding         : 65001
 
-Date: 2017-08-08 10:39:48
+Date: 2017-08-08 12:00:12
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -33,14 +33,14 @@ CREATE TABLE `s_cfg` (
 -- ----------------------------
 -- Records of s_cfg
 -- ----------------------------
-INSERT INTO `s_cfg` VALUES ('wheel_of_fortune', '1', '2', '转盘：格子：1', null, null, '1');
-INSERT INTO `s_cfg` VALUES ('wheel_of_fortune', '2', '3', '转盘：格子：2', null, null, '1');
-INSERT INTO `s_cfg` VALUES ('wheel_of_fortune', '3', '1', '转盘：格子：3', null, null, '1');
-INSERT INTO `s_cfg` VALUES ('wheel_of_fortune', '4', '4', '转盘：格子：4', null, null, '1');
-INSERT INTO `s_cfg` VALUES ('wheel_of_fortune', '5', '5020b6507bce11e784627dd159406629', '转盘：格子：5', null, null, '1');
-INSERT INTO `s_cfg` VALUES ('wheel_of_fortune', '6', '587a29d07bce11e784627dd159406629', '转盘：格子：6', null, null, '1');
-INSERT INTO `s_cfg` VALUES ('wheel_of_fortune', '7', '0618ba207bcf11e784627dd159406629', '转盘：格子：7', null, null, '1');
-INSERT INTO `s_cfg` VALUES ('wheel_of_fortune', '8', '170f87f07bcf11e784627dd159406629', '转盘：格子：8', null, null, '1');
+INSERT INTO `s_cfg` VALUES ('daily_turntable', '1', '2', '每日转盘：格子1：商品', null, null, '1');
+INSERT INTO `s_cfg` VALUES ('daily_turntable', '2', '3', '每日转盘：格子2：商品', null, null, '1');
+INSERT INTO `s_cfg` VALUES ('daily_turntable', '3', '1', '每日转盘：格子3：商品', null, null, '1');
+INSERT INTO `s_cfg` VALUES ('daily_turntable', '4', '4', '每日转盘：格子4：商品', null, null, '1');
+INSERT INTO `s_cfg` VALUES ('daily_turntable', '5', '5020b6507bce11e784627dd159406629', '每日转盘：格子5：商品', null, null, '1');
+INSERT INTO `s_cfg` VALUES ('daily_turntable', '6', '587a29d07bce11e784627dd159406629', '每日转盘：格子6：商品', null, null, '1');
+INSERT INTO `s_cfg` VALUES ('daily_turntable', '7', '0618ba207bcf11e784627dd159406629', '每日转盘：格子7：商品', null, null, '1');
+INSERT INTO `s_cfg` VALUES ('daily_turntable', '8', '170f87f07bcf11e784627dd159406629', '每日转盘：格子8：商品', null, null, '1');
 INSERT INTO `s_cfg` VALUES ('group_type_baiyin', 'bullet_lv_max', '20', '组类型：白银：炮最大等级', null, null, '1');
 INSERT INTO `s_cfg` VALUES ('group_type_huangjin', 'bullet_lv_max', '29', '组类型：黄金：炮最大等级', null, null, '1');
 INSERT INTO `s_cfg` VALUES ('group_type_qingtong', 'bullet_lv_max', '11', '组类型：青铜：炮最大等级', null, null, '1');

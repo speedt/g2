@@ -286,6 +286,16 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
 })();
 
 (() => {
+
+  /**
+   * 每日登陆摇奖随机一个格子
+   *
+   * @return 格子号
+   */
+  function randomCell(){
+    return _.random(1, _.keys(cfg.daily_turntable).length);
+  }
+
   /**
    * 每日登陆摇奖
    *
