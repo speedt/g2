@@ -7,13 +7,11 @@
 
 module.exports = {
   app: {
-    resHost: '127.0.0.1'
-  },
-  corp: {
     name: 'foreworld.net',
+    port: 8888,
   },
   cookie: {
-    key: 'backend',
+    key: 'web',
     secret: 'login'
   },
   html: {
@@ -27,7 +25,7 @@ module.exports = {
     password: 'admin',
   },
   mysql: {
-    database: 'emag',
+    database: 'emag2',
     host: '127.0.0.1',
     port: 12306,
     user: 'root',
