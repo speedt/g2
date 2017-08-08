@@ -1,5 +1,5 @@
 /*!
- * emag.lib
+ * emag.manage
  * Copyright(c) 2016 huangxin <3203317@qq.com>
  * MIT Licensed
  */
@@ -9,7 +9,7 @@ const path   = require('path');
 const cwd    = process.cwd();
 const conf   = require(path.join(cwd, 'settings'));
 const Stomp  = require('stompjs');
-const logger = require('log4js').getLogger('lib.amq');
+const logger = require('log4js').getLogger('manage');
 
 const activemq = conf.activemq;
 
@@ -24,43 +24,33 @@ const activemq = conf.activemq;
     });
   }
 
+  process.on('exit', unsubscribe);
+
   exports.getClient = function(cb){
     if(client) return cb(null, client);
 
     client = Stomp.overTCP(activemq.host, activemq.port);
     client.heartbeat.outgoing = 20000;
-    // client will send heartbeats every 20000ms
     client.heartbeat.incoming = 10000;
-
-    process.on('uncaughtException', err => {
-      logger.error('uncaughtException: %j', err);
-      unsubscribe();
-    });
-
-    process.on('exit', () => {
-      unsubscribe();
-    });
 
     client.connect({
       login:    activemq.user,
       passcode: activemq.password,
-    }, function(){
+    }, () => {
       logger.debug('amq client: OK');
       cb(null, client);
-    }, function (err){
-      logger.error('amq client: %j', err);
-      unsubscribe();
+    }, err => {
+      logger.error('amq client:', err);
       cb(err);
     });
-
   };
 })();
 
 exports.sendReq = function(dest, params, data, cb){
-  this.getClient(function (err, client){
+  this.getClient((err, client) => {
     if(err) return cb(err);
     try{
-      client.send(dest, params, data);
+      client.send(dest, params || {}, JSON.stringify(data));
       cb(null, 'OK');
     }catch(ex){ cb(ex); }
   });
