@@ -1,5 +1,5 @@
 /*!
- * emag.manage
+ * emag.lib
  * Copyright(c) 2016 huangxin <3203317@qq.com>
  * MIT Licensed
  */
@@ -9,7 +9,7 @@ const path   = require('path');
 const cwd    = process.cwd();
 const conf   = require(path.join(cwd, 'settings'));
 const Stomp  = require('stompjs');
-const logger = require('log4js').getLogger('manage');
+const logger = require('log4js').getLogger('lib');
 
 const activemq = conf.activemq;
 

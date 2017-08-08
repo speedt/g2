@@ -6,3 +6,4 @@
 'use strict';
 
 exports.macro = require('./macro');
+exports.amq   = require('./amq');
