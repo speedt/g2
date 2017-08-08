@@ -1,16 +1,16 @@
 /*
 Navicat MySQL Data Transfer
 
-Source Server         : g-1
+Source Server         : 127.0.0.1
 Source Server Version : 50623
-Source Host           : 127.0.0.01:12306
+Source Host           : 127.0.0.1:12306
 Source Database       : emag2
 
 Target Server Type    : MYSQL
 Target Server Version : 50623
 File Encoding         : 65001
 
-Date: 2017-08-07 23:20:51
+Date: 2017-08-08 10:39:48
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -33,14 +33,14 @@ CREATE TABLE `s_cfg` (
 -- ----------------------------
 -- Records of s_cfg
 -- ----------------------------
-INSERT INTO `s_cfg` VALUES ('wheel_of_fortune', '1', '1000', '转盘：格子：1', null, null, '1');
-INSERT INTO `s_cfg` VALUES ('wheel_of_fortune', '2', '20000', '转盘：格子：2', null, null, '1');
-INSERT INTO `s_cfg` VALUES ('wheel_of_fortune', '3', '5000', '转盘：格子：3', null, null, '1');
-INSERT INTO `s_cfg` VALUES ('wheel_of_fortune', '4', '3000', '转盘：格子：4', null, null, '1');
-INSERT INTO `s_cfg` VALUES ('wheel_of_fortune', '5', '10000', '转盘：格子：5', null, null, '1');
-INSERT INTO `s_cfg` VALUES ('wheel_of_fortune', '6', '30000', '转盘：格子：6', null, null, '1');
-INSERT INTO `s_cfg` VALUES ('wheel_of_fortune', '7', '2000', '转盘：格子：7', null, null, '1');
-INSERT INTO `s_cfg` VALUES ('wheel_of_fortune', '8', '50000', '转盘：格子：8', null, null, '1');
+INSERT INTO `s_cfg` VALUES ('wheel_of_fortune', '1', '2', '转盘：格子：1', null, null, '1');
+INSERT INTO `s_cfg` VALUES ('wheel_of_fortune', '2', '3', '转盘：格子：2', null, null, '1');
+INSERT INTO `s_cfg` VALUES ('wheel_of_fortune', '3', '1', '转盘：格子：3', null, null, '1');
+INSERT INTO `s_cfg` VALUES ('wheel_of_fortune', '4', '4', '转盘：格子：4', null, null, '1');
+INSERT INTO `s_cfg` VALUES ('wheel_of_fortune', '5', '5020b6507bce11e784627dd159406629', '转盘：格子：5', null, null, '1');
+INSERT INTO `s_cfg` VALUES ('wheel_of_fortune', '6', '587a29d07bce11e784627dd159406629', '转盘：格子：6', null, null, '1');
+INSERT INTO `s_cfg` VALUES ('wheel_of_fortune', '7', '0618ba207bcf11e784627dd159406629', '转盘：格子：7', null, null, '1');
+INSERT INTO `s_cfg` VALUES ('wheel_of_fortune', '8', '170f87f07bcf11e784627dd159406629', '转盘：格子：8', null, null, '1');
 INSERT INTO `s_cfg` VALUES ('group_type_baiyin', 'bullet_lv_max', '20', '组类型：白银：炮最大等级', null, null, '1');
 INSERT INTO `s_cfg` VALUES ('group_type_huangjin', 'bullet_lv_max', '29', '组类型：黄金：炮最大等级', null, null, '1');
 INSERT INTO `s_cfg` VALUES ('group_type_qingtong', 'bullet_lv_max', '11', '组类型：青铜：炮最大等级', null, null, '1');
@@ -248,26 +248,27 @@ CREATE TABLE `s_user` (
   `lose_count` int(11) DEFAULT NULL,
   `win_score_count` int(11) DEFAULT NULL,
   `lose_score_count` int(11) DEFAULT NULL,
+  `line_gone_count` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of s_user
 -- ----------------------------
-INSERT INTO `s_user` VALUES ('0525822071ab11e7a481015d0a4c1d9e', '吴老肥', '96e79218965eb72c92a549dd5a330112', '1', '吴老肥', '1', '2017-07-26 10:35:00', '', '', '', '', '20066', '0', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null);
-INSERT INTO `s_user` VALUES ('1', 'hx', 'e10adc3949ba59abbe56e057f20f883e', '1', '张三', null, null, null, '1234', null, null, '999755674', '1213', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null);
-INSERT INTO `s_user` VALUES ('2', 'wupeng  ', 'e10adc3949ba59abbe56e057f20f883e', '1', '李四', null, null, null, null, null, null, '998832792', '31231', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null);
-INSERT INTO `s_user` VALUES ('2c730630708011e78e22ffc0f87ffa5a', '猫1', '96e79218965eb72c92a549dd5a330112', '1', '', '1', '2017-07-24 22:55:46', '', '', '', '', '30000', '0', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null);
-INSERT INTO `s_user` VALUES ('3', 'lixiang', 'e10adc3949ba59abbe56e057f20f883e', '1', '王五', null, null, null, null, null, null, '999989930', '123123', '0', '0', '0', '0', '0', '0', '0', '0', '1', null, null, null, null, null);
-INSERT INTO `s_user` VALUES ('4', 'wy', 'e10adc3949ba59abbe56e057f20f883e', '1', '哈哈', null, null, null, null, null, null, '901228843', '1233123', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null);
-INSERT INTO `s_user` VALUES ('5', 't1', 'e10adc3949ba59abbe56e057f20f883e', '1', 't1', null, null, null, null, null, null, '19394', '123', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null);
-INSERT INTO `s_user` VALUES ('6', 't2', 'e10adc3949ba59abbe56e057f20f883e', '1', 't2', null, null, null, null, null, null, '41600', '89', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null);
-INSERT INTO `s_user` VALUES ('7', 't3', 'e10adc3949ba59abbe56e057f20f883e', '1', 't3', null, null, null, null, null, null, '122862147', '87', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null);
-INSERT INTO `s_user` VALUES ('9c012a33aa8b4ecc8aaf20ea149a6f25', 'mega', 'e10adc3949ba59abbe56e057f20f883e', '1', '马六', null, null, null, '12341', null, null, '34720042', '123123', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null);
-INSERT INTO `s_user` VALUES ('9fe2a410777c11e7bdc4fd3c0cd2bc87', '猫4', '96e79218965eb72c92a549dd5a330112', '0', '猫4123123', '1', '2017-08-02 20:18:00', '', '', '', '', '10065', '0', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null);
-INSERT INTO `s_user` VALUES ('b5780670775f11e7831c0d095411373b', '猫2', '96e79218965eb72c92a549dd5a330112', '1', '猫2', '1', '2017-08-02 16:51:01', '', '', '', '', '43280', '0', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null);
-INSERT INTO `s_user` VALUES ('c2fe9bb076ba11e7ad1a29fa785dd421', '雪箭轩', 'bde0814411dcea94c5e0d9b29e635510', '1', '雪箭轩', '1', '2017-08-01 21:10:17', '', '', '', '', '9570499', '0', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null);
-INSERT INTO `s_user` VALUES ('e5e252b0776011e7831c0d095411373b', '猫3', 'e10adc3949ba59abbe56e057f20f883e', '1', '猫34', '1', '2017-08-02 16:59:32', '', '', '', '', '1800023', '0', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null);
+INSERT INTO `s_user` VALUES ('0525822071ab11e7a481015d0a4c1d9e', '吴老肥', '96e79218965eb72c92a549dd5a330112', '1', '吴老肥', '1', '2017-07-26 10:35:00', '', '', '', '', '20066', '0', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null, null);
+INSERT INTO `s_user` VALUES ('1', 'hx', 'e10adc3949ba59abbe56e057f20f883e', '1', '张三', null, null, null, '1234', null, null, '999755674', '1213', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null, null);
+INSERT INTO `s_user` VALUES ('2', 'wupeng  ', 'e10adc3949ba59abbe56e057f20f883e', '1', '李四', null, null, null, null, null, null, '998832792', '31231', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null, null);
+INSERT INTO `s_user` VALUES ('2c730630708011e78e22ffc0f87ffa5a', '猫1', '96e79218965eb72c92a549dd5a330112', '1', '', '1', '2017-07-24 22:55:46', '', '', '', '', '30000', '0', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null, null);
+INSERT INTO `s_user` VALUES ('3', 'lixiang', 'e10adc3949ba59abbe56e057f20f883e', '1', '王五', null, null, null, null, null, null, '999989930', '123123', '0', '0', '0', '0', '0', '0', '0', '0', '1', null, null, null, null, null, null);
+INSERT INTO `s_user` VALUES ('4', 'wy', 'e10adc3949ba59abbe56e057f20f883e', '1', '哈哈', null, null, null, null, null, null, '901228843', '1233123', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null, null);
+INSERT INTO `s_user` VALUES ('5', 't1', 'e10adc3949ba59abbe56e057f20f883e', '1', 't1', null, null, null, null, null, null, '19394', '123', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null, null);
+INSERT INTO `s_user` VALUES ('6', 't2', 'e10adc3949ba59abbe56e057f20f883e', '1', 't2', null, null, null, null, null, null, '41600', '89', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null, null);
+INSERT INTO `s_user` VALUES ('7', 't3', 'e10adc3949ba59abbe56e057f20f883e', '1', 't3', null, null, null, null, null, null, '122862147', '87', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null, null);
+INSERT INTO `s_user` VALUES ('9c012a33aa8b4ecc8aaf20ea149a6f25', 'mega', 'e10adc3949ba59abbe56e057f20f883e', '1', '马六', null, '2017-08-08 10:18:43', null, '12341', null, null, '34720042', '123123', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null, null);
+INSERT INTO `s_user` VALUES ('9fe2a410777c11e7bdc4fd3c0cd2bc87', '猫4', '96e79218965eb72c92a549dd5a330112', '0', '猫4123123', '1', '2017-08-02 20:18:00', '', '', '', '', '10065', '0', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null, null);
+INSERT INTO `s_user` VALUES ('b5780670775f11e7831c0d095411373b', '猫2', '96e79218965eb72c92a549dd5a330112', '1', '猫2', '1', '2017-08-02 16:51:01', '', '', '', '', '43280', '0', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null, null);
+INSERT INTO `s_user` VALUES ('c2fe9bb076ba11e7ad1a29fa785dd421', '雪箭轩', 'bde0814411dcea94c5e0d9b29e635510', '1', '雪箭轩', '1', '2017-08-01 21:10:17', '', '', '', '', '9570499', '0', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null, null);
+INSERT INTO `s_user` VALUES ('e5e252b0776011e7831c0d095411373b', '猫3', 'e10adc3949ba59abbe56e057f20f883e', '1', '猫34', '1', '2017-08-02 16:59:32', '', '', '', '', '1800023', '0', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null, null);
 
 -- ----------------------------
 -- Table structure for `w_game_prop`
@@ -346,10 +347,15 @@ CREATE TABLE `w_goods` (
 -- ----------------------------
 -- Records of w_goods
 -- ----------------------------
-INSERT INTO `w_goods` VALUES ('1', '商品1', '1', '2017-07-11 17:49:43', '1123', '123123123', '1', '2012');
-INSERT INTO `w_goods` VALUES ('2', '商品2', '2', '2017-06-06 10:29:31', '1234', 'null', '0', '10');
-INSERT INTO `w_goods` VALUES ('3', '商品3', '3', '2017-07-11 17:47:41', '3123123', null, '0', '0');
-INSERT INTO `w_goods` VALUES ('4', '商品41', '42', '2017-08-01 21:39:34', '4173', '12312334', '0', '30');
+INSERT INTO `w_goods` VALUES ('0618ba207bcf11e784627dd159406629', '商品7', '商品7', '2017-08-08 08:17:55', '7', '7', '1', '7');
+INSERT INTO `w_goods` VALUES ('1', '商品3', '商品3', '2017-07-11 17:49:43', '3', '3', '1', '3');
+INSERT INTO `w_goods` VALUES ('170f87f07bcf11e784627dd159406629', '商品8', '商品8', '2017-08-08 08:18:23', '8', '8', '1', '8');
+INSERT INTO `w_goods` VALUES ('2', '商品1', '商品1', '2017-06-06 10:29:31', '1', '1', '1', '1');
+INSERT INTO `w_goods` VALUES ('3', '商品2', '商品2', '2017-07-11 17:47:41', '2', '2', '0', '2');
+INSERT INTO `w_goods` VALUES ('4', '商品4', '商品4', '2017-08-01 21:39:34', '4', '4', '0', '4');
+INSERT INTO `w_goods` VALUES ('5020b6507bce11e784627dd159406629', '商品5', '商品5', '2017-08-08 08:12:50', '5', '5', '1', '5');
+INSERT INTO `w_goods` VALUES ('587a29d07bce11e784627dd159406629', '商品6', '商品6', '2017-08-08 08:13:04', '6', '6', '1', '6');
+INSERT INTO `w_goods` VALUES ('baa2bff07bd811e78b655f61f9095a9f', '登陆奖励', '登陆奖励', '2017-08-08 09:27:23', '0', '', '0', '24');
 
 -- ----------------------------
 -- Table structure for `w_goods_detail`
@@ -368,10 +374,18 @@ CREATE TABLE `w_goods_detail` (
 -- Records of w_goods_detail
 -- ----------------------------
 INSERT INTO `w_goods_detail` VALUES ('1', '1', '1', '1', '2017-08-07 17:16:58');
+INSERT INTO `w_goods_detail` VALUES ('10', '0618ba207bcf11e784627dd159406629', '3', '77', '2017-08-08 08:18:07');
+INSERT INTO `w_goods_detail` VALUES ('11', '170f87f07bcf11e784627dd159406629', '3', '88', '2017-08-08 08:18:45');
+INSERT INTO `w_goods_detail` VALUES ('12', 'baa2bff07bd811e78b655f61f9095a9f', '3', '10000', '2017-08-08 09:27:55');
+INSERT INTO `w_goods_detail` VALUES ('13', 'baa2bff07bd811e78b655f61f9095a9f', '2', '3', '2017-08-08 09:28:18');
 INSERT INTO `w_goods_detail` VALUES ('2', '1', '2', '2', '2017-08-07 17:17:01');
 INSERT INTO `w_goods_detail` VALUES ('3', '2', '1', '3', '2017-08-07 17:17:03');
 INSERT INTO `w_goods_detail` VALUES ('4', '2', '2', '4', '2017-08-07 17:17:06');
-INSERT INTO `w_goods_detail` VALUES ('5', '1', '3', '10000', '2017-08-07 20:30:30');
+INSERT INTO `w_goods_detail` VALUES ('5', '1', '3', '5', '2017-08-07 20:30:30');
+INSERT INTO `w_goods_detail` VALUES ('6', '3', '3', '33', '2017-08-08 08:15:57');
+INSERT INTO `w_goods_detail` VALUES ('7', '4', '3', '44', '2017-08-08 08:16:34');
+INSERT INTO `w_goods_detail` VALUES ('8', '5020b6507bce11e784627dd159406629', '3', '55', '2017-08-08 08:17:13');
+INSERT INTO `w_goods_detail` VALUES ('9', '587a29d07bce11e784627dd159406629', '3', '66', '2017-08-08 08:17:31');
 
 -- ----------------------------
 -- Table structure for `w_notice`
