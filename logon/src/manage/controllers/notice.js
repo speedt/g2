@@ -89,7 +89,7 @@ exports.del = function(req, res, next){
 exports.send = function(req, res, next){
   var query = req.body;
 
-  amq.sendReq('dest', {}, { id: query.id }, (err, code) => {
+  amq.send('dest', {}, { id: query.id }, (err, code) => {
     if(err) return next(err);
     res.send({});
   });

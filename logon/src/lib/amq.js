@@ -46,7 +46,7 @@ const activemq = conf.activemq;
   };
 })();
 
-exports.sendReq = function(dest, params, data, cb){
+exports.send = function(dest, params, data, cb){
   this.getClient((err, client) => {
     if(err) return cb(err);
     try{
