@@ -126,8 +126,7 @@ exports.init = function(cb){
         redis.hset('cfg::'+ i.type_, i.key_, i.value_, redis.print);
       }
 
-      cb(null, 'OK');
+      cb(null, docs);
     });
-
   });
 };

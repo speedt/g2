@@ -1,5 +1,5 @@
 /*!
- * emag.login
+ * emag.backend
  * Copyright(c) 2016 huangxin <3203317@qq.com>
  * MIT Licensed
  */
@@ -8,17 +8,8 @@
 module.exports = {
   app: {
     id: '112aba1ad4424e7891037028ef024645',
-    resHost: '127.0.0.1'
-  },
-  corp: {
     name: 'foreworld.net',
-  },
-  cookie: {
-    key: 'login',
-    secret: 'login'
-  },
-  html: {
-    cdn: 'http://www.foreworld.net/'
+    resHost: '127.0.0.1',
   },
   activemq: {
     host: '127.0.0.1',
@@ -27,7 +18,7 @@ module.exports = {
     password: 'admin',
   },
   mysql: {
-    database: 'emag',
+    database: 'emag2',
     host: '127.0.0.1',
     port: 12306,
     user: 'root',
