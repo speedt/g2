@@ -240,7 +240,7 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
 (() => {
   const seconds   = 15;  //令牌有效期 5s
   const numkeys   = 4;
-  const sha1      = '391dc0b72e8ac3029da5ee8bfd4b4dc3ad245840';
+  const sha1      = 'd8f515be193e9d7a0bce3bbb27d358702b6150f6';
 
   /**
    * 令牌授权
@@ -259,10 +259,10 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
       doc.user_name,
       doc.sex              || 0,
       doc.create_time,
-      doc.mobile,
-      doc.qq,
-      doc.weixin,
-      doc.email,
+      doc.mobile           || '',
+      doc.qq               || '',
+      doc.weixin           || '',
+      doc.email            || '',
       doc.current_score    || 0,  // 当前总分
       doc.tool_1           || 0,
       doc.tool_2           || 0,
@@ -273,7 +273,7 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
       doc.tool_7           || 0,
       doc.tool_8           || 0,
       doc.tool_9           || 0,
-      doc.nickname,
+      doc.nickname         || doc.user_name,
       doc.vip              || 0,
       doc.consume_count    || 0,  // 消费（¥）
       doc.win_count        || 0,  // 胜利（次数）
