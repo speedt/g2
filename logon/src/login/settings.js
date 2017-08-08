@@ -16,7 +16,6 @@ module.exports = {
   },
   html: {
     virtualPath: '/client/',
-    cdn: 'http://www.foreworld.net/'
   },
   activemq: {
     host: '127.0.0.1',

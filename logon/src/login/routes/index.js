@@ -12,5 +12,4 @@ module.exports = function(app){
   app.post('/user/login$',    user.login);
   app.get ('/user/login$',    user.loginUI);
   app.post('/user/register$', user.register);
-
 };
