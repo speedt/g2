@@ -7,6 +7,7 @@
 
 module.exports = {
   app: {
+    client_id: '5a2c6a1043454b168e6d3e8bef5cbce2',
     name: 'foreworld.net',
     port: 8888,
   },

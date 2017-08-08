@@ -86,7 +86,7 @@ const logger = require('log4js').getLogger('biz.user');
     if(!regex_user_name.test(newInfo.user_pass)) return '02';
   }
 
-  var sql = 'INSERT INTO s_user (id, user_name, user_pass, status, sex, create_time, mobile, qq, weixin, email, current_score, tool_1, tool_2, tool_3, tool_4, tool_5, tool_6, tool_7, tool_8, tool_9, nickname, vip, consume_count, win_count, lose_count, win_score_count, lose_score_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+  var sql = 'INSERT INTO s_user (id, user_name, user_pass, status, sex, create_time, mobile, qq, weixin, email, current_score, tool_1, tool_2, tool_3, tool_4, tool_5, tool_6, tool_7, tool_8, tool_9, nickname, vip, consume_count, win_count, lose_count, win_score_count, lose_score_count, line_gone_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
   /**
    * 用户注册
@@ -134,6 +134,7 @@ const logger = require('log4js').getLogger('biz.user');
         0,
         0,
         0,
+        0,
       ];
 
       mysql.query(sql, postData, function (err, status){
@@ -155,6 +156,38 @@ const logger = require('log4js').getLogger('biz.user');
  */
 exports.login = function(logInfo /* 用户名及密码 */, cb){
   var self = this;
+
+  self.getByName(logInfo.user_name, (err, doc) => {
+    if(err)  return cb(err);
+    if(!doc) return cb(null, '01');
+
+    // 用户的状态
+    if(1 !== doc.status) return cb(null, '02');
+
+    // 验证密码
+    if(md5.hex(logInfo.user_pass) !== doc.user_pass)
+      return cb(null, '03');
+
+    var p1 = new Promise((resolve, reject) => {
+      self.authorize(doc, (err, code) => {
+        if(err) return reject(err);
+        resolve(code);
+      });
+    });
+
+    var p2 = new Promise((resolve, reject) => {
+      // 服务器可用性
+      biz.server.available((err, info) => {
+        if(err) return reject(err);
+        resolve(info);
+      });
+    });
+
+    Promise.all([p1, p2]).then(values => {
+      cb(null, null, values);
+    }).catch(cb);
+
+  });
 };
 
 (() => {
@@ -201,5 +234,53 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
     ];
 
     mysql.query(sql, postData, cb);
+  };
+})();
+
+(() => {
+  const seconds   = 5;  //令牌有效期 5s
+  const numkeys   = 4;
+  const sha1      = '391dc0b72e8ac3029da5ee8bfd4b4dc3ad245840';
+
+  /**
+   * 令牌授权
+   *
+   * @return 登陆令牌
+   */
+  exports.authorize = function(doc, cb){
+    var code = utils.replaceAll(uuid.v4(), '-', '');
+
+    delete doc.user_pass;
+
+    redis.evalsha(sha1, numkeys,
+      conf.redis.database, conf.app.client_id, doc.id, code,
+      seconds,
+      JSON.stringify(doc),
+      doc.user_name        || 0,
+      doc.sex              || 0,
+      doc.create_time      || 0,
+      doc.mobile           || 0,
+      doc.qq               || 0,
+      doc.weixin           || 0,
+      doc.email            || 0,
+      doc.current_score    || 0,  // 当前总分
+      doc.tool_1           || 0,
+      doc.tool_2           || 0,
+      doc.tool_3           || 0,
+      doc.tool_4           || 0,
+      doc.tool_5           || 0,
+      doc.tool_6           || 0,
+      doc.tool_7           || 0,
+      doc.tool_8           || 0,
+      doc.tool_9           || 0,
+      doc.nickname         || 0,  // 昵称
+      doc.vip              || 0,
+      doc.consume_count    || 0,  // 消费（¥）
+      doc.win_count        || 0,  // 胜利（次数）
+      doc.lose_count       || 0,  // 失败（次数）
+      doc.win_score_count  || 0,  // 胜利（总分）
+      doc.lose_score_count || 0,  // 失败（总分）
+      doc.line_gone_count  || 0,  // 掉线（次数）
+      cb);
   };
 })();

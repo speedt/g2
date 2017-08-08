@@ -6,28 +6,16 @@
 'use strict';
 
 const biz = require('emag.biz');
-const cfg = require('emag.cfg');
 
 const conf  = require('../settings');
 const utils = require('speedt-utils').utils;
 
-exports.resetPwd = function(req, res, next){
-  var query = req.body;
-
-  biz.user.resetPwd(query.id, '123456', function (err, status){
-    if(err) return next(err);
-    res.send({});
-  });
-};
-
 exports.register = function(req, res, next){
   var query  = req.body;
 
-  query.score = 1000;
-
-  biz.user.register(query, function (err, warn, doc){
-    if(err) return next(err);
-    if(warn) return res.send({ error: { msg: warn } });
+  biz.user.register(query, function (err, code, doc){
+    if(err)  return next(err);
+    if(code) return res.send({ error: { msg: code } });
     res.send({});
   });
 };
