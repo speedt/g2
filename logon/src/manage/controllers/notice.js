@@ -11,6 +11,8 @@ const _   = require('underscore');
 const conf  = require('../settings');
 const utils = require('speedt-utils').utils;
 
+const amq = require('emag.lib').amq;
+
 exports.indexUI = function(req, res, next){
 
   biz.notice.findAll(function (err, docs){
@@ -79,6 +81,15 @@ exports.del = function(req, res, next){
   var query = req.body;
 
   biz.notice.del(query.id, function (err, status){
+    if(err) return next(err);
+    res.send({});
+  });
+};
+
+exports.send = function(req, res, next){
+  var query = req.body;
+
+  amq.sendReq('dest', {}, { id: query.id }, (err, code) => {
     if(err) return next(err);
     res.send({});
   });

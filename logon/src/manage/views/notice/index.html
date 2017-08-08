@@ -236,7 +236,20 @@
 <script>
 function send(id){
   if(confirm("频繁操作将影响服务器性能，确认执行吗？")){
-    // todo
+    $.ajax({
+      url: '$!{conf.html.virtualPath}notice/send',
+      type: 'POST',
+      dataType: 'JSON',
+      data: { id: id },
+      success: function(data){
+        console.debug(data);
+        if(data.error) return alert(data.error.code);
+        alert('发送成功');
+      },
+      error: function(){
+        alert(arguments[2]);
+      }
+    });
   }
 }
 
@@ -249,7 +262,6 @@ function del(id){
       data: { id: id },
       success: function(data){
         if(data.error) return alert(data.error.msg);
-        console.log(data)
         alert('删除成功');
         location.reload();
       },
