@@ -16,7 +16,6 @@ const utils = require('speedt-utils').utils;
 const mysql = require('emag.db').mysql;
 const redis = require('emag.db').redis;
 
-
 (() => {
   const numkeys = 1;
   const sha1    = '51f34ec6eec067fecc66d20c2117523f88c5effe';

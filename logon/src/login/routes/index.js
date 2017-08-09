@@ -5,8 +5,8 @@
  */
 'use strict';
 
-const fishjoy = require('../controllers/fishjoy');
-const user    = require('../controllers/user');
+const pushCake = require('../controllers/pushCake');
+const user     = require('../controllers/user');
 
 module.exports = function(app){
 
@@ -14,5 +14,5 @@ module.exports = function(app){
   app.get ('/user/login$',    user.loginUI);
   app.post('/user/register$', user.register);
 
-  app.get('/', fishjoy.indexUI);
+  app.get('/', pushCake.indexUI);
 };

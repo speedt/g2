@@ -11,7 +11,7 @@ const conf  = require('../settings');
 const utils = require('speedt-utils').utils;
 
 exports.indexUI = function(req, res, next){
-  res.render('fishjoy/1_0_4', {
+  res.render('pushCake/1_0_1', {
     conf: conf,
     data: {}
   });

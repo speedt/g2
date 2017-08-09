@@ -31,7 +31,7 @@ exports.login = function(req, res, next){
   var query = req.body;
 
   biz.user.login(query, (err, code, token /* 授权码及服务器信息 */) => {
-    if(err) return next(err);
+    if(err)  return next(err);
     if(code) return res.send({ error: { code: code } });
     res.send({ data: token });
   });

@@ -8,7 +8,6 @@
 exports.goods    = require('./goods');
 exports.gift     = require('./gift');
 exports.user     = require('./user');
-exports.group    = require('./group');
 exports.backend  = require('./backend');
 exports.frontend = require('./frontend');
 exports.manager  = require('./manager');
