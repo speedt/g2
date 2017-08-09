@@ -12,12 +12,12 @@ echo "channel_close.lua"
 /root/my/redis/redis-3.2.6/src/redis-cli -a 123456 script load "$(cat /root/my/git/speedt/g2/assets/redis/channel_close.lua)"
 
 echo ""
-echo "my_info.lua"
-/root/my/redis/redis-3.2.6/src/redis-cli -a 123456 script load "$(cat /root/my/git/speedt/g2/assets/redis/my_info.lua)"
+echo "user_info_byChannelId.lua"
+/root/my/redis/redis-3.2.6/src/redis-cli -a 123456 script load "$(cat /root/my/git/speedt/g2/assets/redis/user_info_byChannelId.lua)"
 
 echo ""
-echo "user_info.lua"
-/root/my/redis/redis-3.2.6/src/redis-cli -a 123456 script load "$(cat /root/my/git/speedt/g2/assets/redis/user_info.lua)"
+echo "user_info_byId.lua"
+/root/my/redis/redis-3.2.6/src/redis-cli -a 123456 script load "$(cat /root/my/git/speedt/g2/assets/redis/user_info_byId.lua)"
 
 # 
 

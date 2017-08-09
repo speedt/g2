@@ -12,6 +12,9 @@ local user_id = redis.call('GET', server_id ..'::'.. channel_id);
 
 if (user_id) then
   redis.call('DEL', 'prop::user::'.. user_id, server_id ..'::'.. channel_id);
+
+  -- 属性::系统::在线人数-1
+  redis.call('HINCRBY', 'prop::sys', 'online_count', -1);
 end;
 
 return 'OK';

@@ -62,6 +62,9 @@ redis.call('EXPIRE', 'prop::user::'.. user_id, seconds);
 redis.call('SET',    server_id ..'::'.. channel_id, user_id);
 redis.call('EXPIRE', server_id ..'::'.. channel_id, seconds);
 
+-- 属性::系统::在线人数+1
+redis.call('HINCRBY', 'prop::sys', 'online_count', 1);
+
 -- 
 
 return result;
