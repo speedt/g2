@@ -100,7 +100,7 @@ exports.send = function(req, res, next){
       delete doc.user_id;
       delete doc.last_time;
 
-      var data = JSON.stringify([conf.app.ver, 1008, , _.now(), doc]);
+      var data = ['ALL', JSON.stringify([conf.app.ver, 1008, , _.now(), doc])];
 
       for(let i of docs){
         amq.send('/queue/back.send.v3.'+ i, { priority: 8 }, data, (err, code) => { /*  */ });
