@@ -4,7 +4,7 @@ local db = KEYS[1];
 
 redis.call('SELECT', db);
 
-redis.call('FLUSHDB');
+-- redis.call('FLUSHDB');
 
 -- local key_0 = '::';
 
