@@ -89,8 +89,24 @@ exports.del = function(req, res, next){
 exports.send = function(req, res, next){
   var query = req.body;
 
-  amq.send('dest', {}, { id: query.id }, (err, code) => {
+  biz.frontend.findAll(function (err, docs){
     if(err) return next(err);
-    res.send({});
+    if(0 === docs.length) return next(new Error('前置机未启动'));
+
+    biz.notice.getById(query.id, function (err, doc){
+      if(err)  return next(err);
+      if(!doc) return next(new Error('Not Found'));
+
+      delete doc.user_id;
+      delete doc.last_time;
+
+      var data = JSON.stringify([conf.app.ver, 1008, , _.now(), doc]);
+
+      for(let i of docs){
+        amq.send('/queue/back.send.v3.'+ i, { priority: 8 }, data, (err, code) => { /*  */ });
+      }
+
+      res.send({});
+    });
   });
 };

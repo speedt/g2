@@ -19,7 +19,7 @@ const redis = require('emag.db').redis;
 
 (() => {
   const numkeys = 1;
-  const sha1    = '4231ee247f4f3f575df2afb81a1da997071366a8';
+  const sha1    = '51f34ec6eec067fecc66d20c2117523f88c5effe';
 
   /**
    * 获取全部前置机id
@@ -29,7 +29,7 @@ const redis = require('emag.db').redis;
    * @return
    */
   exports.findAll = function(cb){
-    redis.evalsha(sha1, numkeys, 0, cb);
+    redis.evalsha(sha1, numkeys, conf.redis.database, cb);
   };
 })();
 

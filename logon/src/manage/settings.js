@@ -7,6 +7,7 @@
 
 module.exports = {
   app: {
+    ver: 104,
     name: 'foreworld.net',
     port: 9999,
   },
