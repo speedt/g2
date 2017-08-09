@@ -322,9 +322,18 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
    */
   exports.logout = function(server_id, channel_id, cb){
 
+    var self = this;
+
     redis.evalsha(sha1, numkeys, conf.redis.database, server_id, channel_id, (err, code) => {
       if(err) return cb(err);
-      cb(null, code);
+      if(!_.isArray(code)) return cb(null, code);
+
+      var obj = utils.arrToObj(code);
+
+      self.editInfo(obj, function (err, status){
+        if(err) return cb(err);
+        cb(null, null, status);
+      });
     });
   };
 })();
