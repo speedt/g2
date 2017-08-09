@@ -1,7 +1,7 @@
 -- huangxin <3203317@qq.com>
 
-local db      = KEYS[1];
-local front_id = KEYS[2];
+local db        = KEYS[1];
+local front_id  = KEYS[2];
 
 local open_time = ARGV[1];
 
