@@ -313,7 +313,7 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
 
 (() => {
   const numkeys = 3;
-  const sha1    = '243ee192b64ae839b6d4d974f29d73b56f8526f2';
+  const sha1    = '3b248050f9965193d8a4836d6258861a1890017f';
 
   /**
    * 用户退出
