@@ -15,6 +15,9 @@ if (user_id) then
 
   -- 属性::系统::在线人数-1
   redis.call('HINCRBY', 'prop::sys', 'online_count', -1);
+
+  -- 属性::前置机::在线人数-1
+  redis.call('HINCRBY', 'prop::front::'.. server_id, 'online_count', -1);
 end;
 
 return 'OK';
