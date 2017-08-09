@@ -150,14 +150,16 @@ $(function(){
       };
 
       // first
-      var p = {
-        version: 102,
-        seqId: Math.random() * 1000,
-        timestamp: new Date().getTime(),
-        data: JSON.stringify({
+      var p = [
+        102,
+        1,
+        Math.random() * 1000,
+        new Date().getTime(),
+        JSON.stringify({
           code: location.search.match(/code=([\w\-]+)/) ? RegExp.$1 : ''
-        })
-      };
+        }),
+        null,
+      ];
       socket.send(JSON.stringify(p));
     };
 
