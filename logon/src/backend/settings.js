@@ -7,6 +7,7 @@
 
 module.exports = {
   app: {
+    ver: 104,
     id: '112aba1ad4424e7891037028ef024645',
     name: 'foreworld.net',
     resHost: '127.0.0.1',
