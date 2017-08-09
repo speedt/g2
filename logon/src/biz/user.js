@@ -310,3 +310,21 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
     });
   };
 })();
+
+(() => {
+  const numkeys = 3;
+  const sha1    = '243ee192b64ae839b6d4d974f29d73b56f8526f2';
+
+  /**
+   * 用户退出
+   *
+   * channel_close.lua
+   */
+  exports.logout = function(server_id, channel_id, cb){
+
+    redis.evalsha(sha1, numkeys, conf.redis.database, server_id, channel_id, (err, code) => {
+      if(err) return cb(err);
+      cb(null, code);
+    });
+  };
+})();
