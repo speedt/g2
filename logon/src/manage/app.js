@@ -112,3 +112,8 @@ biz.cfg.init((err, docs) => {
   if(err) throw err;
   logger.debug('redis init:', docs);
 });
+
+function exit(){ process.exit(0); }
+
+process.on('SIGINT', exit);
+process.on('SIGTERM', exit);

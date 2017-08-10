@@ -106,3 +106,8 @@ server.listen(app.get('port'), () => {
 process.on('uncaughtException', err => {
   logger.error('uncaughtException:', err);
 });
+
+function exit(){ process.exit(0); }
+
+process.on('SIGINT', exit);
+process.on('SIGTERM', exit);
