@@ -1,6 +1,6 @@
 /*!
  * emag.backend
- * Copyright(c) 2016 huangxin <3203317@qq.com>
+ * Copyright(c) 2017 huangxin <3203317@qq.com>
  * MIT Licensed
  */
 'use strict';
@@ -9,8 +9,8 @@ const path   = require('path');
 const cwd    = process.cwd();
 const _      = require('underscore');
 const conf   = require('./settings');
-const biz    = require('emag.biz');
 const cfg    = require('emag.cfg');
+const biz    = require('emag.biz');
 const handle = require('emag.handle');
 const Stomp  = require('stompjs');
 
@@ -61,36 +61,3 @@ biz.backend.open(conf.app.id, (err, code) => {
   if(err) return logger.error('backend %j open:', conf.app.id, err);
   logger.info('backend %j open: %j', conf.app.id, code);
 });
-
-(() => {
-  var client = null;
-
-  function unsubscribe(){
-    if(!client) return;
-
-    client.disconnect(() => {
-      logger.info('amq client disconnect: %s', _.now());
-    });
-  }
-
-  process.on('exit', unsubscribe);
-
-  function getClient(cb){
-    if(client) return cb(null, client);
-
-    client = Stomp.overTCP(activemq.host, activemq.port);
-    client.heartbeat.outgoing = 20000;
-    client.heartbeat.incoming = 10000;
-
-    client.connect({
-      login:    activemq.user,
-      passcode: activemq.password,
-    }, () => {
-      logger.debug('amq client: OK');
-      cb(null, client);
-    }, err => {
-      logger.error('amq client:', err);
-      cb(err);
-    });
-  };
-})();
