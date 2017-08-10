@@ -50,12 +50,17 @@ process.on('uncaughtException', err => {
   logger.error('uncaughtException:', err);
 });
 
-process.on('exit', () => {
+function exit(){
   biz.backend.close(conf.app.id, (err, code) => {
     if(err) return logger.error('backend %j close:', conf.app.id, err);
     logger.info('backend %j close: %j', conf.app.id, code);
+    process.exit(0);
   });
-});
+}
+
+process.on('SIGINT', exit);
+process.on('SIGTERM', exit);
+process.on('exit', exit);
 
 biz.backend.open(conf.app.id, (err, code) => {
   if(err) return logger.error('backend %j open:', conf.app.id, err);
