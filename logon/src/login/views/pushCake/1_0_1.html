@@ -84,16 +84,14 @@ $(function(){
 
   $('#send').click(function(){
 
-    var p = {
-      version: 102,
-      method: 2001,
-      seqId: Math.random() * 1000,
-      timestamp: new Date().getTime(),
-      data: JSON.stringify({
-        receiver: $('#user_id').val(),
-        message: $('#msg').val()
-      })
-    };
+    var p = [
+      102,
+      2001,
+      Math.random() * 1000,
+      new Date().getTime(),
+      JSON.stringify([$('#user_id').val(), $('#msg').val()]),
+      null,
+    ];
     socket.send(JSON.stringify(p));
   });
 

@@ -66,3 +66,60 @@ biz.backend.open(conf.app.id, (err, code) => {
   if(err) return logger.error('backend %j open:', conf.app.id, err);
   logger.info('backend %j open: %j', conf.app.id, code);
 });
+
+(() => {
+  var client = null;
+
+  var _2001_chat_1v1, _2003_chat_group;
+
+  function send(dest, params, data, cb){
+    getClient((err, client) => {
+      if(err) return cb(err);
+      try{
+        client.send(dest, params || {}, JSON.stringify(data));
+        cb(null, 'OK');
+      }catch(ex){ cb(ex); }
+    });
+  };
+
+  function unsubscribe(){
+    if(!client) return;
+
+    if(_2001_chat_1v1)     _2001_chat_1v1.unsubscribe();
+    if(_2003_chat_group) _2003_chat_group.unsubscribe();
+
+    client.disconnect(() => {
+      logger.info('amq client disconnect: %s', _.now());
+      process.exit(0);
+    });
+  }
+
+  process.on('SIGINT', unsubscribe);
+  process.on('SIGTERM', unsubscribe);
+  process.on('exit', unsubscribe);
+
+  function getClient(cb){
+    if(client) return cb(null, client);
+
+    client = Stomp.overTCP(activemq.host, activemq.port);
+    client.heartbeat.outgoing = 20000;
+    client.heartbeat.incoming = 10000;
+
+    client.connect({
+      login:    activemq.user,
+      passcode: activemq.password,
+    }, () => {
+      logger.debug('amq client: OK');
+
+      _2001_chat_1v1   = client.subscribe('/queue/qq.2001',   handle.chat.one_for_one.bind(null, send));
+
+      cb(null, client);
+
+    }, err => {
+      logger.error('amq client:', err);
+      cb(err);
+    });
+  };
+
+  getClient(err => {});
+})();
