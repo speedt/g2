@@ -45,7 +45,8 @@ const activemq = conf.activemq;
       cb(null, client);
     }, err => {
       logger.error('amq client:', err);
-      cb(err);
+      if(!client) return cb(err);
+      client.disconnect(cb.bind(null, err));
     });
   };
 })();

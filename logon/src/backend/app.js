@@ -133,7 +133,8 @@ biz.backend.open(conf.app.id, (err, code) => {
 
     }, err => {
       logger.error('amq client:', err);
-      cb(err);
+      if(!client) return cb(err);
+      client.disconnect(cb.bind(null, err));
     });
   };
 
