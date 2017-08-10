@@ -70,6 +70,8 @@ biz.backend.open(conf.app.id, (err, code) => {
 (() => {
   var client = null;
 
+  var _front_start, _front_stop;
+
   var _2001_chat_1v1, _2003_chat_group;
 
   function send(dest, params, data, cb){
@@ -84,6 +86,9 @@ biz.backend.open(conf.app.id, (err, code) => {
 
   function unsubscribe(){
     if(!client) return;
+
+    if(_front_start) _front_start.unsubscribe();
+    if(_front_stop)   _front_stop.unsubscribe();
 
     if(_2001_chat_1v1)     _2001_chat_1v1.unsubscribe();
     if(_2003_chat_group) _2003_chat_group.unsubscribe();
@@ -110,6 +115,9 @@ biz.backend.open(conf.app.id, (err, code) => {
       passcode: activemq.password,
     }, () => {
       logger.debug('amq client: OK');
+
+      _front_start = client.subscribe('/queue/front.start', handle.front.start);
+      _front_stop  = client.subscribe('/queue/front.stop',  handle.front.stop);
 
       _2001_chat_1v1   = client.subscribe('/queue/qq.2001',   handle.chat.one_for_one.bind(null, send));
 
