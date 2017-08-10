@@ -9,6 +9,7 @@ const path   = require('path');
 const cwd    = process.cwd();
 const conf   = require(path.join(cwd, 'settings'));
 const Stomp  = require('stompjs');
+const _      = require('underscore');
 const logger = require('log4js').getLogger('lib');
 
 const activemq = conf.activemq;
@@ -21,9 +22,12 @@ const activemq = conf.activemq;
 
     client.disconnect(() => {
       logger.info('amq client disconnect: %s', _.now());
+      process.exit(0);
     });
   }
 
+  process.on('SIGINT', unsubscribe);
+  process.on('SIGTERM', unsubscribe);
   process.on('exit', unsubscribe);
 
   exports.getClient = function(cb){
