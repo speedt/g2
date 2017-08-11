@@ -16,6 +16,7 @@
     加入群组：
     <input type='text' id='group_id' />
     <input type='button' id='entryGroup' value='entryGroup'><p></p>
+    <input type='button' id='exitGroup' value='exitGroup'><p></p>
 
     <textarea rows='8' cols='50'></textarea>
     <textarea rows='8' cols='50'></textarea><p></p>
@@ -38,6 +39,7 @@ var random = function(){
 
 $(function(){
   random();
+  $('#group_id').val(_.random(100000, 999999));
 })
 
 var socket = null;
@@ -49,7 +51,6 @@ $(function(){
   });
 
   $('#createGroup').click(function(){
-
     var p = [
       102,
       3001,
@@ -61,8 +62,31 @@ $(function(){
     socket.send(JSON.stringify(p));
   });
 
-  $('#_5005_ready').click(function(){
+  $('#entryGroup').click(function(){
+    var p = [
+      102,
+      3007,
+      Math.random() * 1000,
+      new Date().getTime(),
+      $('#group_id').val(),
+      null,
+    ];
+    socket.send(JSON.stringify(p));
+  });
 
+  $('#exitGroup').click(function(){
+    var p = [
+      102,
+      3005,
+      Math.random() * 1000,
+      new Date().getTime(),
+      null,
+      null,
+    ];
+    socket.send(JSON.stringify(p));
+  });
+
+  $('#_5005_ready').click(function(){
     var p = {
       version: 102,
       method: 5005,
@@ -70,10 +94,6 @@ $(function(){
       timestamp: new Date().getTime()
     };
     socket.send(JSON.stringify(p));
-  });
-
-  $('#entryGroup').click(function(){
-
   });
 
   $('#send').click(function(){
