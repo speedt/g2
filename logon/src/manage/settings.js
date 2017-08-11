@@ -20,20 +20,20 @@ module.exports = {
   },
   activemq: {
     host: '127.0.0.1',
-    port: 12613,
+    port: process.env.ACTIVEMQ_PORT || 12613,
     user: 'admin',
-    password: 'admin',
+    password: process.env.ACTIVEMQ_PASS || 'admin',
   },
   mysql: {
     database: 'emag2',
     host: '127.0.0.1',
-    port: 12306,
+    port: process.env.MYSQL_PORT || 12306,
     user: 'root',
-    password: 'password',
+    password: process.env.MYSQL_PASS || 'password',
     connectionLimit: 50
   },
   redis: {
-    port: 12379,
+    port: process.env.REDIS_PORT || 12379,
     host: '127.0.0.1',
     password: '123456',
     database: 1
