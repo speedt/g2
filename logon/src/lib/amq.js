@@ -26,7 +26,6 @@ const activemq = conf.activemq;
     });
   }
 
-  process.on('SIGINT', unsubscribe);
   process.on('SIGTERM', unsubscribe);
   process.on('exit', unsubscribe);
 
