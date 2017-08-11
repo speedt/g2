@@ -17,8 +17,6 @@ const logger = log4js.getLogger('handle');
 
 const _ = require('underscore');
 
-const group = require('./group');
-
 exports.open = function(send, msg){
   if(!_.isString(msg.body)) return logger.error('channel open empty');
 
