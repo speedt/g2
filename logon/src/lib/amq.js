@@ -21,6 +21,7 @@ const activemq = conf.activemq;
     if(!client) return;
 
     client.disconnect(() => {
+      for(let i of fns){ i.unsubscribe(); }
       logger.info('amq client disconnect: %s', _.now());
     });
   }
@@ -46,6 +47,24 @@ const activemq = conf.activemq;
       logger.error('amq client:', err);
       if(!client) return cb(err);
       client.disconnect(cb.bind(null, err));
+    });
+  };
+
+  var fns = [];
+
+  /**
+   * 注入监听队列
+   *
+   * @return
+   */
+  exports.injection = function(name, fn, cb){
+    var self = this;
+
+    self.getClient((err, client) => {
+      if(err) return cb(err);
+      if(!client) return cb(new Error('no client'));
+      fns.push(client.subscribe(name, fn.bind(null, self.send.bind(self))));
+      cb();
     });
   };
 })();

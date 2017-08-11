@@ -12,9 +12,7 @@ const conf   = require('./settings');
 const cfg    = require('emag.cfg');
 const biz    = require('emag.biz');
 const handle = require('emag.handle');
-const Stomp  = require('stompjs');
-
-const activemq = conf.activemq;
+const amq    = require('emag.lib').amq;
 
 const log4js = require('log4js');
 
@@ -67,75 +65,14 @@ biz.backend.open(conf.app.id, (err, code) => {
   logger.info('backend %j open: %j', conf.app.id, code);
 });
 
-(() => {
-  var client = null;
+amq.getClient((err) => {
+  if(err) return logger.error('amq client:', err);
 
-  var _front_start, _front_stop;
+  amq.injection('/queue/front.start', handle.front.start, () => {});
+  amq.injection('/queue/front.stop',  handle.front.stop, () => {});
 
-  var _channel_open, _channel_close;
+  amq.injection('/queue/channel.open',  handle.channel.open, () => {});
+  amq.injection('/queue/channel.close', handle.channel.close, () => {});
 
-  var _2001_chat_1v1, _2003_chat_group;
-
-  function send(dest, params, data, cb){
-    getClient((err, client) => {
-      if(err) return cb(err);
-      try{
-        client.send(dest, params || {}, JSON.stringify(data));
-        cb(null, 'OK');
-      }catch(ex){ cb(ex); }
-    });
-  };
-
-  function unsubscribe(){
-    if(!client) return;
-
-    if(_front_start) _front_start.unsubscribe();
-    if(_front_stop)   _front_stop.unsubscribe();
-
-    if(_channel_open)   _channel_open.unsubscribe();
-    if(_channel_close) _channel_close.unsubscribe();
-
-    if(_2001_chat_1v1)     _2001_chat_1v1.unsubscribe();
-    if(_2003_chat_group) _2003_chat_group.unsubscribe();
-
-    client.disconnect(() => {
-      logger.info('amq client disconnect: %s', _.now());
-    });
-  }
-
-  process.on('SIGINT', unsubscribe);
-  process.on('SIGTERM', unsubscribe);
-  process.on('exit', unsubscribe);
-
-  function getClient(cb){
-    if(client) return cb(null, client);
-
-    client = Stomp.overTCP(activemq.host, activemq.port);
-    client.heartbeat.outgoing = 20000;
-    client.heartbeat.incoming = 10000;
-
-    client.connect({
-      login:    activemq.user,
-      passcode: activemq.password,
-    }, () => {
-      logger.debug('amq client: OK');
-
-      _front_start = client.subscribe('/queue/front.start', handle.front.start);
-      _front_stop  = client.subscribe('/queue/front.stop',  handle.front.stop);
-
-      _channel_open  = client.subscribe('/queue/channel.open',  handle.channel.open.bind(null, send));
-      _channel_close = client.subscribe('/queue/channel.close', handle.channel.close);
-
-      _2001_chat_1v1   = client.subscribe('/queue/qq.2001',   handle.chat.one_for_one.bind(null, send));
-
-      cb(null, client);
-
-    }, err => {
-      logger.error('amq client:', err);
-      if(!client) return cb(err);
-      client.disconnect(cb.bind(null, err));
-    });
-  };
-
-  getClient(err => {});
-})();
+  amq.injection('/queue/qq.2001', handle.chat.one_for_one, () => {});
+});

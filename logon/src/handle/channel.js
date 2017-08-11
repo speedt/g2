@@ -34,7 +34,7 @@ exports.open = function(send, msg){
   });
 };
 
-exports.close = function(msg){
+exports.close = function(send, msg){
   if(!_.isString(msg.body)) return logger.error('channel close empty');
 
   var s = msg.body.split('::');
