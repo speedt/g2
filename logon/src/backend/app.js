@@ -100,7 +100,6 @@ biz.backend.open(conf.app.id, (err, code) => {
 
     client.disconnect(() => {
       logger.info('amq client disconnect: %s', _.now());
-      process.exit(0);
     });
   }
 

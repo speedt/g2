@@ -22,7 +22,6 @@ const activemq = conf.activemq;
 
     client.disconnect(() => {
       logger.info('amq client disconnect: %s', _.now());
-      process.exit(0);
     });
   }
 
