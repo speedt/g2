@@ -35,7 +35,7 @@ module.exports = {
   redis: {
     port: process.env.REDIS_PORT || 12379,
     host: '127.0.0.1',
-    password: '123456',
+    password: process.env.REDIS_PASS || '123456',
     database: 1
   }
 };
