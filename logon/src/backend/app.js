@@ -75,4 +75,6 @@ amq.getClient((err) => {
   amq.injection('/queue/channel.close', handle.channel.close, () => {});
 
   amq.injection('/queue/qq.2001', handle.chat.one_for_one, () => {});
+
+  amq.injection('/queue/qq.3001', handle.group.search, () => {});
 });

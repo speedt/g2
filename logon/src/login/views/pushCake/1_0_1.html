@@ -8,13 +8,8 @@
 
     <input type='button' id='logout' value='logout'><p></p>
 
-    <input type='button' onclick='searchGroup("qingtong")' value='8人场'>
-    <input type='button' onclick='searchGroup("baiyin")' value='5人场'>
-    <input type='button' onclick='searchGroup("huangjin")' value='快速场'><p></p>
-
-    观看群组：
-    <input type='text' id='group_id' />
-    <input type='button' id='visitGroup' value='visitGroup'><p></p>
+    创建群组：
+    <input type='button' id='createGroup' value='createGroup'><p></p>
 
     加入群组：
     <input type='text' id='group_id' />
@@ -23,11 +18,7 @@
     <textarea rows='8' cols='50'></textarea>
     <textarea rows='8' cols='50'></textarea><p></p>
 
-    <input type='button' id='_5005_ready' value='_5005_ready'>
-    <input type='button' id='shot' value='shot'>
-    <input type='button' id='switch_1' value='switch::1'>
-    <input type='button' id='switch_3' value='switch::3'>
-    <input type='button' id='blast' value='blast'><p></p>
+    <input type='button' id='_5005_ready' value='_5005_ready'><p></p>
 
     发送给：
     <input type='text' id='user_id' placeholder='ALL,GROUP,PERSON,...' />
@@ -49,23 +40,20 @@ $(function(){
 
 var socket = null;
 
-
-function visitGroup(group_id){
-  console.log(group_id)
-};
-
-function searchGroup(group_type){
-  var p = {
-    version: 102,
-    method: 3001,
-    seqId: Math.random() * 1000,
-    timestamp: new Date().getTime(),
-    data: group_type
-  };
-  socket.send(JSON.stringify(p));
-}
-
 $(function(){
+
+  $('#createGroup').click(function(){
+
+    var p = [
+      102,
+      3001,
+      Math.random() * 1000,
+      new Date().getTime(),
+      null,
+      null,
+    ];
+    socket.send(JSON.stringify(p));
+  });
 
   $('#_5005_ready').click(function(){
 
@@ -161,7 +149,6 @@ $(function(){
       socket.send(JSON.stringify(p));
     };
 
-
     socket.onclose = function(evt){
       console.log(evt);
 
@@ -182,62 +169,6 @@ $(function(){
 
   $('#logout').click(function(){
     socket.close();
-  });
-
-  $('#shot').click(function(){
-    var p = {
-      version: 102,
-      method: 5001,
-      seqId: Math.random() * 1000,
-      timestamp: new Date().getTime(),
-      data: JSON.stringify({
-        id: new Date().getTime() +'',
-        x: 1,
-        y: 2,
-      })
-    };
-    socket.send(JSON.stringify(p));
-  });
-
-  $('#switch_1').click(function(){
-    var p = {
-      version: 102,
-      method: 5013,
-      seqId: Math.random() * 1000,
-      timestamp: new Date().getTime(),
-      data: 1
-    };
-    socket.send(JSON.stringify(p));
-  });
-
-  $('#switch_3').click(function(){
-    var p = {
-      version: 102,
-      method: 5013,
-      seqId: Math.random() * 1000,
-      timestamp: new Date().getTime(),
-      data: 3
-    };
-    socket.send(JSON.stringify(p));
-  });
-
-  $('#blast').click(function(){
-
-    // if(!back_id) return;
-
-    var p = {
-      version: 102,
-      method: 5003,
-      backendId: '112aba1ad4424e7891037028ef024645',
-      seqId: Math.random() * 1000,
-      timestamp: new Date().getTime(),
-      data: JSON.stringify([{
-        id: new Date().getTime() +'',
-        x: 1,
-        y: 2,
-      }, ['1','2']])
-    };
-    socket.send(JSON.stringify(p));
   });
 
 });
