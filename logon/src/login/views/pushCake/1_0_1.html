@@ -8,6 +8,8 @@
 
     <input type='button' id='logout' value='logout'><p></p>
 
+    <input type='button' id='wrongTest' value='wrongTest'><p></p>
+
     创建群组：
     <input type='button' id='createGroup' value='createGroup'><p></p>
 
@@ -41,6 +43,10 @@ $(function(){
 var socket = null;
 
 $(function(){
+
+  $('#wrongTest').click(function(){
+    socket.send(JSON.stringify({}));
+  });
 
   $('#createGroup').click(function(){
 
