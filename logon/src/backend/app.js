@@ -77,4 +77,5 @@ amq.getClient((err) => {
   amq.injection('/queue/qq.2001', handle.chat.one_for_one, () => {});
 
   amq.injection('/queue/qq.3001', handle.group.search, () => {});
+  amq.injection('/queue/qq.3007', handle.group.entry,  () => {});
 });

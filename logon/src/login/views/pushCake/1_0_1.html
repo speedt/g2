@@ -56,7 +56,12 @@ $(function(){
       3001,
       Math.random() * 1000,
       new Date().getTime(),
-      null,
+      JSON.stringify({
+        group_name: '房间名',
+        visitor_count: 6,  // n个钓鱼人
+        round_count: 4,  // n圈
+        group_fund: 1000,  // 组局基金
+      }),
       null,
     ];
     socket.send(JSON.stringify(p));
