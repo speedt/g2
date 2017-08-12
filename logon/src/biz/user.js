@@ -316,9 +316,9 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
   const sha1    = '3b248050f9965193d8a4836d6258861a1890017f';
 
   /**
-   * 用户退出
+   * 用户退出（channel_close.lua）
    *
-   * channel_close.lua
+   * @return
    */
   exports.logout = function(server_id, channel_id, cb){
 
@@ -341,14 +341,18 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
 
 (() => {
   const numkeys = 3;
-  const sha1    = 'c0063dca448024e38e985ad81ec21bb36e6602eb';
+  const sha1    = '6df440fb93a747912f3eae2835c8fec8e90788ca';
 
   /**
-   * 获取用户Id
+   * 获取用户信息（user_info_byChannelId.lua）
    *
-   * user_id.lua
+   * @return
    */
-  exports.getUserId = function(server_id, channel_id, cb){
-    redis.evalsha(sha1, numkeys, conf.redis.database, server_id, channel_id, cb);
+  exports.getByChannelId = function(server_id, channel_id, cb){
+    redis.evalsha(sha1, numkeys, conf.redis.database, server_id, channel_id, (err, code) => {
+      if(err) return cb(err);
+      if(!_.isArray(code)) return cb(null, code);
+      cb(null, null, utils.arrToObj(code));
+    });
   };
 })();

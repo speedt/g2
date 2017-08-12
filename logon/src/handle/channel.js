@@ -20,10 +20,10 @@ const _ = require('underscore');
 (() => {
   function step1(server_id, channel_id){
     return new Promise((resolve, reject) => {
-      biz.user.getUserId(server_id, channel_id, function (err, user_id){
+      biz.user.getByChannelId(server_id, channel_id, function (err, code, user){
         if(err) return reject(err);
-        if(!user_id) return reject(new Error('Not Found'));
-        resolve(user_id);
+        if(!user) return reject(new Error('Not Found'));
+        resolve(user.id);
       });
     });
   }
@@ -55,7 +55,6 @@ const _ = require('underscore');
 
       step1.call(null, server_id, channel_id).then(user_id => {
         return step2.call(null, user_id);
-      }).then(function(){
       }).catch(err => {
         logger.error('channel open:', err);
       });
