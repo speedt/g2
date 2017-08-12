@@ -329,7 +329,6 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
       var obj = utils.arrToObj(code);
 
       biz.user_log.saveNew({
-        log_desc: '',
         log_type: 2,
         user_id: obj.id
       }, function (err, status){
@@ -342,7 +341,7 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
 
 (() => {
   const numkeys = 3;
-  const sha1    = '3b248050f9965193d8a4836d6258861a1890017f';
+  const sha1    = 'c0063dca448024e38e985ad81ec21bb36e6602eb';
 
   /**
    * 获取用户Id

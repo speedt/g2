@@ -30,20 +30,18 @@ exports.open = function(send, msg){
   send('/queue/back.send.v3.'+ server_id, { priority: 9 }, send_data, (err, code) => {
     if(err) return logger.error('channel open:', err);
 
-    biz.user.getUserId('server_id', 'channel_id', function (err, user_id){
+    biz.user.getUserId(server_id, channel_id, function (err, user_id){
       if(err) return logger.error('channel open:', err);
+      if(!user_id) return logger.error('channel open:', new Error('Not Found'));
 
-      console.log(arguments);
+      biz.user_log.saveNew({
+        log_type: 1,
+        user_id: user_id
+      }, function (err, status){
+        if(err) return logger.error('channel open:', err);
+      });
     });
 
-    // biz.user_log.saveNew({
-    //   log_desc: '',
-    //   log_type: 1,
-    //   user_id: obj.id
-    // }, function (err, status){
-    //   if(err) return cb(err);
-    //   cb(null, null, status);
-    // });
   });
 };
 
