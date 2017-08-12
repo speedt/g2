@@ -12,8 +12,7 @@ const conf  = require(path.join(cwd, 'settings'));
 const biz    = require('emag.biz');
 const cfg    = require('emag.cfg');
 
-const log4js = require('log4js');
-const logger = log4js.getLogger('handle');
+const logger = require('log4js').getLogger('handle');
 
 const _ = require('underscore');
 
@@ -22,9 +21,6 @@ exports.search = function(send, msg){
 
   try{ var data = JSON.parse(msg.body);
   }catch(ex){ return; }
-
-  if(!data.serverId)  return;
-  if(!data.channelId) return;
 
   var send_data = [data.channelId, JSON.stringify([conf.app.ver, 3002])];
 
@@ -36,4 +32,12 @@ exports.search = function(send, msg){
 };
 
 exports.quit = function(send, msg){
+  if(!_.isString(msg.body)) return logger.error('group quit empty');
+
+  try{ var data = JSON.parse(msg.body);
+  }catch(ex){ return; }
+
+  biz.group.quit(data.serverId, data.channelId, function (err, doc){
+    if(err) return logger.error('group quit:', err);
+  });
 };
