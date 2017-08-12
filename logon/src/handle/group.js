@@ -59,11 +59,26 @@ exports.quit = function(send, msg){
   try{ var data = JSON.parse(msg.body);
   }catch(ex){ return; }
 
-  biz.group.quit(data.serverId, data.channelId, function (err, doc){
+  var _data = {
+    user_id: '张三',
+    game_info: {
+      status: 1,  // 游戏状态
+    }
+  };
+
+  _data.err = {
+    code: 101,
+    msg: '进入房间失败描述'
+  };
+
+  var send_data = [data.channelId, JSON.stringify([conf.app.ver, 3006, null, _.now(), JSON.stringify(_data)])];
+
+  logger.debug('group quit: %j', send_data);
+
+  send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, send_data, (err, code) => {
     if(err) return logger.error('group quit:', err);
   });
 };
-
 
 exports.entry = function(send, msg){
   if(!_.isString(msg.body)) return logger.error('group entry empty');

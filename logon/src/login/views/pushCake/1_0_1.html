@@ -21,7 +21,7 @@
     <textarea rows='8' cols='50'></textarea>
     <textarea rows='8' cols='50'></textarea><p></p>
 
-    <input type='button' id='_5005_ready' value='_5005_ready'><p></p>
+    <input type='button' id='_5005_ready' value='举手'><p></p>
 
     发送给：
     <input type='text' id='user_id' placeholder='ALL,GROUP,PERSON,...' />
@@ -92,17 +92,18 @@ $(function(){
   });
 
   $('#_5005_ready').click(function(){
-    var p = {
-      version: 102,
-      method: 5005,
-      seqId: Math.random() * 1000,
-      timestamp: new Date().getTime()
-    };
+    var p = [
+      102,
+      5005,
+      Math.random() * 1000,
+      new Date().getTime(),
+      null,
+      null,
+    ];
     socket.send(JSON.stringify(p));
   });
 
   $('#send').click(function(){
-
     var p = [
       102,
       2001,
