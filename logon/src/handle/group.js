@@ -41,7 +41,7 @@ exports.search = function(send, msg){
 
   _data.err = {
     code: 101,
-    msg: '创建房间失败描述'
+    msg: '失败描述'
   };
 
   var send_data = [data.channelId, JSON.stringify([conf.app.ver, 3002, null, _.now(), JSON.stringify(_data)])];
@@ -68,7 +68,7 @@ exports.quit = function(send, msg){
 
   _data.err = {
     code: 101,
-    msg: '进入房间失败描述'
+    msg: '失败描述'
   };
 
   var send_data = [data.channelId, JSON.stringify([conf.app.ver, 3006, null, _.now(), JSON.stringify(_data)])];
@@ -108,7 +108,7 @@ exports.entry = function(send, msg){
 
   _data.err = {
     code: 101,
-    msg: '进入房间失败描述'
+    msg: '失败描述'
   };
 
   var send_data = [data.channelId, JSON.stringify([conf.app.ver, 3008, null, _.now(), JSON.stringify(_data)])];

@@ -23,25 +23,15 @@ exports.ready = function(send, msg){
   }catch(ex){ return; }
 
   var _data = {
-    group_info: {
-      id: _.random(100000, 999999),
-      name: '房间名',
-      visitor_count: 6,  // n个钓鱼人
-    },
-    users_info: [{
-      id: '张三',
-      seat: 1,
-    }],
+    users_info: ['张三', '李四'],
     game_info: {
-      status: 1,  // 游戏状态
-      round_count: 4,  // n圈
-      group_fund: 1000,  // 组局基金
+      status: '玩家准备中/选庄',  // 游戏状态
     }
   };
 
   _data.err = {
     code: 101,
-    msg: '创建房间失败描述'
+    msg: '失败描述'
   };
 
   var send_data = [data.channelId, JSON.stringify([conf.app.ver, 5006, null, _.now(), JSON.stringify(_data)])];
