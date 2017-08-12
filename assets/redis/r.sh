@@ -19,6 +19,10 @@ echo ""
 echo "user_info_byId.lua"
 /root/my/redis/redis-3.2.6/src/redis-cli -a 123456 script load "$(cat /root/my/git/speedt/g2/assets/redis/user_info_byId.lua)"
 
+echo ""
+echo "user_id.lua"
+/root/my/redis/redis-3.2.6/src/redis-cli -a 123456 script load "$(cat /root/my/git/speedt/g2/assets/redis/user_id.lua)"
+
 # 
 
 echo ""

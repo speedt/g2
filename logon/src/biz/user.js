@@ -322,18 +322,34 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
    */
   exports.logout = function(server_id, channel_id, cb){
 
-    var self = this;
-
     redis.evalsha(sha1, numkeys, conf.redis.database, server_id, channel_id, (err, code) => {
       if(err) return cb(err);
       if(!_.isArray(code)) return cb(null, code);
 
       var obj = utils.arrToObj(code);
 
-      self.editInfo(obj, function (err, status){
+      biz.user_log.saveNew({
+        log_desc: '',
+        log_type: 2,
+        user_id: obj.id
+      }, function (err, status){
         if(err) return cb(err);
         cb(null, null, status);
       });
     });
+  };
+})();
+
+(() => {
+  const numkeys = 3;
+  const sha1    = '3b248050f9965193d8a4836d6258861a1890017f';
+
+  /**
+   * 获取用户Id
+   *
+   * user_id.lua
+   */
+  exports.getUserId = function(server_id, channel_id, cb){
+    redis.evalsha(sha1, numkeys, conf.redis.database, server_id, channel_id, cb);
   };
 })();
