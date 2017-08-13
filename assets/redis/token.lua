@@ -38,16 +38,6 @@ if (s) then
   redis.call('DEL', result);
 end;
 
--- 
-
-local group_id = redis.call('HGET', 'prop::user::'.. user_id, 'group_id');
-
-if (group_id) then
-  -- 把之前登陆所在的群组赋给新登陆（会话）
-  redis.call('HMSET', code, 'group_id',     group_id,
-                            'group_pos_id', redis.call('HGET', 'prop::user::'.. user_id, 'group_pos_id'));
-end;
-
 -- 重命名
 
 redis.call('RENAME', code, 'prop::user::'.. user_id);
