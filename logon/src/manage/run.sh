@@ -8,4 +8,5 @@ npm install \
 && export MYSQL_PORT=3306 \
 && export MYSQL_PASS=123456 \
 && export REDIS_PORT=6379 \
+&& pm2 kill
 && pm2 start app.js --name manage
