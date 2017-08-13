@@ -334,6 +334,8 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
         create_time: _.now(),
       });
 
+      cb();
+
     });
   };
 })();

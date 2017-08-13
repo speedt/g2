@@ -39,7 +39,7 @@ log4js.configure({
   }
 });
 
-const logger = log4js.getLogger('login');
+const logger = log4js.getLogger('app');
 
 const app = express();
 
