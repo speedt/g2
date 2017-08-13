@@ -21,7 +21,7 @@ const redis = require('emag.db').redis;
 const cfg = require('emag.cfg');
 const biz = require('emag.biz');
 
-const logger = require('log4js').getLogger('biz.group');
+const logger = require('log4js').getLogger('biz.group_user');
 
 (() => {
   var sql = '';
@@ -30,44 +30,25 @@ const logger = require('log4js').getLogger('biz.group');
    *
    * @return
    */
-  exports.search = function(cb){
+  exports.getAllByGroupId = function(id, cb){
     // todo
   };
 })();
 
 (() => {
-  var sql = '';
-
+  var sql = 'SELECT '+
+              'c.group_name, '+
+              'b.user_name, '+
+              'a.* '+
+                'FROM '+
+                  '(SELECT * FROM g_group_user WHERE user_id=?) a '+
+                    'LEFT JOIN s_user b ON (a.user_id=b.id) '+
+                    'LEFT JOIN g_group c ON (a.group_id=c.id)';
   /**
    *
    * @return
    */
-  exports.quit = function(cb){
-    // todo
-  };
-})();
-
-(() => {
-  var sql = '';
-
-  /**
-   *
-   * @return
-   */
-  exports.entry = function(group_id, user_id, cb){
-
-    var self = this;
-  };
-})();
-
-(() => {
-  var sql = 'SELECT a.* FROM g_group a WHERE a.id=?';
-
-  /**
-   *
-   * @return
-   */
-  exports.getById = function(id, cb){
+  exports.getByUserId = function(id, cb){
 
     mysql.query(sql, [id], (err, docs) => {
       if(err) return cb(err);
