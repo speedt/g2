@@ -70,6 +70,14 @@ const logger = require('log4js').getLogger('biz.group');
       self.getById(group_id, (err, doc) => {
         if(err) return reject(err);
         if(!doc) return reject('non_existent_group');
+
+        // 玩家数+游客数
+        let user_count = (cfg['group_type_pushCake']['player_count'] - 0) + doc.visitor_count;
+
+        logger.debug('group user count: %s::%s', doc.user_count, user_count);
+
+        if(doc.user_count >= user_count) return reject('group_is_full');
+
         resolve();
       });
     });
@@ -79,14 +87,14 @@ const logger = require('log4js').getLogger('biz.group');
    *
    * @return
    */
-  exports.entry = function(group_id, user_id, cb){
+  exports.entry = function(user_id, group_id, cb){
 
     var self = this;
   };
 })();
 
 (() => {
-  var sql = 'SELECT a.* FROM g_group a WHERE a.id=?';
+  var sql = 'SELECT (SELECT COUNT(1) FROM g_group_user WHERE group_id=a.id) AS user_count, a.* FROM g_group a WHERE a.id=?';
 
   /**
    *

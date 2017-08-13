@@ -40,10 +40,12 @@ const logger = require('log4js').getLogger('biz.group_user');
               'c.group_name, '+
               'b.user_name, '+
               'a.* '+
-                'FROM '+
-                  '(SELECT * FROM g_group_user WHERE user_id=?) a '+
-                    'LEFT JOIN s_user b ON (a.user_id=b.id) '+
-                    'LEFT JOIN g_group c ON (a.group_id=c.id)';
+            'FROM '+
+              '(SELECT * FROM g_group_user WHERE user_id=?) a '+
+              'LEFT JOIN s_user b ON (a.user_id=b.id) '+
+              'LEFT JOIN g_group c ON (a.group_id=c.id) '+
+            'WHERE '+
+              'b.id IS NOT NULL';
   /**
    *
    * @return
