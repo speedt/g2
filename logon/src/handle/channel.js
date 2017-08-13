@@ -19,9 +19,9 @@ const _ = require('underscore');
 (() => {
   function step1(server_id, channel_id){
     return new Promise((resolve, reject) => {
-      biz.user.getByChannelId(server_id, channel_id, function (err, code, user){
+      biz.user.registerChannel(server_id, channel_id, function (err, code, user){
         if(err) return reject(err);
-        if(!user) return reject(new Error('Not Found'));
+        if(code) return reject(code);
         resolve(user.id);
       });
     });

@@ -238,6 +238,39 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
 })();
 
 (() => {
+  var sql = 'UPDATE s_user SET server_id=?, channel_id=? WHERE id=?';
+
+  /**
+   * 注册通道
+   *
+   * @return
+   */
+  exports.registerChannel = function(server_id, channel_id){
+
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+
+      this.getByChannelId(server_id, channel_id, (err, code, doc) => {
+        if(err) return reject(err);
+        if(code) return reject(code);
+
+        var postData = [
+          server_id,
+          channel_id,
+          doc.id,
+        ];
+
+        mysql.query(sql, postData, (err, status) => {
+          if(err) return reject(err);
+          resolve(doc);
+        });
+      });
+    });
+  };
+})();
+
+(() => {
   const seconds   = 15;  //令牌有效期 5s
   const numkeys   = 4;
   const sha1      = 'd8f515be193e9d7a0bce3bbb27d358702b6150f6';
