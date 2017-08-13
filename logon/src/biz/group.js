@@ -72,7 +72,7 @@ const logger = require('log4js').getLogger('biz.group');
         if(!doc) return reject('non_existent_group');
 
         // 玩家数+游客数
-        let user_count = (cfg['group_type_pushCake']['player_count'] - 0) + doc.visitor_count;
+        let user_count = (cfg.dynamic.group_type_pushCake.player_count - 0) + doc.visitor_count;
 
         logger.debug('group user count: %s::%s', doc.user_count, user_count);
 
@@ -90,6 +90,15 @@ const logger = require('log4js').getLogger('biz.group');
   exports.entry = function(user_id, group_id, cb){
 
     var self = this;
+
+    step1.call(null, user_id).then(() => {
+      return step2.call(self, group_id);
+    }).then(() => {
+      cb();
+    }).catch(err => {
+      if('string' === typeof err) return cb(null, err);
+      cb(err);
+    });
   };
 })();
 

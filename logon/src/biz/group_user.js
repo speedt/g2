@@ -24,18 +24,6 @@ const biz = require('emag.biz');
 const logger = require('log4js').getLogger('biz.group_user');
 
 (() => {
-  var sql = '';
-
-  /**
-   *
-   * @return
-   */
-  exports.getAllByGroupId = function(id, cb){
-    // todo
-  };
-})();
-
-(() => {
   var sql = 'SELECT '+
               'c.group_name, '+
               'b.user_name, '+

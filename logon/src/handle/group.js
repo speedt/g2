@@ -80,42 +80,43 @@ exports.quit = function(send, msg){
   });
 };
 
-exports.entry = function(send, msg){
-  if(!_.isString(msg.body)) return logger.error('group entry empty');
+(() => {
 
-  try{ var data = JSON.parse(msg.body);
-  }catch(ex){ return; }
+  function step1(serverId, channelId){
 
-  var _data = {
-    group_info: {
-      id: _.random(100000, 999999),
-      name: '房间名',
-      visitor_count: 6,  // n个钓鱼人
-    },
-    users_info: [{
-      id: '张三',
-      seat: 1,
-    }, {
-      id: '李四',
-      seat: 2,
-    }],
-    game_info: {
-      status: 1,  // 游戏状态
-      round_count: 4,  // n圈
-      group_fund: 1000,  // 组局基金
-    }
-  };
+    return new Promise((resolve, reject) => {
 
-  _data.err = {
-    code: 101,
-    msg: '失败描述'
-  };
+      biz.user.getByChannelId(serverId, channelId, (err, code, doc) => {
+        if(err) return reject(err);
+        if(code) return reject(code);
+        resolve(doc);
+      });
+    });
+  }
 
-  var send_data = [data.channelId, JSON.stringify([conf.app.ver, 3008, null, _.now(), JSON.stringify(_data)])];
+  function step2(user_id, group_id){
 
-  logger.debug('group entry: %j', send_data);
+    return new Promise((resolve, reject) => {
 
-  send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, send_data, (err, code) => {
-    if(err) return logger.error('group entry:', err);
-  });
-};
+      biz.group.entry(user_id, group_id, (err, docs) => {
+        if(err) return reject(err);
+        resolve(docs);
+      });
+    });
+  }
+
+  exports.entry = function(send, msg){
+    if(!_.isString(msg.body)) return logger.error('group entry empty');
+
+    try{ var data = JSON.parse(msg.body);
+    }catch(ex){ return; }
+
+    step1.call(null, data.serverId, data.channelId).then(user => {
+      return step2.call(null, user.id, data.data);
+    }).then(docs => {
+      console.log(docs);
+    }).catch(err => {
+      logger.error('group entry:', err);
+    });
+
+})();
