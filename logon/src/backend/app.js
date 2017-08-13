@@ -21,8 +21,9 @@ log4js.configure({
     app: {
       type: 'dateFile',
       filename: path.join(cwd, 'logs', 'app'),
-      pattern: 'yyyy-MM-dd.log',
-      alwaysIncludePattern: true
+      pattern: '.yyyy-MM-dd.log',
+      alwaysIncludePattern: true,
+      compress: true,
     },
     console: {
       type: 'console'

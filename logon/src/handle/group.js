@@ -95,7 +95,7 @@ exports.entry = function(send, msg){
     users_info: [{
       id: '张三',
       seat: 1,
-    },{
+    }, {
       id: '李四',
       seat: 2,
     }],
