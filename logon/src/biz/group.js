@@ -48,7 +48,32 @@ const logger = require('log4js').getLogger('biz.group');
 })();
 
 (() => {
-  var sql = '';
+
+  function step1(user_id){
+
+    return new Promise((resolve, reject) => {
+
+      biz.group_user.getByUserId(user_id, (err, doc) => {
+        if(err) return reject(err);
+        if(doc) return reject('must_be_quit');
+        resolve();
+      });
+    });
+  }
+
+  function step2(group_id){
+
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+
+      self.getById(group_id, (err, doc) => {
+        if(err) return reject(err);
+        if(!doc) return reject('non_existent_group');
+        resolve();
+      });
+    });
+  }
 
   /**
    *
