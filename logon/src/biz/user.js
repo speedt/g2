@@ -328,13 +328,12 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
 
       var obj = utils.arrToObj(code);
 
-      biz.user_log.saveNew({
+      logger.info('user logout: %j', {
         log_type: 2,
-        user_id: obj.id
-      }, function (err, status){
-        if(err) return cb(err);
-        cb(null, null, status);
+        user_id: obj.id,
+        create_time: _.now(),
       });
+
     });
   };
 })();

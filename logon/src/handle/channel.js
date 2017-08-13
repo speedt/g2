@@ -12,7 +12,7 @@ const conf = require(path.join(cwd, 'settings'));
 const biz    = require('emag.biz');
 const cfg    = require('emag.cfg');
 
-const logger = require('log4js').getLogger('handle');
+const logger = require('log4js').getLogger('handle.channel');
 
 const _ = require('underscore');
 
@@ -29,13 +29,14 @@ const _ = require('underscore');
 
   function step2(user_id){
     return new Promise((resolve, reject) => {
-        biz.user_log.saveNew({
-          log_type: 1,
-          user_id: user_id
-        }, function (err, status){
-          if(err) return reject(err);
-          resolve();
-        });
+
+      logger.info('user login: %j', {
+        log_type: 1,
+        user_id: user_id,
+        create_time: _.now(),
+      });
+
+      resolve();
     });
   }
 

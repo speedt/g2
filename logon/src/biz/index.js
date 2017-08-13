@@ -9,7 +9,6 @@ exports.goods    = require('./goods');
 exports.gift     = require('./gift');
 
 exports.user     = require('./user');
-exports.user_log = require('./user_log');
 
 exports.backend  = require('./backend');
 exports.frontend = require('./frontend');
