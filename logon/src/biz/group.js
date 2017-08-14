@@ -10,7 +10,6 @@ const cwd  = process.cwd();
 const conf = require(path.join(cwd, 'settings'));
 
 const uuid = require('node-uuid');
-const _    = require('underscore');
 
 const md5   = require('speedt-utils').md5;
 const utils = require('speedt-utils').utils;
@@ -20,6 +19,10 @@ const redis = require('emag.db').redis;
 
 const cfg = require('emag.cfg');
 const biz = require('emag.biz');
+
+const _  = require('underscore');
+_.str    = require('underscore.string');
+_.mixin(_.str.exports());
 
 const logger = require('log4js').getLogger('biz.group');
 
@@ -47,60 +50,40 @@ const logger = require('log4js').getLogger('biz.group');
   };
 })();
 
-(() => {
+/**
+ *
+ * @return
+ */
+exports.entry = function(server_id, channel_id, group_id){
 
-  function step1(user_id){
+  return new Promise((resolve, reject) => {
 
-    return new Promise((resolve, reject) => {
+    if(!_.isString(group_id)) return reject('invalid_group_id');
 
-      biz.group_user.getByUserId(user_id, (err, doc) => {
-        if(err) return reject(err);
-        if(doc) return reject('must_be_quit');
-        resolve();
-      });
-    });
-  }
+    group_id = _.trim(group_id);
 
-  function step2(group_id){
+    if('' === group_id) return reject('invalid_group_id');
 
-    var self = this;
+    biz.group_user.getByUserId.call(null, server_id, channel_id).then(doc => {
 
-    return new Promise((resolve, reject) => {
+      if(doc) return reject('must_be_quit');
+      return biz.group.getById.call(null, group_id);
+    }).then(doc => {
 
-      self.getById(group_id, (err, doc) => {
-        if(err) return reject(err);
-        if(!doc) return reject('non_existent_group');
+      if(!doc) return reject('non_existent_group');
 
-        // 玩家数+游客数
-        let user_count = (cfg.dynamic.group_type_pushCake.player_count - 0) + doc.visitor_count;
+      // 玩家数+游客数
+      var user_count = (cfg.dynamic.group_type_pushCake.player_count - 0) + doc.visitor_count;
 
-        logger.debug('group user count: %s::%s', doc.user_count, user_count);
+      logger.debug('group user count: %s::%s', doc.user_count, user_count);
 
-        if(doc.user_count >= user_count) return reject('group_is_full');
+      if(doc.user_count >= user_count) return reject('group_is_full');
 
-        resolve();
-      });
-    });
-  }
+      resolve();
 
-  /**
-   *
-   * @return
-   */
-  exports.entry = function(user_id, group_id, cb){
-
-    var self = this;
-
-    step1.call(null, user_id).then(() => {
-      return step2.call(self, group_id);
-    }).then(() => {
-      cb();
-    }).catch(err => {
-      if('string' === typeof err) return cb(null, err);
-      cb(err);
-    });
-  };
-})();
+    }).catch(reject);
+  });
+};
 
 (() => {
   var sql = 'SELECT (SELECT COUNT(1) FROM g_group_user WHERE group_id=a.id) AS user_count, a.* FROM g_group a WHERE a.id=?';
@@ -109,11 +92,14 @@ const logger = require('log4js').getLogger('biz.group');
    *
    * @return
    */
-  exports.getById = function(id, cb){
+  exports.getById = function(id){
 
-    mysql.query(sql, [id], (err, docs) => {
-      if(err) return cb(err);
-      cb(null, mysql.checkOnly(docs) ? docs[0] : null);
+    return new Promise((resolve, reject) => {
+
+      mysql.query(sql, [id], (err, docs) => {
+        if(err) return reject(err);
+        resolve(mysql.checkOnly(docs) ? docs[0] : null);
+      });
     });
   };
 })();

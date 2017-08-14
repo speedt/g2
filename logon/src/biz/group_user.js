@@ -26,23 +26,24 @@ const logger = require('log4js').getLogger('biz.group_user');
 (() => {
   var sql = 'SELECT '+
               'c.group_name, '+
-              'b.user_name, '+
-              'a.* '+
+              'a.user_name, '+
+              'b.* '+
             'FROM '+
-              '(SELECT * FROM g_group_user WHERE user_id=?) a '+
-              'LEFT JOIN s_user b ON (a.user_id=b.id) '+
-              'LEFT JOIN g_group c ON (a.group_id=c.id) '+
+              '(SELECT * FROM s_user WHERE server_id=? AND channel_id=?) a '+
+              'LEFT JOIN g_group_user b ON (a.id=b.user_id) '+
+              'LEFT JOIN g_group c ON (b.group_id=c.id) '+
             'WHERE '+
-              'b.id IS NOT NULL';
+              'b.user_id IS NOT NULL';
   /**
    *
    * @return
    */
-  exports.getByUserId = function(id, cb){
-
-    mysql.query(sql, [id], (err, docs) => {
-      if(err) return cb(err);
-      cb(null, mysql.checkOnly(docs) ? docs[0] : null);
+  exports.getByUserId = function(server_id, channel_id){
+    return new Promise((resolve, reject) => {
+      mysql.query(sql, [server_id, channel_id], (err, docs) => {
+        if(err) return reject(err);
+        resolve(mysql.checkOnly(docs) ? docs[0] : null);
+      });
     });
   };
 })();

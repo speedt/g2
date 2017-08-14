@@ -80,44 +80,15 @@ exports.quit = function(send, msg){
   });
 };
 
-(() => {
+exports.entry = function(send, msg){
+  if(!_.isString(msg.body)) return logger.error('group entry empty');
 
-  function step1(serverId, channelId){
+  try{ var data = JSON.parse(msg.body);
+  }catch(ex){ return; }
 
-    return new Promise((resolve, reject) => {
-
-      biz.user.getByChannelId(serverId, channelId, (err, code, doc) => {
-        if(err) return reject(err);
-        if(code) return reject(code);
-        resolve(doc);
-      });
-    });
-  }
-
-  function step2(user_id, group_id){
-
-    return new Promise((resolve, reject) => {
-
-      biz.group.entry(user_id, group_id, (err, docs) => {
-        if(err) return reject(err);
-        resolve(docs);
-      });
-    });
-  }
-
-  exports.entry = function(send, msg){
-    if(!_.isString(msg.body)) return logger.error('group entry empty');
-
-    try{ var data = JSON.parse(msg.body);
-    }catch(ex){ return; }
-
-    step1.call(null, data.serverId, data.channelId).then(user => {
-      return step2.call(null, user.id, data.data);
-    }).then(docs => {
-      console.log(docs);
-    }).catch(err => {
-      logger.error('group entry:', err);
-    });
-  };
-
-})();
+  biz.group.entry.call(null, data.serverId, data.channelId, data.data).then(doc => {
+    console.log(doc);
+  }).catch(err => {
+    logger.error('group entry:', err);
+  });
+};
