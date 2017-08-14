@@ -26,24 +26,51 @@ const logger = require('log4js').getLogger('biz.group_user');
 (() => {
   var sql = 'SELECT '+
               'c.group_name, '+
-              'a.user_name, '+
-              'b.* '+
+              'b.user_name, '+
+              'a.* '+
             'FROM '+
-              '(SELECT * FROM s_user WHERE server_id=? AND channel_id=?) a '+
-              'LEFT JOIN g_group_user b ON (a.id=b.user_id) '+
-              'LEFT JOIN g_group c ON (b.group_id=c.id) '+
+              '(SELECT * FROM g_group_user WHERE user_id=?) a '+
+              'LEFT JOIN s_user b ON (a.user_id=b.id) '+
+              'LEFT JOIN g_group c ON (a.group_id=c.id) '+
             'WHERE '+
-              'b.user_id IS NOT NULL';
+              'b.id IS NOT NULL';
   /**
    *
    * @return
    */
-  exports.getByUserId = function(server_id, channel_id){
+  exports.getByUserId = function(id){
     return new Promise((resolve, reject) => {
-      mysql.query(sql, [server_id, channel_id], (err, docs) => {
+      mysql.query(sql, [id], (err, docs) => {
         if(err) return reject(err);
         resolve(mysql.checkOnly(docs) ? docs[0] : null);
       });
+    });
+  };
+})();
+
+(() => {
+  const sql = 'INSERT INTO g_group_user (group_id, user_id, create_time, status) VALUES (?, ?, ?, ?)';
+
+  /**
+   *
+   * @return
+   */
+  exports.saveNew = function(newInfo){
+
+    return new Promise((resolve, reject) => {
+
+      var postData = [
+        newInfo.group_id,
+        newInfo.user_id,
+        new Date(),
+        0,
+      ];
+
+      mysql.query(sql, postData, (err, status) => {
+        if(err) return reject(err);
+        resolve(status);
+      });
+
     });
   };
 })();

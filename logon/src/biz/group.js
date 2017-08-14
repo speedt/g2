@@ -64,24 +64,39 @@ exports.entry = function(server_id, channel_id, group_id){
 
     if('' === group_id) return reject('invalid_group_id');
 
-    biz.group_user.getByUserId.call(null, server_id, channel_id).then(doc => {
+    biz.user.getByChannelId(server_id, channel_id, (err, code, doc) => {
+      if(err) return reject(err);
+      if(code) return reject(code);
 
-      if(doc) return reject('must_be_quit');
-      return biz.group.getById.call(null, group_id);
-    }).then(doc => {
+      var user = doc;
 
-      if(!doc) return reject('non_existent_group');
+      biz.group.getById.call(null, group_id).then(doc => {
 
-      // 玩家数+游客数
-      var user_count = (cfg.dynamic.group_type_pushCake.player_count - 0) + doc.visitor_count;
+        if(!doc) throw new Error('non_existent_group');
 
-      logger.debug('group user count: %s::%s', doc.user_count, user_count);
+        // 玩家数+游客数
+        var user_count = (cfg.dynamic.group_type_pushCake.player_count - 0) + doc.visitor_count;
 
-      if(doc.user_count >= user_count) return reject('group_is_full');
+        logger.debug('group user count: %s::%s', doc.user_count, user_count);
 
-      resolve();
+        if(doc.user_count >= user_count) return reject('group_is_full');
 
-    }).catch(reject);
+        return biz.group_user.getByUserId.call(null, user.id);
+
+      }).then(doc => {
+
+        if(doc) throw new Error('must_be_quit');
+
+        return biz.group_user.saveNew.call(null, {
+          group_id: group_id,
+          user_id: user.id,
+        });
+
+      }).then(status => {
+        resolve(status);
+      }).catch(reject);
+
+    });
   });
 };
 
