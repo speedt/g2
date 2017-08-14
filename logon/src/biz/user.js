@@ -247,26 +247,22 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
    */
   exports.registerChannel = function(server_id, channel_id){
 
-    var self = this;
+    this.getByChannelId(server_id, channel_id, (err, code, user) => {
+      if(err) return cb(err);
+      if(code) return cb(null, code);
 
-    return new Promise((resolve, reject) => {
+      var postData = [
+        server_id,
+        channel_id,
+        user.id,
+      ];
 
-      this.getByChannelId(server_id, channel_id, (err, code, doc) => {
-        if(err) return reject(err);
-        if(code) return reject(code);
-
-        var postData = [
-          server_id,
-          channel_id,
-          doc.id,
-        ];
-
-        mysql.query(sql, postData, (err, status) => {
-          if(err) return reject(err);
-          resolve(doc);
-        });
+      mysql.query(sql, postData, (err, status) => {
+        if(err) return cb(err);
+        cb(null, null, user);
       });
     });
+
   };
 })();
 
@@ -358,17 +354,7 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
     redis.evalsha(sha1, numkeys, conf.redis.database, server_id, channel_id, (err, code) => {
       if(err) return cb(err);
       if(!_.isArray(code)) return cb(null, code);
-
-      var obj = utils.arrToObj(code);
-
-      logger.info('user logout: %j', {
-        log_type: 2,
-        user_id: obj.id,
-        create_time: _.now(),
-      });
-
-      cb();
-
+      cb(null, null, utils.arrToObj(code));
     });
   };
 })();

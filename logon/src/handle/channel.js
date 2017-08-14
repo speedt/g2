@@ -71,8 +71,15 @@ exports.close = function(send, msg){
   var server_id  = s[0];
   var channel_id = s[1];
 
-  biz.user.logout(server_id, channel_id, function (err, code){
+  biz.user.logout(server_id, channel_id, function (err, code, user){
     if(err) return logger.error('channel close:', err);
-    logger.info('channel close: %j', s);
+    if(code) return logger.error('channel close:', code);
+
+    logger.info('user logout: %j', {
+      log_type: 2,
+      user_id: user.id,
+      create_time: _.now(),
+    });
+
   });
 };
