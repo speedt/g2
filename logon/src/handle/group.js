@@ -118,5 +118,6 @@ exports.quit = function(send, msg){
     }).catch(err => {
       logger.error('group entry:', err);
     });
+  };
 
 })();

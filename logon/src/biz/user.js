@@ -247,19 +247,22 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
    */
   exports.registerChannel = function(server_id, channel_id){
 
-    this.getByChannelId(server_id, channel_id, (err, code, user) => {
-      if(err) return cb(err);
-      if(code) return cb(null, code);
+    return new Promise((resolve, reject) => {
 
-      var postData = [
-        server_id,
-        channel_id,
-        user.id,
-      ];
+      this.getByChannelId(server_id, channel_id, (err, code, user) => {
+        if(err) return reject(err);
+        if(code) return reject(code);
 
-      mysql.query(sql, postData, (err, status) => {
-        if(err) return cb(err);
-        cb(null, null, user);
+        var postData = [
+          server_id,
+          channel_id,
+          user.id,
+        ];
+
+        mysql.query(sql, postData, (err, status) => {
+          if(err) return reject(err);
+          resolve(user);
+        });
       });
     });
 
