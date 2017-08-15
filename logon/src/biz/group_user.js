@@ -69,3 +69,38 @@ const logger = require('log4js').getLogger('biz.group_user');
     });
   };
 })();
+
+(() => {
+  var sql = 'SELECT '+
+              'c.group_name, '+
+              'b.user_name, b.server_id, b.channel_id, '+
+              'a.* '+
+            'FROM '+
+              '(SELECT * FROM g_group_user WHERE group_id=?) a '+
+              'LEFT JOIN s_user b ON (a.user_id=b.id) '+
+              'LEFT JOIN g_group c ON (a.group_id=c.id) '+
+            'WHERE '+
+              'b.id IS NOT NULL AND '+
+              'c.id IS NOT NULL '+
+            'ORDER BY a.create_time DESC';
+  /**
+   *
+   * @return
+   */
+  exports.getByGroupId = function(id, cb){
+
+    if(!!cb && 'function' === typeof cb){
+      return mysql.query(sql, [id], (err, docs) => {
+        if(err) return cb(err);
+        cb(null, docs);
+      });
+    }
+
+    return new Promise((resolve, reject) => {
+      mysql.query(sql, [id], (err, docs) => {
+        if(err) return reject(err);
+        resolve(docs);
+      });
+    });
+  };
+})();
