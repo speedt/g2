@@ -38,12 +38,10 @@ const logger = require('log4js').getLogger('biz.group_user');
    *
    * @return
    */
-  exports.getByUserId = function(id){
-    return new Promise((resolve, reject) => {
-      mysql.query(sql, [id], (err, docs) => {
-        if(err) return reject(err);
-        resolve(mysql.checkOnly(docs) ? docs[0] : null);
-      });
+  exports.getByUserId = function(id, cb){
+    mysql.query(sql, [id], (err, docs) => {
+      if(err) return cb(err);
+      cb(null, mysql.checkOnly(docs) ? docs[0] : null);
     });
   };
 })();
@@ -56,9 +54,7 @@ const logger = require('log4js').getLogger('biz.group_user');
    * @return
    */
   exports.saveNew = function(newInfo){
-
     return new Promise((resolve, reject) => {
-
       var postData = [
         newInfo.group_id,
         newInfo.user_id,
@@ -68,9 +64,8 @@ const logger = require('log4js').getLogger('biz.group_user');
 
       mysql.query(sql, postData, (err, status) => {
         if(err) return reject(err);
-        resolve(status);
+        resolve(postData);
       });
-
     });
   };
 })();
