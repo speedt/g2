@@ -62,8 +62,7 @@ exports.quit = function(send, msg){
   try{ var data = JSON.parse(msg.body);
   }catch(ex){ return; }
 
-  biz.group.quit.call(null, data.serverId, data.channelId).then(docs => {
-
+  biz.group.quit(data.serverId, data.channelId).then(docs => {
     var _send_data = [];
     _send_data.push(null);
     _send_data.push(JSON.stringify([conf.app.ver, 3006, data.seqId, _.now(), docs]));
@@ -101,7 +100,7 @@ exports.entry = function(send, msg){
   try{ var data = JSON.parse(msg.body);
   }catch(ex){ return; }
 
-  biz.group.entry.call(null, data.serverId, data.channelId, data.data).then(docs => {
+  biz.group.entry(data.serverId, data.channelId, data.data).then(docs => {
 
     var _send_data = [];
     _send_data.push(null);

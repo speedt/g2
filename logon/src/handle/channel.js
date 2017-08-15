@@ -62,7 +62,7 @@ exports.close = function(send, msg){
     seqId: 0,
   };
 
-  biz.group.quit.call(null, data.serverId, data.channelId).then(docs => {
+  biz.group.quit(data.serverId, data.channelId).then(docs => {
 
     var _send_data = [];
     _send_data.push(null);
@@ -79,7 +79,7 @@ exports.close = function(send, msg){
       });
     }
 
-    biz.user.logout.call(null, data.serverId, data.channelId).then(user => {
+    biz.user.logout(data.serverId, data.channelId).then(user => {
 
       logger.info('user logout: %j', {
         log_type: 2,
