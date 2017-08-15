@@ -11,6 +11,7 @@ const conf = require(path.join(cwd, 'settings'));
 
 const biz    = require('emag.biz');
 const cfg    = require('emag.cfg');
+const handle = require('emag.handle');
 
 const logger = require('log4js').getLogger('handle.channel');
 
@@ -55,18 +56,51 @@ exports.close = function(send, msg){
 
   var s = msg.body.split('::');
 
-  var server_id  = s[0];
-  var channel_id = s[1];
+  var data = {
+    serverId: s[0],
+    channelId: s[1],
+    seqId: 0,
+  };
 
-  biz.user.logout.call(null, server_id, channel_id).then(user => {
+  biz.group.quit.call(null, data.serverId, data.channelId).then(docs => {
 
-    logger.info('user logout: %j', {
-      log_type: 2,
-      user_id: user.id,
-      create_time: _.now(),
+    var _send_data = [];
+    _send_data.push(null);
+    _send_data.push(JSON.stringify([conf.app.ver, 3006, data.seqId, _.now(), docs]));
+
+    for(let i of docs){
+      if(!i.server_id) continue;
+      if(!i.channel_id) continue;
+
+      _send_data.splice(0, 1, i.channel_id);
+
+      send('/queue/back.send.v3.'+ i.server_id, { priority: 9 }, _send_data, (err, code) => {
+        if(err) return logger.error('group quit:', err);
+      });
+    }
+
+    biz.user.logout.call(null, data.serverId, data.channelId).then(user => {
+
+      logger.info('user logout: %j', {
+        log_type: 2,
+        user_id: user.id,
+        create_time: _.now(),
+      });
+
+    }).catch(err => {
+      logger.error('channel close:', err);
     });
 
   }).catch(err => {
-    logger.error('channel close:', err);
+    if('string' !== typeof err) return logger.error('group quit:', err);
+
+    var _send_data = [];
+    _send_data.push(data.channelId);
+    _send_data.push(JSON.stringify([conf.app.ver, 3006, data.seqId, _.now(), { err: { code: err } }]));
+
+    send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _send_data, (err, code) => {
+      if(err) return logger.error('group quit:', err);
+    });
+
   });
 };

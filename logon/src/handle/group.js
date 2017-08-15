@@ -12,7 +12,7 @@ const conf  = require(path.join(cwd, 'settings'));
 const biz    = require('emag.biz');
 const cfg    = require('emag.cfg');
 
-const logger = require('log4js').getLogger('handle');
+const logger = require('log4js').getLogger('handle.group');
 
 const _ = require('underscore');
 
