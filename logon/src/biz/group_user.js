@@ -89,7 +89,7 @@ const logger = require('log4js').getLogger('biz.group_user');
 
       mysql.query(sql, postData, (err, status) => {
         if(err) return reject(err);
-        resolve(postData);
+        resolve();
       });
     });
   };

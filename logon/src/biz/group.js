@@ -94,7 +94,7 @@ const logger = require('log4js').getLogger('biz.group');
       var user_count = (cfg.dynamic.group_type_pushCake.player_count - 0) + group.visitor_count;
       logger.debug('group user count: %s::%s', group.user_count, user_count);
       if(group.user_count >= user_count) return reject('group_is_full');
-      resolve(group);
+      resolve();
     });
   };
 

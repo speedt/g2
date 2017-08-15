@@ -245,27 +245,19 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
    *
    * @return
    */
-  exports.registerChannel = function(server_id, channel_id){
-
+  exports.registerChannel = function(server_id, channel_id, user){
     return new Promise((resolve, reject) => {
+      var postData = [
+        server_id,
+        channel_id,
+        user.id,
+      ];
 
-      this.getByChannelId(server_id, channel_id, (err, code, user) => {
+      mysql.query(sql, postData, (err, status) => {
         if(err) return reject(err);
-        if(code) return reject(code);
-
-        var postData = [
-          server_id,
-          channel_id,
-          user.id,
-        ];
-
-        mysql.query(sql, postData, (err, status) => {
-          if(err) return reject(err);
-          resolve(user);
-        });
+        resolve(user);
       });
     });
-
   };
 })();
 
@@ -375,16 +367,7 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
    *
    * @return
    */
-  exports.getByChannelId = function(server_id, channel_id, cb){
-
-    if(!!cb && 'function' === typeof cb){
-      return redis.evalsha(sha1, numkeys, conf.redis.database, server_id, channel_id, (err, code) => {
-        if(err) return cb(err);
-        if(!_.isArray(code)) return cb(null, code);
-        cb(null, null, utils.arrToObj(code));
-      });
-    }
-
+  exports.getByChannelId = function(server_id, channel_id){
     return new Promise((resolve, reject) => {
       redis.evalsha(sha1, numkeys, conf.redis.database, server_id, channel_id, (err, code) => {
         if(err) return reject(err);
