@@ -45,8 +45,32 @@ const logger = require('log4js').getLogger('biz.group');
    *
    * @return
    */
-  exports.quit = function(cb){
-    // todo
+  exports.quit = function(server_id, channel_id, cb){
+    return new Promise((resolve, reject) => {
+
+      biz.user.getByChannelId(server_id, channel_id, (err, code, doc) => {
+        if(err) return reject(err);
+        if(code) return reject(code);
+
+        var user = doc;
+
+        biz.group_user.getByUserId(user.id, (err, doc) => {
+          if(err) return reject(err);
+          if(!doc) return reject('not_in_any_group');
+
+          biz.group_user.delByUserId(user.id, (err, status) => {
+            if(err) return reject(err);
+
+            biz.group_user.findAllByGroupId(doc.group_id, (err, docs) => {
+              if(err) return reject(err);
+              resolve(docs);
+            });
+
+          })
+        });
+      });
+
+    });
   };
 })();
 

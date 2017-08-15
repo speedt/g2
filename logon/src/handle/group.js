@@ -53,33 +53,48 @@ exports.search = function(send, msg){
   });
 };
 
+/**
+ *
+ */
 exports.quit = function(send, msg){
   if(!_.isString(msg.body)) return logger.error('group quit empty');
 
   try{ var data = JSON.parse(msg.body);
   }catch(ex){ return; }
 
-  var _data = {
-    user_id: '张三',
-    game_info: {
-      status: 1,  // 游戏状态
+  biz.group.quit.call(null, data.serverId, data.channelId).then(docs => {
+
+    var _send_data = [];
+    _send_data.push(null);
+    _send_data.push(JSON.stringify([conf.app.ver, 3006, data.seqId, _.now(), docs]));
+
+    for(let i of docs){
+      if(!i.server_id) continue;
+      if(!i.channel_id) continue;
+
+      _send_data.splice(0, 1, i.channel_id);
+
+      send('/queue/back.send.v3.'+ i.server_id, { priority: 9 }, _send_data, (err, code) => {
+        if(err) return logger.error('group quit:', err);
+      });
     }
-  };
+  }).catch(err => {
+    if('string' !== typeof err) return logger.error('group quit:', err);
 
-  _data.err = {
-    code: 101,
-    msg: '失败描述'
-  };
+    var _send_data = [];
+    _send_data.push(data.channelId);
+    _send_data.push(JSON.stringify([conf.app.ver, 3006, data.seqId, _.now(), { err: { code: err } }]));
 
-  var send_data = [data.channelId, JSON.stringify([conf.app.ver, 3006, null, _.now(), JSON.stringify(_data)])];
+    send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _send_data, (err, code) => {
+      if(err) return logger.error('group quit:', err);
+    });
 
-  logger.debug('group quit: %j', send_data);
-
-  send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, send_data, (err, code) => {
-    if(err) return logger.error('group quit:', err);
   });
 };
 
+/**
+ *
+ */
 exports.entry = function(send, msg){
   if(!_.isString(msg.body)) return logger.error('group entry empty');
 
@@ -88,21 +103,30 @@ exports.entry = function(send, msg){
 
   biz.group.entry.call(null, data.serverId, data.channelId, data.data).then(docs => {
 
-    var send_data = [];
-    send_data.push(null);
-    send_data.push(JSON.stringify([conf.app.ver, 3007, data.seqId, _.now(), docs]));
+    var _send_data = [];
+    _send_data.push(null);
+    _send_data.push(JSON.stringify([conf.app.ver, 3008, data.seqId, _.now(), docs]));
 
     for(let i of docs){
       if(!i.server_id) continue;
       if(!i.channel_id) continue;
 
-      send_data.splice(0, 1, i.channel_id);
+      _send_data.splice(0, 1, i.channel_id);
 
-      send('/queue/back.send.v3.'+ i.server_id, { priority: 9 }, send_data, (err, code) => {
+      send('/queue/back.send.v3.'+ i.server_id, { priority: 9 }, _send_data, (err, code) => {
         if(err) return logger.error('group entry:', err);
       });
     }
   }).catch(err => {
-    logger.error('group entry:', err);
+    if('string' !== typeof err) return logger.error('group entry:', err);
+
+    var _send_data = [];
+    _send_data.push(data.channelId);
+    _send_data.push(JSON.stringify([conf.app.ver, 3008, data.seqId, _.now(), { err: { code: err } }]));
+
+    send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _send_data, (err, code) => {
+      if(err) return logger.error('group entry:', err);
+    });
+
   });
 };

@@ -167,3 +167,15 @@ const logger = require('log4js').getLogger('biz.group_user');
     });
   };
 })();
+
+(() => {
+  var sql = 'DELETE FROM g_group_user WHERE user_id=?';
+
+  /**
+   *
+   * @return
+   */
+  exports.delByUserId = function(id, cb){
+    mysql.query(sql, [id], cb);
+  };
+})();
