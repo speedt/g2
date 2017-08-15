@@ -86,8 +86,22 @@ exports.entry = function(send, msg){
   try{ var data = JSON.parse(msg.body);
   }catch(ex){ return; }
 
-  biz.group.entry.call(null, data.serverId, data.channelId, data.data).then(doc => {
-    console.log(doc);
+  biz.group.entry.call(null, data.serverId, data.channelId, data.data).then(docs => {
+
+    var send_data = [];
+    send_data.push(null);
+    send_data.push(JSON.stringify([conf.app.ver, 3007, data.seqId, _.now(), docs]));
+
+    for(let i of docs){
+      if(!i.server_id) continue;
+      if(!i.channel_id) continue;
+
+      send_data.splice(0, 1, i.channel_id);
+
+      send('/queue/back.send.v3.'+ i.server_id, { priority: 9 }, send_data, (err, code) => {
+        if(err) return logger.error('group entry:', err);
+      });
+    }
   }).catch(err => {
     logger.error('group entry:', err);
   });
