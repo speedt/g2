@@ -62,7 +62,9 @@ exports.quit = function(send, msg){
   try{ var data = JSON.parse(msg.body);
   }catch(ex){ return; }
 
-  biz.group.quit(data.serverId, data.channelId).then(docs => {
+  biz.user.getByChannelId(data.serverId, data.channelId)
+  .then(biz.group.quit)
+  .then(docs => {
     var _send_data = [];
     _send_data.push(null);
     _send_data.push(JSON.stringify([conf.app.ver, 3006, data.seqId, _.now(), docs]));
@@ -77,7 +79,8 @@ exports.quit = function(send, msg){
         if(err) return logger.error('group quit:', err);
       });
     }
-  }).catch(err => {
+  })
+  .catch(err => {
     if('string' !== typeof err) return logger.error('group quit:', err);
 
     var _send_data = [];
@@ -87,7 +90,6 @@ exports.quit = function(send, msg){
     send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _send_data, (err, code) => {
       if(err) return logger.error('group quit:', err);
     });
-
   });
 };
 
@@ -100,8 +102,9 @@ exports.entry = function(send, msg){
   try{ var data = JSON.parse(msg.body);
   }catch(ex){ return; }
 
-  biz.group.entry(data.serverId, data.channelId, data.data).then(docs => {
-
+  biz.user.getByChannelId(data.serverId, data.channelId)
+  .then(biz.group.entry.bind(null, data.data))
+  .then(docs => {
     var _send_data = [];
     _send_data.push(null);
     _send_data.push(JSON.stringify([conf.app.ver, 3008, data.seqId, _.now(), docs]));
@@ -116,7 +119,8 @@ exports.entry = function(send, msg){
         if(err) return logger.error('group entry:', err);
       });
     }
-  }).catch(err => {
+  })
+  .catch(err => {
     if('string' !== typeof err) return logger.error('group entry:', err);
 
     var _send_data = [];
@@ -126,6 +130,5 @@ exports.entry = function(send, msg){
     send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _send_data, (err, code) => {
       if(err) return logger.error('group entry:', err);
     });
-
   });
 };

@@ -62,45 +62,43 @@ exports.close = function(send, msg){
     seqId: 0,
   };
 
-  biz.group.quit(data.serverId, data.channelId).then(docs => {
+  biz.user.logout(data.serverId, data.channelId).then(user => {
 
-    var _send_data = [];
-    _send_data.push(null);
-    _send_data.push(JSON.stringify([conf.app.ver, 3006, data.seqId, _.now(), docs]));
+    logger.info('user logout: %j', {
+      log_type: 2,
+      user_id: user.id,
+      create_time: _.now(),
+    });
 
-    for(let i of docs){
-      if(!i.server_id) continue;
-      if(!i.channel_id) continue;
+    biz.group.quit(user).then(docs => {
+      var _send_data = [];
+      _send_data.push(null);
+      _send_data.push(JSON.stringify([conf.app.ver, 3006, data.seqId, _.now(), docs]));
 
-      _send_data.splice(0, 1, i.channel_id);
+      for(let i of docs){
+        if(!i.server_id) continue;
+        if(!i.channel_id) continue;
 
-      send('/queue/back.send.v3.'+ i.server_id, { priority: 9 }, _send_data, (err, code) => {
-        if(err) return logger.error('group quit:', err);
-      });
-    }
+        _send_data.splice(0, 1, i.channel_id);
 
-    biz.user.logout(data.serverId, data.channelId).then(user => {
-
-      logger.info('user logout: %j', {
-        log_type: 2,
-        user_id: user.id,
-        create_time: _.now(),
-      });
+        send('/queue/back.send.v3.'+ i.server_id, { priority: 9 }, _send_data, (err, code) => {
+          if(err) return logger.error('group quit:', err);
+        });
+      }
 
     }).catch(err => {
-      logger.error('channel close:', err);
+      if('string' !== typeof err) return logger.error('group quit:', err);
+
+      var _send_data = [];
+      _send_data.push(data.channelId);
+      _send_data.push(JSON.stringify([conf.app.ver, 3006, data.seqId, _.now(), { err: { code: err } }]));
+
+      send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _send_data, (err, code) => {
+        if(err) return logger.error('group quit:', err);
+      });
     });
 
   }).catch(err => {
-    if('string' !== typeof err) return logger.error('group quit:', err);
-
-    var _send_data = [];
-    _send_data.push(data.channelId);
-    _send_data.push(JSON.stringify([conf.app.ver, 3006, data.seqId, _.now(), { err: { code: err } }]));
-
-    send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _send_data, (err, code) => {
-      if(err) return logger.error('group quit:', err);
-    });
-
+    logger.error('channel close:', err);
   });
 };

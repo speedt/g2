@@ -45,31 +45,22 @@ const logger = require('log4js').getLogger('biz.group');
    *
    * @return
    */
-  exports.quit = function(server_id, channel_id, cb){
+  exports.quit = function(user){
     return new Promise((resolve, reject) => {
 
-      biz.user.getByChannelId(server_id, channel_id, (err, code, doc) => {
+      biz.group_user.getByUserId(user.id, (err, doc) => {
         if(err) return reject(err);
-        if(code) return reject(code);
+        if(!doc) return reject('not_in_any_group');
 
-        var user = doc;
-
-        biz.group_user.getByUserId(user.id, (err, doc) => {
+        biz.group_user.delByUserId(user.id, (err, status) => {
           if(err) return reject(err);
-          if(!doc) return reject('not_in_any_group');
 
-          biz.group_user.delByUserId(user.id, (err, status) => {
+          biz.group_user.findAllByGroupId(doc.group_id, (err, docs) => {
             if(err) return reject(err);
-
-            biz.group_user.findAllByGroupId(doc.group_id, (err, docs) => {
-              if(err) return reject(err);
-              resolve(docs);
-            });
-
-          })
-        });
+            resolve(docs);
+          });
+        })
       });
-
     });
   };
 })();
@@ -127,34 +118,23 @@ const logger = require('log4js').getLogger('biz.group');
    *
    * @return
    */
-  exports.entry = function(server_id, channel_id, group_id){
+  exports.entry = function(group_id, user){
 
     return new Promise((resolve, reject) => {
-
       if(!_.isString(group_id)) return reject('invalid_group_id');
-
       group_id = _.trim(group_id);
-
       if('' === group_id) return reject('invalid_group_id');
 
-      biz.user.getByChannelId(server_id, channel_id, (err, code, doc) => {
-        if(err) return reject(err);
-        if(code) return reject(code);
-
-        var user = doc;
-
-        p1(group_id)
-        .then(p2)
-        .then(p3.bind(null, user.id))
-        .then(biz.group_user.saveNew.bind(null, {
-          group_id: group_id,
-          user_id: user.id,
-        }))
-        .then(biz.group_user.findAllByGroupId.bind(null, group_id))
-        .then(groups => resolve(groups))
-        .catch(reject);
-
-      });
+      p1(group_id)
+      .then(p2)
+      .then(p3.bind(null, user.id))
+      .then(biz.group_user.saveNew.bind(null, {
+        group_id: group_id,
+        user_id: user.id,
+      }))
+      .then(biz.group_user.findAllByGroupId.bind(null, group_id))
+      .then(groups => resolve(groups))
+      .catch(reject);
     });
   };
 })();
