@@ -126,10 +126,8 @@ const logger = require('log4js').getLogger('biz.group');
           group_id: group_id,
           user_id: user.id,
         }))
-        .then(biz.group_user.getByGroupId.bind(null, group_id))
-        .then(groups => {
-          resolve(groups);
-        })
+        .then(biz.group_user.findAllByGroupId.bind(null, group_id))
+        .then(groups => resolve(groups))
         .catch(reject);
 
       });
