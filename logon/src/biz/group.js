@@ -27,14 +27,14 @@ _.mixin(_.str.exports());
 const logger = require('log4js').getLogger('biz.group');
 
 (() => {
-  var sql = '';
-
   /**
    *
    * @return
    */
-  exports.search = function(cb){
-    // todo
+  exports.search = function(user){
+    return new Promise((resolve, reject) => {
+      // todo
+    });
   };
 })();
 

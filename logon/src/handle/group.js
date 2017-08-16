@@ -22,34 +22,34 @@ exports.search = function(send, msg){
   try{ var data = JSON.parse(msg.body);
   }catch(ex){ return; }
 
-  var _data = {
-    group_info: {
-      id: _.random(100000, 999999),
-      name: '房间名',
-      visitor_count: 6,  // n个钓鱼人
-    },
-    users_info: [{
-      id: '张三',
-      seat: 1,
-    }],
-    game_info: {
-      status: 1,  // 游戏状态
-      round_count: 4,  // n圈
-      group_fund: 1000,  // 组局基金
+  biz.user.getByChannelId(data.serverId, data.channelId)
+  .then(biz.group.search)
+  .then(group_users => {
+    var _data = [];
+    _data.push(null);
+    _data.push(JSON.stringify([conf.app.ver, 3002, data.seqId, _.now(), group_users]));
+
+    for(let i of group_users){
+      if(!i.server_id) continue;
+      if(!i.channel_id) continue;
+
+      _data.splice(0, 1, i.channel_id);
+
+      send('/queue/back.send.v3.'+ i.server_id, { priority: 9 }, _data, (err, code) => {
+        if(err) return logger.error('group search:', err);
+      });
     }
-  };
+  })
+  .catch(err => {
+    if('string' !== typeof err) return logger.error('group search:', err);
 
-  _data.err = {
-    code: 101,
-    msg: '失败描述'
-  };
+    var _data = [];
+    _data.push(data.channelId);
+    _data.push(JSON.stringify([conf.app.ver, 3002, data.seqId, _.now(), { err: { code: err } }]));
 
-  var send_data = [data.channelId, JSON.stringify([conf.app.ver, 3002, null, _.now(), JSON.stringify(_data)])];
-
-  logger.debug('group search: %j', send_data);
-
-  send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, send_data, (err, code) => {
-    if(err) return logger.error('group search:', err);
+    send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _data, (err, code) => {
+      if(err) return logger.error('group search:', err);
+    });
   });
 };
 
