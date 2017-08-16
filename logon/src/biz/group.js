@@ -242,10 +242,38 @@ function p3(user_id){
    */
   exports.genFreeId = function(){
     return new Promise((resolve, reject) => {
-      p1((err, id) => {
+
+      biz.group.getFree((err, doc) => {
         if(err) return reject(err);
-        resolve(id);
+        if(doc) return resolve(doc.id);
+
+        p1((err, id) => {
+          if(err) return reject(err);
+          resolve(id);
+        });
       });
+
+    });
+  };
+})();
+
+(() => {
+  var sql = 'SELECT '+
+              'b.* '+
+            'FROM '+
+              '(SELECT (SELECT COUNT(1) FROM g_group_user WHERE group_id=a.id) AS user_count, a.* FROM g_group a) b '+
+            'WHERE '+
+              'b.user_count=? '+
+            'LIMIT ?';
+  /**
+   * 获取一个空闲的群组
+   *
+   * @return
+   */
+  exports.getFree = function(cb){
+    mysql.query(sql, [0, 1], (err, docs) => {
+      if(err) return cb(err);
+      cb(null, mysql.checkOnly(docs) ? docs[0] : null);
     });
   };
 })();
