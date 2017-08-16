@@ -27,7 +27,7 @@ _.mixin(_.str.exports());
 const logger = require('log4js').getLogger('biz.group');
 
 (() => {
-  const sql = 'INSERT INTO g_group (id, group_name, group_type, create_time, status, fund, round_count, visitor_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+  const sql = 'INSERT INTO g_group (id, group_name, group_type, create_time, status, fund, round_count, visitor_count, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
   /**
    *
@@ -43,12 +43,7 @@ const logger = require('log4js').getLogger('biz.group');
       trans.beginTransaction(err => {
         if(err) return cb(err);
 
-        group.id = utils.replaceAll(uuid.v1(), '-', '');
-        group.create_time = new Date();
-        group.status = 0;
-        group.fund = group.fund || 0;
-        group.round_count = group.round_count || 0;
-        group.visitor_count = group.visitor_count || 0;
+        group.user_id = user.id;
 
         var postData = [
           group.id,
@@ -59,6 +54,7 @@ const logger = require('log4js').getLogger('biz.group');
           group.fund,
           group.round_count,
           group.visitor_count,
+          group.user_id,
         ];
 
         trans.query(sql, postData, (err, status) => {
@@ -94,7 +90,20 @@ const logger = require('log4js').getLogger('biz.group');
   exports.search = function(group, user){
     return new Promise((resolve, reject) => {
 
+      group.create_time = new Date();
+      group.status = 0;
+      group.fund = group.fund || 0;
+      group.round_count = group.round_count || 0;
+      group.visitor_count = group.visitor_count || 0;
+
       p3(user.id)  /* 如果用户已在某一群组，则提示先退出 */
+      .then(biz.group.genFreeId)
+      .then(group_id => {
+        return new Promise((resolve, reject) => {
+          group.id = group_id;
+          resolve();
+        });
+      })
       .then(() => {
         return new Promise((resolve, reject) => {
           biz.group.saveNew(group, user, (err, doc) => {
@@ -200,8 +209,6 @@ function p3(user_id){
   };
 })();
 
-
-
 (() => {
   var sql = 'SELECT (SELECT COUNT(1) FROM g_group_user WHERE group_id=a.id) AS user_count, a.* FROM g_group a WHERE a.id=?';
 
@@ -213,6 +220,32 @@ function p3(user_id){
     mysql.query(sql, [id], (err, docs) => {
       if(err) return cb(err);
       cb(null, mysql.checkOnly(docs) ? docs[0] : null);
+    });
+  };
+})();
+
+(() => {
+  function p1(cb){
+    var id = _.random(100000, 999999);
+
+    biz.group.getById(id, (err, doc) => {
+      if(err) return cb(err);
+      if(doc) return p1(cb);
+      cb(null, id);
+    });
+  }
+
+  /**
+   * 生成空闲Id
+   *
+   * @return
+   */
+  exports.genFreeId = function(){
+    return new Promise((resolve, reject) => {
+      p1((err, id) => {
+        if(err) return reject(err);
+        resolve(id);
+      });
     });
   };
 })();
