@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50623
 File Encoding         : 65001
 
-Date: 2017-08-16 16:26:57
+Date: 2017-08-16 20:22:17
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -28,14 +28,18 @@ CREATE TABLE `g_group` (
   `fund` int(11) DEFAULT NULL,
   `round_count` int(11) DEFAULT NULL,
   `visitor_count` int(11) DEFAULT NULL,
+  `user_id` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of g_group
 -- ----------------------------
-INSERT INTO `g_group` VALUES ('1', '群名字', null, null, '0', null, null, '1');
-INSERT INTO `g_group` VALUES ('2', '2', null, null, '0', null, null, '1');
+INSERT INTO `g_group` VALUES ('1', '群名字', null, null, '0', null, null, '1', null);
+INSERT INTO `g_group` VALUES ('2', '2', null, null, '0', null, null, '1', null);
+INSERT INTO `g_group` VALUES ('505960', '房间名', null, '2017-08-16 19:59:36', '0', '1000', '4', '6', null);
+INSERT INTO `g_group` VALUES ('5db2d690827711e7b4b683bbe4ca7710', '房间名', null, '2017-08-16 19:38:04', '0', '1000', '4', '6', null);
+INSERT INTO `g_group` VALUES ('955668', '房间名', null, '2017-08-16 20:02:48', '0', '1000', '4', '6', '9c012a33aa8b4ecc8aaf20ea149a6f25');
 
 -- ----------------------------
 -- Table structure for `g_group_user`
