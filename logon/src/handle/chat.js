@@ -23,14 +23,11 @@ exports.one_for_one = function(send, msg){
   try{ var data = JSON.parse(msg.body);
   }catch(ex){ return; }
 
-  if(!data.serverId)  return;
-  if(!data.channelId) return;
+  var _data = [data.channelId, JSON.stringify([conf.app.ver, 2002, , _.now(), data.data])];
 
-  var send_data = [data.channelId, JSON.stringify([conf.app.ver, 2002, , _.now(), data.data])];
+  logger.debug('chat one_for_one: %j', _data);
 
-  logger.debug('chat one_for_one: %j', send_data);
-
-  send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, send_data, (err, code) => {
+  send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _data, (err, code) => {
     if(err) return logger.error('chat one_for_one:', err);
   });
 };
@@ -44,44 +41,41 @@ exports.one_for_group = function(client, msg){
   try{ var data = JSON.parse(msg.body);
   }catch(ex){ return; }
 
-  if(!data.serverId)  return;
-  if(!data.channelId) return;
+  var send_msg = filter(data.data);
+  if(!send_msg) return;
 
-  var send_msg = filtering(data.data);
-  if(!send_msg)       return;
+  biz.user.getByChannelId(data.serverId, data.channelId)
+  .then(user => {
+    return biz.group_user.findAllByUserId(user.id);
+  })
+  .then(group_user => {
 
-  biz.group.findUsersByChannel(data.serverId, data.channelId, function (err, doc){
-    if(err) return logger.error('group findUsersByChannel:', err);
+    var _data = [];
+    _data.push(null);
+    _data.push(JSON.stringify([conf.app.ver, 2004, data.seqId, data.timestamp, data.data]));
 
-    if(_.isArray(doc)){
+    for(let i of group_user){
+      if(!i.server_id) continue;
+      if(!i.channel_id) continue;
 
-      var arr1 = doc[0];
-      if(!arr1) return;
+      _data.splice(0, 1, i.channel_id);
 
-      var result = {
-        method: 2004,
-        seqId:  data.seqId,
-        data:   [doc[1], send_msg],
-      };
-
-      return ((function(){
-
-        for(let i=0, j=arr1.length; i<j; i++){
-          let s           = arr1[i];
-          result.receiver = arr1[++i];
-
-          if(!s)               continue;
-          if(!result.receiver) continue;
-
-          client.send('/queue/back.send.v2.'+ s, { priority: 9 }, JSON.stringify(result));
-        }
-      })());
+      send('/queue/back.send.v3.'+ i.server_id, { priority: 9 }, _data, (err, code) => {
+        if(err) return logger.error('chat one_for_group:', err);
+      });
     }
 
-    switch(doc){
-      case 'invalid_user_id':
-        return client.send('/queue/front.force.v2.'+ data.serverId, { priority: 9 }, data.channelId);
-    }
+  })
+  .catch(err => {
+    if('string' !== typeof err) return logger.error('chat one_for_group:', err);
+
+    var _data = [];
+    _data.push(data.channelId);
+    _data.push(JSON.stringify([conf.app.ver, 2004, data.seqId, _.now(), { err: { code: err } }]));
+
+    send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _data, (err, code) => {
+      if(err) return logger.error('chat one_for_group:', err);
+    });
   });
 };
 
@@ -91,6 +85,6 @@ exports.one_for_group = function(client, msg){
  *
  * @return
  */
-function filtering(msg){
+function filter(msg){
   return msg;
 }
