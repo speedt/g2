@@ -27,17 +27,88 @@ _.mixin(_.str.exports());
 const logger = require('log4js').getLogger('biz.group');
 
 (() => {
+  const sql = 'INSERT INTO g_group (id, group_name, group_type, create_time, status, fund, round_count, visitor_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+
   /**
    *
+   * @param group 群组
+   * @param user  创建人
    * @return
    */
-  exports.search = function(user){
-    return new Promise((resolve, reject) => {
-      // todo
+  exports.saveNew = function(group, user, cb){
+
+    mysql.getPool().getConnection((err, trans) => {
+      if(err) return cb(err);
+
+      trans.beginTransaction(err => {
+        if(err) return cb(err);
+
+        group.id = utils.replaceAll(uuid.v1(), '-', '');
+        group.create_time = new Date();
+        group.status = 0;
+        group.fund = group.fund || 0;
+        group.round_count = group.round_count || 0;
+        group.visitor_count = group.visitor_count || 0;
+
+        var postData = [
+          group.id,
+          group.group_name,
+          group.group_type,
+          group.create_time,
+          group.status,
+          group.fund,
+          group.round_count,
+          group.visitor_count,
+        ];
+
+        trans.query(sql, postData, (err, status) => {
+          if(err) return trans.rollback(() => { cb(err); });
+
+          biz.group_user.saveNew({
+            group_id: group.id,
+            user_id: user.id,
+            seat: 1,
+          }, trans)
+          .then(group_user => {
+            trans.commit(err => {
+              if(err) return trans.rollback(() => { cb(err); });
+              cb(null, group_user);
+            });
+          })
+          .catch(err => {
+            trans.rollback(() => { cb(err); });
+          });
+        });
+      });
     });
+
   };
 })();
 
+(() => {
+  /**
+   *
+   * @param group 群组信息
+   * @return
+   */
+  exports.search = function(group, user){
+    return new Promise((resolve, reject) => {
+
+      p3(user.id)  /* 如果用户已在某一群组，则提示先退出 */
+      .then(() => {
+        return new Promise((resolve, reject) => {
+          biz.group.saveNew(group, user, (err, doc) => {
+            if(err) return reject(err);
+            resolve(doc.group_id);
+          });
+        });
+      })
+      .then(biz.group_user.findAllByGroupId)
+      .then(docs => resolve(docs))
+      .catch(reject);
+    });
+  };
+})();
 
 (() => {
   function p1(user){
@@ -73,6 +144,16 @@ const logger = require('log4js').getLogger('biz.group');
   };
 })();
 
+function p3(user_id){
+  return new Promise((resolve, reject) => {
+    biz.group_user.getByUserId(user_id, (err, doc) => {
+      if(err) return reject(err);
+      if(doc) return reject('must_be_quit');
+      resolve();
+    });
+  });
+};
+
 (() => {
   function p1(group_id){
     return new Promise((resolve, reject) => {
@@ -91,16 +172,6 @@ const logger = require('log4js').getLogger('biz.group');
       logger.debug('group user count: %s::%s', group.user_count, user_count);
       if(group.user_count >= user_count) return reject('group_is_full');
       resolve();
-    });
-  };
-
-  function p3(user_id){
-    return new Promise((resolve, reject) => {
-      biz.group_user.getByUserId(user_id, (err, doc) => {
-        if(err) return reject(err);
-        if(doc) return reject('must_be_quit');
-        resolve();
-      });
     });
   };
 

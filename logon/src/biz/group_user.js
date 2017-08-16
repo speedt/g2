@@ -63,12 +63,12 @@ const logger = require('log4js').getLogger('biz.group_user');
    *
    * @return
    */
-  exports.saveNew = function(newInfo){
+  exports.saveNew = function(newInfo, trans){
     return new Promise((resolve, reject) => {
 
       newInfo.create_time = new Date();
       newInfo.status = 0;
-      newInfo.seat = 0;
+      newInfo.seat = newInfo.seat || 0;
 
       var postData = [
         newInfo.group_id,
@@ -78,7 +78,7 @@ const logger = require('log4js').getLogger('biz.group_user');
         newInfo.seat,
       ];
 
-      mysql.query(sql, postData, (err, status) => {
+      (trans || mysql).query(sql, postData, (err, status) => {
         if(err) return reject(err);
         resolve(newInfo);
       });

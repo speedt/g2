@@ -22,8 +22,11 @@ exports.search = function(send, msg){
   try{ var data = JSON.parse(msg.body);
   }catch(ex){ return; }
 
+  try{ var group_info = JSON.parse(data.data);
+  }catch(ex){ return; }
+
   biz.user.getByChannelId(data.serverId, data.channelId)
-  .then(biz.group.search)
+  .then(biz.group.search.bind(null, group_info))
   .then(group_users => {
     var _data = [];
     _data.push(null);
