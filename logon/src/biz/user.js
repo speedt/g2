@@ -48,8 +48,14 @@ const logger = require('log4js').getLogger('biz.user');
 })();
 
 (() => {
-  var sql = 'SELECT a.* FROM s_user a WHERE a.id=?';
-
+  var sql = 'SELECT '+
+              'c.id group_id, c.group_name, c.status group_status, '+
+              'b.seat, '+
+              'a.* '+
+            'FROM '+
+              '(SELECT * FROM s_user WHERE id=?) a '+
+              'LEFT JOIN g_group_user b ON (a.id=b.user_id) '+
+              'LEFT JOIN g_group c ON (b.group_id=c.id)';
   /**
    *
    * @return
@@ -353,7 +359,15 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
       redis.evalsha(sha1, numkeys, conf.redis.database, server_id, channel_id, (err, code) => {
         if(err) return reject(err);
         if(!_.isArray(code)) return reject(code);
-        resolve(utils.arrToObj(code));
+
+        var _user = utils.arrToObj(code);
+
+        biz.user.getById(_user.id, (err, doc) => {
+          if(err) return reject(err);
+          if(doc) return resolve(doc);
+          reject('invalid_user_id');
+        });
+
       });
     });
   };
@@ -373,7 +387,15 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
       redis.evalsha(sha1, numkeys, conf.redis.database, server_id, channel_id, (err, code) => {
         if(err) return reject(err);
         if(!_.isArray(code)) return reject(code);
-        resolve(utils.arrToObj(code));
+
+        var _user = utils.arrToObj(code);
+
+        biz.user.getById(_user.id, (err, doc) => {
+          if(err) return reject(err);
+          if(doc) return resolve(doc);
+          reject('invalid_user_id');
+        });
+
       });
     });
   };

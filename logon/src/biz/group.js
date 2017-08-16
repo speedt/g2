@@ -38,45 +38,39 @@ const logger = require('log4js').getLogger('biz.group');
   };
 })();
 
-/**
- *
- * @return
- */
-exports.quit = function(user){
-  return new Promise((resolve, reject) => {
 
-    biz.group_user.getByUserId(user.id)
-    .then(group_user => {
-
-      return new Promise((resolve, reject) => {
-        if(!group_user) return reject('not_in_any_group');
-        resolve(group_user);
-      });
-
-    })
-    .then(group_user => {
-
-      return new Promise((resolve, reject) => {
-        if(!group_user.group_name) return reject('invalid_group_id');
-        if(0 === group_user.group_status){
-          return biz.group_user.delByUserId(group_user.user_id, (err, status) => {
-            if(err) return reject(err);
-            resolve(group_user.group_id);
-          });
-        }
-
-        biz.group_user.editOffline(group_user.user_id, (err, status) => {
+(() => {
+  function p1(user){
+    return new Promise((resolve, reject) => {
+      if(0 === user.group_status){
+        return biz.group_user.delByUserId(user.id, (err, status) => {
           if(err) return reject(err);
-          resolve(group_user.group_id);
+          resolve(user.id);
         });
+      }
+
+      biz.group_user.editOffline(user.id, (err, status) => {
+        if(err) return reject(err);
+        resolve(user.id);
       });
+    });
+  }
 
-    })
-    .then(biz.group_user.findAllByGroupId)
-    .catch(reject);
+  /**
+   *
+   * @return
+   */
+  exports.quit = function(user){
+    return new Promise((resolve, reject) => {
 
-  });
-};
+      if(!user.group_id) return reject('not_in_any_group');
+
+      p1(user)
+      .then(biz.group_user.findAllByGroupId)
+      .catch(reject);
+    });
+  };
+})();
 
 (() => {
   function p1(group_id){

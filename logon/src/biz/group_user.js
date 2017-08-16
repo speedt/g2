@@ -25,7 +25,7 @@ const logger = require('log4js').getLogger('biz.group_user');
 
 (() => {
   var sql = 'SELECT '+
-              'c.group_name, c.group_status, '+
+              'c.group_name, c.status group_status, '+
               'b.user_name, '+
               'a.* '+
             'FROM '+
