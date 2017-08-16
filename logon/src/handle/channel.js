@@ -77,9 +77,30 @@ exports.open = function(send, msg){
 
     biz.user.logout(data.serverId, data.channelId)
     .then(p1)
+    .then(biz.group.quit)
+    .then(group_users => {
+      var _data = [];
+      _data.push(null);
+      _data.push(JSON.stringify([conf.app.ver, 3006, data.seqId, _.now(), group_users]));
+
+      for(let i of group_users){
+        if(!i.server_id) continue;
+        if(!i.channel_id) continue;
+
+        _data.splice(0, 1, i.channel_id);
+
+        send('/queue/back.send.v3.'+ i.server_id, { priority: 9 }, _data, (err, code) => {
+          if(err) return logger.error('group quit:', err);
+        });
+      }
+    })
     .catch(err => {
-      logger.error('channel close:', err);
+      if('string' !== typeof err) return logger.error('channel close:', err);
+
+      switch(err){
+        case 'invalid_user_id': return logger.error('channel close:', err);
+        default: return logger.debug('channel close:', err);
+      }
     });
   };
-
 })();

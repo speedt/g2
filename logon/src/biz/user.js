@@ -272,6 +272,25 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
 })();
 
 (() => {
+  var sql = 'UPDATE s_user SET server_id=?, channel_id=? WHERE id=?';
+
+  /**
+   * 清理通道
+   *
+   * @return
+   */
+  exports.clearChannel = function(user_id, cb){
+    var postData = [
+      '',
+      '',
+      user_id,
+    ];
+
+    mysql.query(sql, postData, cb);
+  };
+})();
+
+(() => {
   const seconds   = 15;  //令牌有效期 5s
   const numkeys   = 4;
   const sha1      = 'd8f515be193e9d7a0bce3bbb27d358702b6150f6';
@@ -364,8 +383,12 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
 
         biz.user.getById(_user.id, (err, doc) => {
           if(err) return reject(err);
-          if(doc) return resolve(doc);
-          reject('invalid_user_id');
+          if(!doc) return reject('invalid_user_id');
+
+          biz.user.clearChannel(_user.id, (err) => {
+            if(err) return reject(err);
+            resolve(doc);
+          });
         });
 
       });
