@@ -105,18 +105,18 @@ const logger = require('log4js').getLogger('biz.group_user');
    */
   exports.findAllByGroupId = function(id, cb){
 
-    if(!cb){
-      return new Promise((resolve, reject) => {
-        mysql.query(sql, [id], (err, docs) => {
-          if(err) return reject(err);
-          resolve(docs);
-        });
+    if(!!cb && 'function' === typeof cb){
+      return mysql.query(sql, [id], (err, docs) => {
+        if(err) return cb(err);
+        cb(null, docs);
       });
     }
 
-    mysql.query(sql, [id], (err, docs) => {
-      if(err) return cb(err);
-      cb(null, docs);
+    return new Promise((resolve, reject) => {
+      mysql.query(sql, [id], (err, docs) => {
+        if(err) return reject(err);
+        resolve(docs);
+      });
     });
   };
 })();

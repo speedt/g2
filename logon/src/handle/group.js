@@ -65,17 +65,17 @@ exports.quit = function(send, msg){
   biz.user.getByChannelId(data.serverId, data.channelId)
   .then(biz.group.quit)
   .then(docs => {
-    var _send_data = [];
-    _send_data.push(null);
-    _send_data.push(JSON.stringify([conf.app.ver, 3006, data.seqId, _.now(), docs]));
+    var _data = [];
+    _data.push(null);
+    _data.push(JSON.stringify([conf.app.ver, 3006, data.seqId, _.now(), docs]));
 
     for(let i of docs){
       if(!i.server_id) continue;
       if(!i.channel_id) continue;
 
-      _send_data.splice(0, 1, i.channel_id);
+      _data.splice(0, 1, i.channel_id);
 
-      send('/queue/back.send.v3.'+ i.server_id, { priority: 9 }, _send_data, (err, code) => {
+      send('/queue/back.send.v3.'+ i.server_id, { priority: 9 }, _data, (err, code) => {
         if(err) return logger.error('group quit:', err);
       });
     }
@@ -83,11 +83,11 @@ exports.quit = function(send, msg){
   .catch(err => {
     if('string' !== typeof err) return logger.error('group quit:', err);
 
-    var _send_data = [];
-    _send_data.push(data.channelId);
-    _send_data.push(JSON.stringify([conf.app.ver, 3006, data.seqId, _.now(), { err: { code: err } }]));
+    var _data = [];
+    _data.push(data.channelId);
+    _data.push(JSON.stringify([conf.app.ver, 3006, data.seqId, _.now(), { err: { code: err } }]));
 
-    send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _send_data, (err, code) => {
+    send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _data, (err, code) => {
       if(err) return logger.error('group quit:', err);
     });
   });
@@ -104,30 +104,32 @@ exports.entry = function(send, msg){
 
   biz.user.getByChannelId(data.serverId, data.channelId)
   .then(biz.group.entry.bind(null, data.data))
-  .then(docs => {
-    var _send_data = [];
-    _send_data.push(null);
-    _send_data.push(JSON.stringify([conf.app.ver, 3008, data.seqId, _.now(), docs]));
+  .then(group_users => {
 
-    for(let i of docs){
+    var _data = [];
+    _data.push(null);
+    _data.push(JSON.stringify([conf.app.ver, 3008, data.seqId, _.now(), group_users]));
+
+    for(let i of group_users){
       if(!i.server_id) continue;
       if(!i.channel_id) continue;
 
-      _send_data.splice(0, 1, i.channel_id);
+      _data.splice(0, 1, i.channel_id);
 
-      send('/queue/back.send.v3.'+ i.server_id, { priority: 9 }, _send_data, (err, code) => {
+      send('/queue/back.send.v3.'+ i.server_id, { priority: 9 }, _data, (err, code) => {
         if(err) return logger.error('group entry:', err);
       });
     }
+
   })
   .catch(err => {
     if('string' !== typeof err) return logger.error('group entry:', err);
 
-    var _send_data = [];
-    _send_data.push(data.channelId);
-    _send_data.push(JSON.stringify([conf.app.ver, 3008, data.seqId, _.now(), { err: { code: err } }]));
+    var _data = [];
+    _data.push(data.channelId);
+    _data.push(JSON.stringify([conf.app.ver, 3008, data.seqId, _.now(), { err: { code: err } }]));
 
-    send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _send_data, (err, code) => {
+    send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _data, (err, code) => {
       if(err) return logger.error('group entry:', err);
     });
   });

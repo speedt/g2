@@ -349,16 +349,13 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
    * @return
    */
   exports.logout = function(server_id, channel_id){
-
     return new Promise((resolve, reject) => {
-
       redis.evalsha(sha1, numkeys, conf.redis.database, server_id, channel_id, (err, code) => {
         if(err) return reject(err);
         if(!_.isArray(code)) return reject(code);
         resolve(utils.arrToObj(code));
       });
     });
-
   };
 })();
 

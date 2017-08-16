@@ -51,9 +51,6 @@ exports.open = function(send, msg){
 };
 
 (() => {
-  /**
-   *
-   */
   function p1(user){
     return new Promise((resolve, reject) => {
       logger.info('user logout: %j', {
@@ -76,38 +73,12 @@ exports.open = function(send, msg){
     var data = {
       serverId: s[0],
       channelId: s[1],
-      seqId: 0,
     };
 
     biz.user.logout(data.serverId, data.channelId)
     .then(p1)
-    .then(biz.group.quit)
-    .then(docs => {
-      var _send_data = [];
-      _send_data.push(null);
-      _send_data.push(JSON.stringify([conf.app.ver, 3006, data.seqId, _.now(), docs]));
-
-      for(let i of docs){
-        if(!i.server_id) continue;
-        if(!i.channel_id) continue;
-
-        _send_data.splice(0, 1, i.channel_id);
-
-        send('/queue/back.send.v3.'+ i.server_id, { priority: 9 }, _send_data, (err, code) => {
-          if(err) return logger.error('channel close:', err);
-        });
-      }
-    })
     .catch(err => {
-      if('string' !== typeof err) return logger.error('channel close:', err);
-
-      var _send_data = [];
-      _send_data.push(data.channelId);
-      _send_data.push(JSON.stringify([conf.app.ver, 3006, data.seqId, _.now(), { err: { code: err } }]));
-
-      send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _send_data, (err, code) => {
-        if(err) return logger.error('channel close:', err);
-      });
+      logger.error('channel close:', err);
     });
   };
 

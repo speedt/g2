@@ -66,12 +66,6 @@ const logger = require('log4js').getLogger('biz.group');
 })();
 
 (() => {
-  /**
-   * 判断群组是否存在
-   *
-   * @param group_id 群组id
-   * @return
-   */
   function p1(group_id){
     return new Promise((resolve, reject) => {
       biz.group.getById(group_id, (err, doc) => {
@@ -82,12 +76,6 @@ const logger = require('log4js').getLogger('biz.group');
     });
   }
 
-  /**
-   * 判断群组是否满员
-   *
-   * @param group 群组对象
-   * @return
-   */
   function p2(group){
     return new Promise((resolve, reject) => {
       // 玩家数+游客数
@@ -98,12 +86,6 @@ const logger = require('log4js').getLogger('biz.group');
     });
   };
 
-  /**
-   * 判断用户所在群组
-   *
-   * @param user_id 用户id
-   * @return
-   */
   function p3(user_id){
     return new Promise((resolve, reject) => {
       biz.group_user.getByUserId(user_id, (err, doc) => {
@@ -119,23 +101,24 @@ const logger = require('log4js').getLogger('biz.group');
    * @return
    */
   exports.entry = function(group_id, user){
-
     return new Promise((resolve, reject) => {
+
       if(!_.isString(group_id)) return reject('invalid_group_id');
       group_id = _.trim(group_id);
       if('' === group_id) return reject('invalid_group_id');
 
-      p1(group_id)
-      .then(p2)
-      .then(p3.bind(null, user.id))
+      p1(group_id)  /* 判断群组是否存在 */
+      .then(p2)  /* 判断群组是否满员 */
+      .then(p3.bind(null, user.id))  /* 如果用户已在某一群组，则提示先退出 */
       .then(biz.group_user.saveNew.bind(null, {
         group_id: group_id,
         user_id: user.id,
       }))
       .then(biz.group_user.findAllByGroupId.bind(null, group_id))
-      .then(groups => resolve(groups))
+      .then(group_users => resolve(group_users))
       .catch(reject);
     });
+
   };
 })();
 
