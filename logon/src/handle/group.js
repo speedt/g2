@@ -64,12 +64,12 @@ exports.quit = function(send, msg){
 
   biz.user.getByChannelId(data.serverId, data.channelId)
   .then(biz.group.quit)
-  .then(docs => {
+  .then(group_users => {
     var _data = [];
     _data.push(null);
-    _data.push(JSON.stringify([conf.app.ver, 3006, data.seqId, _.now(), docs]));
+    _data.push(JSON.stringify([conf.app.ver, 3006, data.seqId, _.now(), group_users]));
 
-    for(let i of docs){
+    for(let i of group_users){
       if(!i.server_id) continue;
       if(!i.channel_id) continue;
 

@@ -25,7 +25,7 @@ const logger = require('log4js').getLogger('biz.group_user');
 
 (() => {
   var sql = 'SELECT '+
-              'c.group_name, '+
+              'c.group_name, c.group_status, '+
               'b.user_name, '+
               'a.* '+
             'FROM '+
@@ -40,18 +40,18 @@ const logger = require('log4js').getLogger('biz.group_user');
    */
   exports.getByUserId = function(id, cb){
 
-    if(!cb){
-      return new Promise((resolve, reject) => {
-        mysql.query(sql, [id], (err, docs) => {
-          if(err) return reject(err);
-          resolve(mysql.checkOnly(docs) ? docs[0] : null);
-        });
+    if(!!cb && 'function' === typeof cb){
+      return mysql.query(sql, [id], (err, docs) => {
+        if(err) return cb(err);
+        cb(null, mysql.checkOnly(docs) ? docs[0] : null);
       });
     }
 
-    mysql.query(sql, [id], (err, docs) => {
-      if(err) return cb(err);
-      cb(null, mysql.checkOnly(docs) ? docs[0] : null);
+    return new Promise((resolve, reject) => {
+      mysql.query(sql, [id], (err, docs) => {
+        if(err) return reject(err);
+        resolve(mysql.checkOnly(docs) ? docs[0] : null);
+      });
     });
   };
 })();
@@ -130,6 +130,18 @@ const logger = require('log4js').getLogger('biz.group_user');
    */
   exports.delByUserId = function(id, cb){
     mysql.query(sql, [id], cb);
+  };
+})();
+
+(() => {
+  var sql = 'UPDATE g_group_user SET status=?, offline_time=? WHERE user_id=?';
+
+  /**
+   *
+   * @return
+   */
+  exports.editOffline = function(user_id, cb){
+    mysql.query(sql, [2, new Date(), user_id], cb);
   };
 })();
 

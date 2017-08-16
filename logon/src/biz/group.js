@@ -38,32 +38,45 @@ const logger = require('log4js').getLogger('biz.group');
   };
 })();
 
-(() => {
-  var sql = '';
+/**
+ *
+ * @return
+ */
+exports.quit = function(user){
+  return new Promise((resolve, reject) => {
 
-  /**
-   *
-   * @return
-   */
-  exports.quit = function(user){
-    return new Promise((resolve, reject) => {
+    biz.group_user.getByUserId(user.id)
+    .then(group_user => {
 
-      biz.group_user.getByUserId(user.id, (err, doc) => {
-        if(err) return reject(err);
-        if(!doc) return reject('not_in_any_group');
-
-        biz.group_user.delByUserId(user.id, (err, status) => {
-          if(err) return reject(err);
-
-          biz.group_user.findAllByGroupId(doc.group_id, (err, docs) => {
-            if(err) return reject(err);
-            resolve(docs);
-          });
-        })
+      return new Promise((resolve, reject) => {
+        if(!group_user) return reject('not_in_any_group');
+        resolve(group_user);
       });
-    });
-  };
-})();
+
+    })
+    .then(group_user => {
+
+      return new Promise((resolve, reject) => {
+        if(!group_user.group_name) return reject('invalid_group_id');
+        if(0 === group_user.group_status){
+          return biz.group_user.delByUserId(group_user.user_id, (err, status) => {
+            if(err) return reject(err);
+            resolve(group_user.group_id);
+          });
+        }
+
+        biz.group_user.editOffline(group_user.user_id, (err, status) => {
+          if(err) return reject(err);
+          resolve(group_user.group_id);
+        });
+      });
+
+    })
+    .then(biz.group_user.findAllByGroupId)
+    .catch(reject);
+
+  });
+};
 
 (() => {
   function p1(group_id){
