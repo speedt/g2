@@ -25,16 +25,18 @@ exports.open = function(send, msg){
 
   var s = msg.body.split('::');
 
-  var server_id  = s[0];
-  var channel_id = s[1];
+  var data = {
+    serverId: s[0],
+    channelId: s[1],
+  };
 
-  var _data = [channel_id, JSON.stringify([conf.app.ver, 1, , _.now()])];
+  var _data = [data.channelId, JSON.stringify([conf.app.ver, 1, , _.now()])];
 
-  send('/queue/back.send.v3.'+ server_id, { priority: 9 }, _data, (err, code) => {
+  send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _data, (err, code) => {
     if(err) return logger.error('channel open:', err);
 
-    biz.user.getByChannelId(server_id, channel_id)
-    .then(biz.user.registerChannel.bind(null, server_id, channel_id))
+    biz.user.getByChannelId(data.serverId, data.channelId)
+    .then(biz.user.registerChannel.bind(null, data.serverId, data.channelId))
     .then(user => {
       logger.info('user login: %j', {
         log_type: 1,

@@ -247,9 +247,13 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
    */
   exports.registerChannel = function(server_id, channel_id, user){
     return new Promise((resolve, reject) => {
+
+      user.server_id = server_id;
+      user.channel_id = channel_id;
+
       var postData = [
-        server_id,
-        channel_id,
+        user.server_id,
+        user.channel_id,
         user.id,
       ];
 
