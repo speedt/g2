@@ -65,7 +65,6 @@ exports.quit = function(send, msg){
   biz.user.getByChannelId(data.serverId, data.channelId)
   .then(biz.group.quit)
   .then(group_users => {
-
     var _data = [];
     _data.push(null);
     _data.push(JSON.stringify([conf.app.ver, 3006, data.seqId, _.now(), group_users]));
@@ -80,7 +79,6 @@ exports.quit = function(send, msg){
         if(err) return logger.error('group quit:', err);
       });
     }
-
   })
   .catch(err => {
     if('string' !== typeof err) return logger.error('group quit:', err);
@@ -107,7 +105,6 @@ exports.entry = function(send, msg){
   biz.user.getByChannelId(data.serverId, data.channelId)
   .then(biz.group.entry.bind(null, data.data))
   .then(group_users => {
-
     var _data = [];
     _data.push(null);
     _data.push(JSON.stringify([conf.app.ver, 3008, data.seqId, _.now(), group_users]));
@@ -122,7 +119,6 @@ exports.entry = function(send, msg){
         if(err) return logger.error('group entry:', err);
       });
     }
-
   })
   .catch(err => {
     if('string' !== typeof err) return logger.error('group entry:', err);

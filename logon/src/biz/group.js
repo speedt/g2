@@ -45,13 +45,13 @@ const logger = require('log4js').getLogger('biz.group');
       if(0 === user.group_status){
         return biz.group_user.delByUserId(user.id, (err, status) => {
           if(err) return reject(err);
-          resolve(user.id);
+          resolve(user.group_id);
         });
       }
 
       biz.group_user.editOffline(user.id, (err, status) => {
         if(err) return reject(err);
-        resolve(user.id);
+        resolve(user.group_id);
       });
     });
   }
@@ -67,6 +67,7 @@ const logger = require('log4js').getLogger('biz.group');
 
       p1(user)
       .then(biz.group_user.findAllByGroupId)
+      .then(docs => resolve(docs))
       .catch(reject);
     });
   };
@@ -122,10 +123,9 @@ const logger = require('log4js').getLogger('biz.group');
         user_id: user.id,
       }))
       .then(biz.group_user.findAllByGroupId.bind(null, group_id))
-      .then(group_users => resolve(group_users))
+      .then(docs => resolve(docs))
       .catch(reject);
     });
-
   };
 })();
 
