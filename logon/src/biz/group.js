@@ -27,7 +27,6 @@ _.mixin(_.str.exports());
 const logger = require('log4js').getLogger('biz.group');
 
 (() => {
-
   function p1(trans, newInfo){
     return new Promise((resolve, reject) => {
       trans.query(sql, newInfo, (err, status) => {
@@ -90,7 +89,6 @@ const logger = require('log4js').getLogger('biz.group');
 })();
 
 (() => {
-
   function p1(trans, newInfo){
     return new Promise((resolve, reject) => {
       trans.query(sql, newInfo, (err, status) => {
@@ -287,6 +285,7 @@ function p3(user_id){
 
   function p2(group){
     return new Promise((resolve, reject) => {
+      if(0 === group.user_count) return reject('game_is_over');
       // 玩家数+游客数
       var user_count = (cfg.dynamic.group_type_pushCake.player_count - 0) + group.visitor_count;
       logger.debug('group user count: %s::%s', group.user_count, user_count);
@@ -306,9 +305,9 @@ function p3(user_id){
       group_id = _.trim(group_id);
       if('' === group_id) return reject('invalid_group_id');
 
-      p1(group_id)  /* 判断群组是否存在 */
+      p3(user.id)  /* 如果用户已在某一群组，则提示先退出 */
+      .then(p1.bind(null, group_id))  /* 判断群组是否存在 */
       .then(p2)  /* 判断群组是否满员 */
-      .then(p3.bind(null, user.id))  /* 如果用户已在某一群组，则提示先退出 */
       .then(biz.group_user.saveNew.bind(null, {
         group_id: group_id,
         user_id: user.id,
