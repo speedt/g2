@@ -95,11 +95,11 @@ const logger = require('log4js').getLogger('biz.group_user');
           case 4:  newInfo.seat = 1;  break;
           case 8:  newInfo.seat = 1;  break;
           case 9:  newInfo.seat = 2;  break;
-          case 10:  newInfo.seat = 1;  break;
-          case 11:  newInfo.seat = 4;  break;
-          case 12:  newInfo.seat = 1;  break;
-          case 13:  newInfo.seat = 2;  break;
-          case 14:  newInfo.seat = 1;  break;
+          case 10: newInfo.seat = 1;  break;
+          case 11: newInfo.seat = 4;  break;
+          case 12: newInfo.seat = 1;  break;
+          case 13: newInfo.seat = 2;  break;
+          case 14: newInfo.seat = 1;  break;
           case 15:
           default: newInfo.seat = 0;  break;
         }
