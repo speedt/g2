@@ -68,20 +68,53 @@ const logger = require('log4js').getLogger('biz.group_user');
 
       newInfo.create_time = new Date();
       newInfo.status = 0;
-      newInfo.seat = newInfo.seat || 0;
 
       var postData = [
         newInfo.group_id,
         newInfo.user_id,
         newInfo.create_time,
         newInfo.status,
-        newInfo.seat,
       ];
 
-      (trans || mysql).query(sql, postData, (err, status) => {
+      if(newInfo.seat){
+        postData.push(newInfo.seat);
+
+        return (trans || mysql).query(sql, postData, (err, status) => {
+          if(err) return reject(err);
+          resolve(newInfo);
+        });
+      }
+
+      biz.group_user.getSeatNumCount(newInfo.group_id, (err, doc) => {
         if(err) return reject(err);
-        resolve(newInfo);
-      });
+        if(!doc) return reject(new Error('seat_count_is_null'));
+
+        switch(doc.seat_count){
+          case 1:  newInfo.seat = 3;  break;
+          case 3:  newInfo.seat = 1;  break;
+          case 4:  newInfo.seat = 5;  break;
+          case 5:  newInfo.seat = 1;  break;
+          case 6:  newInfo.seat = 3;  break;
+          case 8:  newInfo.seat = 1;  break;
+          case 9:  newInfo.seat = 10; break;
+          case 10: newInfo.seat = 1;  break;
+          case 11: newInfo.seat = 3;  break;
+          case 13: newInfo.seat = 1;  break;
+          case 14: newInfo.seat = 5;  break;
+          case 15: newInfo.seat = 1;  break;
+          case 16: newInfo.seat = 3;  break;
+          case 18: newInfo.seat = 1;  break;
+          case 19:
+          default: newInfo.seat = 0;  break;
+        }
+
+        postData.push(newInfo.seat);
+
+        (trans || mysql).query(sql, postData, (err, status) => {
+          if(err) return reject(err);
+          resolve(newInfo);
+        });
+      }, trans);
     });
   };
 })();
@@ -176,6 +209,22 @@ const logger = require('log4js').getLogger('biz.group_user');
     mysql.query(sql, [id], (err, docs) => {
       if(err) return cb(err);
       cb(null, docs);
+    });
+  };
+})();
+
+(() => {
+  var sql = 'SELECT SUM(seat) seat_count FROM g_group_user WHERE group_id=?';
+
+  /**
+   * 座位号总和
+   *
+   * @return
+   */
+  exports.getSeatNumCount = function(group_id, cb, trans){
+    (trans || mysql).query(sql, [group_id], (err, docs) => {
+      if(err) return cb(err);
+      cb(null, mysql.checkOnly(docs) ? docs[0] : null);
     });
   };
 })();
