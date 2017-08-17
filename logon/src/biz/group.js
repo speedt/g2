@@ -35,15 +35,13 @@ const logger = require('log4js').getLogger('biz.group');
    * @param user  创建人
    * @return
    */
-  exports.saveNew = function(group, user, cb){
+  exports.saveNew = function(group, cb){
 
     mysql.getPool().getConnection((err, trans) => {
       if(err) return cb(err);
 
       trans.beginTransaction(err => {
         if(err) return cb(err);
-
-        group.user_id = user.id;
 
         var postData = [
           group.id,
@@ -62,7 +60,7 @@ const logger = require('log4js').getLogger('biz.group');
 
           biz.group_user.saveNew({
             group_id: group.id,
-            user_id: user.id,
+            user_id: group.user_id,
             seat: 1,
           }, trans)
           .then(group_user => {
@@ -77,7 +75,6 @@ const logger = require('log4js').getLogger('biz.group');
         });
       });
     });
-
   };
 })();
 
@@ -97,19 +94,37 @@ const logger = require('log4js').getLogger('biz.group');
       group.visitor_count = group.visitor_count || 0;
 
       p3(user.id)  /* 如果用户已在某一群组，则提示先退出 */
-      .then(biz.group.genFreeId)
-      .then(group_id => {
+      .then(biz.group.getFree)
+      .then(_group => {
+
+        if(_group){
+          return biz.group_user.saveNew({
+            group_id: _group.id,
+            user_id: user.id,
+            seat: 1,
+          });
+        }
+
         return new Promise((resolve, reject) => {
-          group.id = group_id;
-          resolve();
+          biz.group.genFreeId()
+          .then(group_id => {
+            return new Promise((resolve, reject) => {
+
+              group.id = group_id;
+              group.user_id = user.id;
+
+              biz.group.saveNew(group, (err, doc) => {
+                if(err) return reject(err);
+                resolve(doc);
+              });
+            });
+          }).
+          catch(reject);
         });
       })
-      .then(() => {
+      .then(group_user => {
         return new Promise((resolve, reject) => {
-          biz.group.saveNew(group, user, (err, doc) => {
-            if(err) return reject(err);
-            resolve(doc.group_id);
-          });
+          resolve(group_user.group_id);
         });
       })
       .then(biz.group_user.findAllByGroupId)
@@ -242,17 +257,10 @@ function p3(user_id){
    */
   exports.genFreeId = function(){
     return new Promise((resolve, reject) => {
-
-      biz.group.getFree((err, doc) => {
+      p1((err, id) => {
         if(err) return reject(err);
-        if(doc) return resolve(doc.id);
-
-        p1((err, id) => {
-          if(err) return reject(err);
-          resolve(id);
-        });
+        resolve(id);
       });
-
     });
   };
 })();
@@ -270,10 +278,12 @@ function p3(user_id){
    *
    * @return
    */
-  exports.getFree = function(cb){
-    mysql.query(sql, [0, 1], (err, docs) => {
-      if(err) return cb(err);
-      cb(null, mysql.checkOnly(docs) ? docs[0] : null);
+  exports.getFree = function(){
+    return new Promise((resolve, reject) => {
+      mysql.query(sql, [0, 1], (err, docs) => {
+        if(err) return reject(err);
+        resolve(mysql.checkOnly(docs) ? docs[0] : null);
+      });
     });
   };
 })();

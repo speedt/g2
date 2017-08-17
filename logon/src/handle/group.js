@@ -16,6 +16,9 @@ const logger = require('log4js').getLogger('handle.group');
 
 const _ = require('underscore');
 
+/**
+ *
+ */
 exports.search = function(send, msg){
   if(!_.isString(msg.body)) return logger.error('group search empty');
 
