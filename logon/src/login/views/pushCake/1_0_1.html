@@ -28,6 +28,10 @@
     <input type='text' id='msg' />
     <input type='button' id='send' value='send'><p></p>
 
+    群发：
+    <input type='text' id='msg_all' />
+    <input type='button' id='send_all' value='send_all'><p></p>
+
     #parse('_pagelet/js.html')
 
 <script type='text/javascript'>
@@ -110,6 +114,18 @@ $(function(){
       Math.random() * 1000,
       new Date().getTime(),
       JSON.stringify([$('#user_id').val(), $('#msg').val()]),
+      null,
+    ];
+    socket.send(JSON.stringify(p));
+  });
+
+  $('#send_all').click(function(){
+    var p = [
+      102,
+      2003,
+      Math.random() * 1000,
+      new Date().getTime(),
+      $('#msg_all').val(),
       null,
     ];
     socket.send(JSON.stringify(p));

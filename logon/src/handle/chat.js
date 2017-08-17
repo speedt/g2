@@ -35,7 +35,7 @@ exports.one_for_one = function(send, msg){
 /**
  *
  */
-exports.one_for_group = function(client, msg){
+exports.one_for_group = function(send, msg){
   if(!_.isString(msg.body)) return logger.error('chat one_for_group empty');
 
   try{ var data = JSON.parse(msg.body);
@@ -46,15 +46,18 @@ exports.one_for_group = function(client, msg){
 
   biz.user.getByChannelId(data.serverId, data.channelId)
   .then(user => {
-    return biz.group_user.findAllByUserId(user.id);
+    return new Promise((resolve, reject) => {
+      resolve(user.id);
+    });
   })
-  .then(group_user => {
+  .then(biz.group_user.findAllByUserId)
+  .then(group_users => {
 
     var _data = [];
     _data.push(null);
-    _data.push(JSON.stringify([conf.app.ver, 2004, data.seqId, data.timestamp, data.data]));
+    _data.push(JSON.stringify([conf.app.ver, 2004, data.seqId, data.timestamp, send_msg]));
 
-    for(let i of group_user){
+    for(let i of group_users){
       if(!i.server_id) continue;
       if(!i.channel_id) continue;
 
