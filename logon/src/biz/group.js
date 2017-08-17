@@ -29,6 +29,32 @@ const logger = require('log4js').getLogger('biz.group');
 (() => {
   const sql = 'INSERT INTO g_group (id, group_name, group_type, create_time, status, fund, round_count, visitor_count, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
+  function p1(trans, newInfo){
+    return new Promise((resolve, reject) => {
+      trans.query(sql, newInfo, (err, status) => {
+        if(err) return reject(err);
+        resolve();
+      });
+    });
+  }
+
+  function p2(trans, group){
+    return biz.group_user.saveNew({
+      group_id: group.id,
+      user_id: group.user_id,
+      seat: 1,
+    }, trans);
+  }
+
+  function p3(trans, group_user){
+    return new Promise((resolve, reject) => {
+      trans.commit(err => {
+        if(err) return reject(err);
+        resolve(group_user);
+      });
+    });
+  }
+
   /**
    *
    * @param group 群组
@@ -55,24 +81,14 @@ const logger = require('log4js').getLogger('biz.group');
           group.user_id,
         ];
 
-        trans.query(sql, postData, (err, status) => {
-          if(err) return trans.rollback(() => { cb(err); });
+        p1(trans, postData)
+        .then(p2.bind(null, trans, group))
+        .then(p3.bind(null, trans))
+        .then(group_user => { cb(null, group_user); })
+        .catch(err => {
+          trans.rollback(() => { cb(err); });
+        })
 
-          biz.group_user.saveNew({
-            group_id: group.id,
-            user_id: group.user_id,
-            seat: 1,
-          }, trans)
-          .then(group_user => {
-            trans.commit(err => {
-              if(err) return trans.rollback(() => { cb(err); });
-              cb(null, group_user);
-            });
-          })
-          .catch(err => {
-            trans.rollback(() => { cb(err); });
-          });
-        });
       });
     });
   };
@@ -87,11 +103,24 @@ const logger = require('log4js').getLogger('biz.group');
   exports.search = function(group, user){
     return new Promise((resolve, reject) => {
 
+      if(!_.isNumber(group.fund)) return reject('invalid_param');
+      group.fund = group.fund || 0;
+      if(0 > group.fund)          return reject('invalid_param');
+
+      if(!_.isNumber(group.round_count)) return reject('invalid_param');
+      group.round_count = group.round_count || 0;
+      if(  cfg.dynamic.group_type_pushCake.round_count_max < group.round_count
+        || cfg.dynamic.group_type_pushCake.round_count_min > group.round_count)
+        return reject('invalid_param');
+
+      if(!_.isNumber(group.visitor_count)) return reject('invalid_param');
+      group.visitor_count = group.visitor_count || 0;
+      if(  cfg.dynamic.group_type_pushCake.visitor_count_max < group.visitor_count
+        || cfg.dynamic.group_type_pushCake.visitor_count_min > group.visitor_count)
+        return reject('invalid_param');
+
       group.create_time = new Date();
       group.status = 0;
-      group.fund = group.fund || 0;
-      group.round_count = group.round_count || 0;
-      group.visitor_count = group.visitor_count || 0;
 
       p3(user.id)  /* 如果用户已在某一群组，则提示先退出 */
       .then(biz.group.getFree)
@@ -118,8 +147,9 @@ const logger = require('log4js').getLogger('biz.group');
                 resolve(doc);
               });
             });
-          }).
-          catch(reject);
+          })
+          .then(doc => resolve(doc))
+          .catch(reject);
         });
       })
       .then(group_user => {
@@ -271,8 +301,8 @@ function p3(user_id){
             'FROM '+
               '(SELECT (SELECT COUNT(1) FROM g_group_user WHERE group_id=a.id) AS user_count, a.* FROM g_group a) b '+
             'WHERE '+
-              'b.user_count=? '+
-            'LIMIT ?';
+              'b.user_count=0 '+
+            'LIMIT 1';
   /**
    * 获取一个空闲的群组
    *
@@ -280,7 +310,7 @@ function p3(user_id){
    */
   exports.getFree = function(){
     return new Promise((resolve, reject) => {
-      mysql.query(sql, [0, 1], (err, docs) => {
+      mysql.query(sql, null, (err, docs) => {
         if(err) return reject(err);
         resolve(mysql.checkOnly(docs) ? docs[0] : null);
       });
