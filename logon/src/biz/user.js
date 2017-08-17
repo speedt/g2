@@ -276,13 +276,7 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
    * @return
    */
   exports.clearChannel = function(user_id, cb){
-    var postData = [
-      '',
-      '',
-      user_id,
-    ];
-
-    mysql.query(sql, postData, cb);
+    mysql.query(sql, ['', '', user_id], cb);
   };
 })();
 
@@ -375,13 +369,13 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
         if(err) return reject(err);
         if(!_.isArray(code)) return reject(code);
 
-        var _user = utils.arrToObj(code);
+        var user = utils.arrToObj(code);
 
-        biz.user.getById(_user.id, (err, doc) => {
+        biz.user.getById(user.id, (err, doc) => {
           if(err) return reject(err);
           if(!doc) return reject('invalid_user_id');
 
-          biz.user.clearChannel(_user.id, (err) => {
+          biz.user.clearChannel(doc.id, (err) => {
             if(err) return reject(err);
             resolve(doc);
           });
@@ -407,9 +401,9 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
         if(err) return reject(err);
         if(!_.isArray(code)) return reject(code);
 
-        var _user = utils.arrToObj(code);
+        var user = utils.arrToObj(code);
 
-        biz.user.getById(_user.id, (err, doc) => {
+        biz.user.getById(user.id, (err, doc) => {
           if(err) return reject(err);
           if(doc) return resolve(doc);
           reject('invalid_user_id');
