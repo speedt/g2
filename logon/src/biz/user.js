@@ -269,10 +269,6 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
       });
     });
   };
-})();
-
-(() => {
-  var sql = 'UPDATE s_user SET server_id=?, channel_id=? WHERE id=?';
 
   /**
    * 清理通道
