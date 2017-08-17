@@ -90,21 +90,17 @@ const logger = require('log4js').getLogger('biz.group_user');
         if(!doc) return reject(new Error('seat_count_is_null'));
 
         switch(doc.seat_count){
-          case 1:  newInfo.seat = 3;  break;
-          case 3:  newInfo.seat = 1;  break;
-          case 4:  newInfo.seat = 5;  break;
-          case 5:  newInfo.seat = 1;  break;
-          case 6:  newInfo.seat = 3;  break;
+          case 1:  newInfo.seat = 2;  break;
+          case 2:  newInfo.seat = 1;  break;
+          case 4:  newInfo.seat = 1;  break;
           case 8:  newInfo.seat = 1;  break;
-          case 9:  newInfo.seat = 10; break;
-          case 10: newInfo.seat = 1;  break;
-          case 11: newInfo.seat = 3;  break;
-          case 13: newInfo.seat = 1;  break;
-          case 14: newInfo.seat = 5;  break;
-          case 15: newInfo.seat = 1;  break;
-          case 16: newInfo.seat = 3;  break;
-          case 18: newInfo.seat = 1;  break;
-          case 19:
+          case 9:  newInfo.seat = 2;  break;
+          case 10:  newInfo.seat = 1;  break;
+          case 11:  newInfo.seat = 4;  break;
+          case 12:  newInfo.seat = 1;  break;
+          case 13:  newInfo.seat = 2;  break;
+          case 14:  newInfo.seat = 1;  break;
+          case 15:
           default: newInfo.seat = 0;  break;
         }
 
