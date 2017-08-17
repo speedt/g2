@@ -44,9 +44,12 @@ exports.one_for_group = function(send, msg){
   var send_msg = filter(data.data);
   if(!send_msg) return;
 
+  var msg_info = [send_msg];
+
   biz.user.getByChannelId(data.serverId, data.channelId)
   .then(user => {
     return new Promise((resolve, reject) => {
+      msg_info.push(user.id);
       resolve(user.id);
     });
   })
@@ -55,7 +58,7 @@ exports.one_for_group = function(send, msg){
 
     var _data = [];
     _data.push(null);
-    _data.push(JSON.stringify([conf.app.ver, 2004, data.seqId, data.timestamp, send_msg]));
+    _data.push(JSON.stringify([conf.app.ver, 2004, data.seqId, data.timestamp, msg_info]));
 
     for(let i of group_users){
       if(!i.server_id) continue;
