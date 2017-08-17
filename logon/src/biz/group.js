@@ -27,7 +27,69 @@ _.mixin(_.str.exports());
 const logger = require('log4js').getLogger('biz.group');
 
 (() => {
-  const sql = 'INSERT INTO g_group (id, group_name, group_type, create_time, status, fund, round_count, visitor_count, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+
+  function p1(trans, newInfo){
+    return new Promise((resolve, reject) => {
+      trans.query(sql, newInfo, (err, status) => {
+        if(err) return reject(err);
+        resolve();
+      });
+    });
+  }
+
+  function p2(trans, group_user){
+    return new Promise((resolve, reject) => {
+      trans.commit(err => {
+        if(err) return reject(err);
+        resolve(group_user);
+      });
+    });
+  }
+
+  const sql = 'UPDATE g_group SET group_name=?, group_type=?, status=?, fund=?, round_count=?, visitor_count=? WHERE id=?';
+
+  /**
+   *
+   * @param group 群组
+   * @param user  创建人
+   * @return
+   */
+  exports.editInfo = function(group, user, cb){
+
+    mysql.getPool().getConnection((err, trans) => {
+      if(err) return cb(err);
+
+      trans.beginTransaction(err => {
+        if(err) return cb(err);
+
+        var postData = [
+          group.group_name,
+          group.group_type,
+          group.status,
+          group.fund,
+          group.round_count,
+          group.visitor_count,
+          group.id,
+        ];
+
+        p1(trans, postData)
+        .then(biz.group_user.saveNew.bind(null, {
+          group_id: group.id,
+          user_id: user.id,
+          seat: 1
+        }, trans))
+        .then(p2.bind(null, trans))
+        .then(group_user => { cb(null, group_user); })
+        .catch(err => {
+          trans.rollback(() => { cb(err); });
+        })
+
+      });
+    });
+  };
+})();
+
+(() => {
 
   function p1(trans, newInfo){
     return new Promise((resolve, reject) => {
@@ -55,10 +117,11 @@ const logger = require('log4js').getLogger('biz.group');
     });
   }
 
+  const sql = 'INSERT INTO g_group (id, group_name, group_type, create_time, status, fund, round_count, visitor_count, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+
   /**
    *
    * @param group 群组
-   * @param user  创建人
    * @return
    */
   exports.saveNew = function(group, cb){
@@ -127,10 +190,13 @@ const logger = require('log4js').getLogger('biz.group');
       .then(_group => {
 
         if(_group){
-          return biz.group_user.saveNew({
-            group_id: _group.id,
-            user_id: user.id,
-            seat: 1,
+          return new Promise((resolve, reject) => {
+            group.id = _group.id;
+
+            biz.group.editInfo(group, user, (err, doc) => {
+              if(err) return reject(err);
+              resolve(doc);
+            });
           });
         }
 
