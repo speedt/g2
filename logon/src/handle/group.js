@@ -36,8 +36,7 @@ exports.search = function(send, msg){
     _data.push(JSON.stringify([conf.app.ver, 3002, data.seqId, _.now(), group_users]));
 
     for(let i of group_users){
-      if(!i.server_id) continue;
-      if(!i.channel_id) continue;
+      if(!i.server_id || !i.channel_id) continue;
 
       _data.splice(0, 1, i.channel_id);
 
@@ -76,8 +75,7 @@ exports.quit = function(send, msg){
     _data.push(JSON.stringify([conf.app.ver, 3006, data.seqId, _.now(), group_users]));
 
     for(let i of group_users){
-      if(!i.server_id) continue;
-      if(!i.channel_id) continue;
+      if(!i.server_id || !i.channel_id) continue;
 
       _data.splice(0, 1, i.channel_id);
 
@@ -116,8 +114,7 @@ exports.entry = function(send, msg){
     _data.push(JSON.stringify([conf.app.ver, 3008, data.seqId, _.now(), group_users]));
 
     for(let i of group_users){
-      if(!i.server_id) continue;
-      if(!i.channel_id) continue;
+      if(!i.server_id || !i.channel_id) continue;
 
       _data.splice(0, 1, i.channel_id);
 
