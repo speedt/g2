@@ -89,7 +89,7 @@ exports.open = function(send, msg){
         _data.splice(0, 1, i.channel_id);
 
         send('/queue/back.send.v3.'+ i.server_id, { priority: 9 }, _data, (err, code) => {
-          if(err) return logger.error('group quit:', err);
+          if(err) return logger.error('channel close:', err);
         });
       }
     })

@@ -60,6 +60,31 @@ const logger = require('log4js').getLogger('biz.group_user');
   const sql = 'INSERT INTO g_group_user (group_id, user_id, create_time, status, seat) VALUES (?, ?, ?, ?, ?)';
 
   /**
+   * 获取座位号
+   *
+   * @return
+   */
+  function getSeatNum(seat_count){
+    switch(seat_count){
+      case 1:  return 2;  // base
+      case 2:  return 1;  // base
+      case 3:  return 4;
+      case 4:  return 1;  // base
+      case 5:  return 2;
+      case 6:  return 1;
+      case 7:  return 8;
+      case 8:  return 1;  // base
+      case 9:  return 2;
+      case 10: return 1;
+      case 11: return 4;
+      case 12: return 1;
+      case 13: return 2;
+      case 14: return 1;
+      default: return 0;
+    }
+  }
+
+  /**
    *
    * @return
    */
@@ -89,20 +114,7 @@ const logger = require('log4js').getLogger('biz.group_user');
         if(err) return reject(err);
         if(!doc) return reject(new Error('seat_count_is_null'));
 
-        switch(doc.seat_count){
-          case 1:  newInfo.seat = 2;  break;
-          case 2:  newInfo.seat = 1;  break;
-          case 4:  newInfo.seat = 1;  break;
-          case 8:  newInfo.seat = 1;  break;
-          case 9:  newInfo.seat = 2;  break;
-          case 10: newInfo.seat = 1;  break;
-          case 11: newInfo.seat = 4;  break;
-          case 12: newInfo.seat = 1;  break;
-          case 13: newInfo.seat = 2;  break;
-          case 14: newInfo.seat = 1;  break;
-          case 15:
-          default: newInfo.seat = 0;  break;
-        }
+        newInfo.seat = getSeatNum(doc.seat_count);
 
         postData.push(newInfo.seat);
 
