@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50623
 File Encoding         : 65001
 
-Date: 2017-08-17 11:19:26
+Date: 2017-08-18 11:56:02
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -29,13 +29,15 @@ CREATE TABLE `g_group` (
   `round_count` int(11) DEFAULT NULL,
   `visitor_count` int(11) DEFAULT NULL,
   `user_id` varchar(32) DEFAULT NULL,
+  `banker_user_id` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of g_group
 -- ----------------------------
-INSERT INTO `g_group` VALUES ('219882', '房间名1502939937438', null, '2017-08-17 11:18:22', '0', '1000', '4', '6', '9c012a33aa8b4ecc8aaf20ea149a6f25');
+INSERT INTO `g_group` VALUES ('557177', '房间名1503027452807', null, '2017-08-17 11:42:28', '0', '1000', '4', '6', '9c012a33aa8b4ecc8aaf20ea149a6f25', null);
+INSERT INTO `g_group` VALUES ('785500', '房间名1502957398830', null, '2017-08-17 11:44:02', '0', '1000', '4', '6', '1', null);
 
 -- ----------------------------
 -- Table structure for `g_group_user`
@@ -54,7 +56,6 @@ CREATE TABLE `g_group_user` (
 -- ----------------------------
 -- Records of g_group_user
 -- ----------------------------
-INSERT INTO `g_group_user` VALUES ('219882', '9c012a33aa8b4ecc8aaf20ea149a6f25', '2017-08-17 11:18:57', '0', '1', null);
 
 -- ----------------------------
 -- Table structure for `s_cfg`
@@ -156,7 +157,7 @@ INSERT INTO `s_user` VALUES ('4', 'wy', 'e10adc3949ba59abbe56e057f20f883e', null
 INSERT INTO `s_user` VALUES ('5', 't1', 'e10adc3949ba59abbe56e057f20f883e', null, null, '1', 't1', null, null, null, null, null, null, '19394', '123', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null, null);
 INSERT INTO `s_user` VALUES ('6', 't2', 'e10adc3949ba59abbe56e057f20f883e', null, null, '1', 't2', null, null, null, null, null, null, '41600', '89', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null, null);
 INSERT INTO `s_user` VALUES ('7', 't3', 'e10adc3949ba59abbe56e057f20f883e', null, null, '1', 't3', null, null, null, null, null, null, '122862147', '87', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null, null);
-INSERT INTO `s_user` VALUES ('9c012a33aa8b4ecc8aaf20ea149a6f25', 'mega', 'e10adc3949ba59abbe56e057f20f883e', 'bbe1c450365b4bbd839d02411167cdea', '080027fffedcde12-00000abe-00000030-87fd97a1eca2e783-b25cd1f8', '1', '马六', null, '2017-08-08 10:18:43', null, '12341', null, null, '34720042', '123123', '0', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null);
+INSERT INTO `s_user` VALUES ('9c012a33aa8b4ecc8aaf20ea149a6f25', 'mega', 'e10adc3949ba59abbe56e057f20f883e', '', '', '1', '马六', null, '2017-08-08 10:18:43', null, '12341', null, null, '34720042', '123123', '0', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null);
 INSERT INTO `s_user` VALUES ('9fe2a410777c11e7bdc4fd3c0cd2bc87', '猫4', '96e79218965eb72c92a549dd5a330112', null, null, '0', '猫4123123', '1', '2017-08-02 20:18:00', '', '', '', '', '10065', '0', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null, null);
 INSERT INTO `s_user` VALUES ('b5780670775f11e7831c0d095411373b', '猫2', '96e79218965eb72c92a549dd5a330112', null, null, '1', '猫2', '1', '2017-08-02 16:51:01', '', '', '', '', '43280', '0', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null, null);
 INSERT INTO `s_user` VALUES ('c2fe9bb076ba11e7ad1a29fa785dd421', '雪箭轩', 'bde0814411dcea94c5e0d9b29e635510', null, null, '1', '雪箭轩', '1', '2017-08-01 21:10:17', '', '', '', '', '9570499', '0', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null, null);
