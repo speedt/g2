@@ -12,7 +12,7 @@ const conf  = require(path.join(cwd, 'settings'));
 const biz    = require('emag.biz');
 const cfg    = require('emag.cfg');
 
-const logger = require('log4js').getLogger('handle');
+const logger = require('log4js').getLogger('handle.pushCake');
 
 const _ = require('underscore');
 
@@ -22,23 +22,17 @@ exports.ready = function(send, msg){
   try{ var data = JSON.parse(msg.body);
   }catch(ex){ return; }
 
-  var _data = {
-    users_info: ['张三', '李四'],
-    game_info: {
-      status: '玩家准备中/选庄',  // 游戏状态
-    }
-  };
+  biz.user.getByChannelId(data.serverId, data.channelId)
+  .then(biz.pushCake.ready)
+  .catch(err => {
+    if('string' !== typeof err) return logger.error('pushCake ready:', err);
 
-  _data.err = {
-    code: 101,
-    msg: '失败描述'
-  };
+    var _data = [];
+    _data.push(data.channelId);
+    _data.push(JSON.stringify([conf.app.ver, 5006, data.seqId, _.now(), { err: { code: err } }]));
 
-  var send_data = [data.channelId, JSON.stringify([conf.app.ver, 5006, null, _.now(), JSON.stringify(_data)])];
-
-  logger.debug('pushCake ready: %j', send_data);
-
-  send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, send_data, (err, code) => {
-    if(err) return logger.error('pushCake ready:', err);
+    send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _data, (err, code) => {
+      if(err) return logger.error('pushCake ready:', err);
+    });
   });
 };
