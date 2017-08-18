@@ -50,7 +50,7 @@ const logger = require('log4js').getLogger('biz.user');
 (() => {
   var sql = 'SELECT '+
               'c.id group_id, c.group_name, c.status group_status, '+
-              'b.seat, '+
+              'b.seat, b.status group_user_status, '+
               'a.* '+
             'FROM '+
               '(SELECT * FROM s_user WHERE id=?) a '+
