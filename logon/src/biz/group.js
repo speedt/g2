@@ -231,14 +231,14 @@ const logger = require('log4js').getLogger('biz.group');
 (() => {
   function p1(user){
     return new Promise((resolve, reject) => {
-      if(0 === user.group_status){
+      if(0 === user.group_status || 0 === user.seat){
         return biz.group_user.delByUserId(user.id, (err, status) => {
           if(err) return reject(err);
           resolve(user.group_id);
         });
       }
 
-      biz.group_user.editOffline(user.id, (err, status) => {
+      biz.group_user.editStatus(user.id, 2, (err, status) => {
         if(err) return reject(err);
         resolve(user.group_id);
       });

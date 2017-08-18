@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50623
 File Encoding         : 65001
 
-Date: 2017-08-18 11:56:02
+Date: 2017-08-18 16:18:32
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -49,7 +49,7 @@ CREATE TABLE `g_group_user` (
   `create_time` datetime DEFAULT NULL,
   `status` int(2) DEFAULT NULL,
   `seat` int(4) DEFAULT NULL,
-  `offline_time` datetime DEFAULT NULL,
+  `status_time` datetime DEFAULT NULL,
   PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

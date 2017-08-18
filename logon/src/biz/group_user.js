@@ -175,14 +175,19 @@ const logger = require('log4js').getLogger('biz.group_user');
 })();
 
 (() => {
-  var sql = 'UPDATE g_group_user SET status=?, offline_time=? WHERE user_id=?';
+  var sql = 'UPDATE g_group_user SET status=?, status_time=? WHERE user_id=?';
 
   /**
+   * 用户状态
+   *
+   * 0、默认
+   * 1、举手
+   * 2、玩家离线
    *
    * @return
    */
-  exports.editOffline = function(user_id, cb){
-    mysql.query(sql, [2, new Date(), user_id], cb);
+  exports.editStatus = function(user_id, status, cb){
+    mysql.query(sql, [status, new Date(), user_id], cb);
   };
 })();
 

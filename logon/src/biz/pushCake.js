@@ -27,6 +27,11 @@ exports.ready = function(user){
     if(0 < user.group_status) return reject('game_already_begun');  // 游戏已经开始
     if(0 === user.seat) return reject('no_need_ready');             // 你是游客
     if(0 < user.group_user_status) return reject('already_begun');  // 你已经举手
-    console.log(user);
+
+    biz.group_user.editStatus(user.id, 1, err => {
+      if(err) return reject(err);
+      user.group_user_status = 1;
+      resolve(user);
+    });
   });
 };
