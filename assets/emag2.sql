@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50623
 File Encoding         : 65001
 
-Date: 2017-08-18 16:18:32
+Date: 2017-08-19 08:38:02
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -25,6 +25,7 @@ CREATE TABLE `g_group` (
   `group_type` varchar(32) DEFAULT NULL,
   `create_time` datetime DEFAULT NULL,
   `status` int(2) DEFAULT NULL,
+  `status_time` datetime DEFAULT NULL,
   `fund` int(11) DEFAULT NULL,
   `round_count` int(11) DEFAULT NULL,
   `visitor_count` int(11) DEFAULT NULL,
@@ -36,8 +37,8 @@ CREATE TABLE `g_group` (
 -- ----------------------------
 -- Records of g_group
 -- ----------------------------
-INSERT INTO `g_group` VALUES ('557177', '房间名1503027452807', null, '2017-08-17 11:42:28', '0', '1000', '4', '6', '9c012a33aa8b4ecc8aaf20ea149a6f25', null);
-INSERT INTO `g_group` VALUES ('785500', '房间名1502957398830', null, '2017-08-17 11:44:02', '0', '1000', '4', '6', '1', null);
+INSERT INTO `g_group` VALUES ('557177', '房间名1503027452807', null, '2017-08-17 11:42:28', '0', null, '1000', '4', '6', '9c012a33aa8b4ecc8aaf20ea149a6f25', null);
+INSERT INTO `g_group` VALUES ('785500', '房间名1502957398830', null, '2017-08-17 11:44:02', '0', null, '1000', '4', '6', '1', null);
 
 -- ----------------------------
 -- Table structure for `g_group_user`

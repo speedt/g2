@@ -27,6 +27,22 @@ _.mixin(_.str.exports());
 const logger = require('log4js').getLogger('biz.group');
 
 (() => {
+  var sql = 'UPDATE g_group SET status=?, status_time=? WHERE id=?';
+
+  /**
+   * 用户状态
+   *
+   * 0、默认
+   * 1、4人举手（游戏开始）
+   *
+   * @return
+   */
+  exports.editStatus = function(id, status, cb, trans){
+    (trans || mysql).query(sql, [status, new Date(), id], cb);
+  };
+})();
+
+(() => {
   function p1(trans, newInfo){
     return new Promise((resolve, reject) => {
       trans.query(sql, newInfo, (err, status) => {
@@ -45,7 +61,7 @@ const logger = require('log4js').getLogger('biz.group');
     });
   }
 
-  const sql = 'UPDATE g_group SET group_name=?, group_type=?, status=?, fund=?, round_count=?, visitor_count=? WHERE id=?';
+  const sql = 'UPDATE g_group SET group_name=?, group_type=?, status=?, status_time=?, fund=?, round_count=?, visitor_count=? WHERE id=?';
 
   /**
    *
@@ -65,6 +81,7 @@ const logger = require('log4js').getLogger('biz.group');
           group.group_name,
           group.group_type,
           group.status,
+          group.status_time,
           group.fund,
           group.round_count,
           group.visitor_count,
