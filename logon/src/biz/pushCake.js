@@ -9,14 +9,19 @@ const path = require('path');
 const cwd  = process.cwd();
 const conf = require(path.join(cwd, 'settings'));
 
-const EventProxy = require('eventproxy');
+const uuid = require('node-uuid');
+const _    = require('underscore');
 
+const md5   = require('speedt-utils').md5;
 const utils = require('speedt-utils').utils;
-const _     = require('underscore');
-const uuid  = require('node-uuid');
 
 const mysql = require('emag.db').mysql;
 const redis = require('emag.db').redis;
+
+const cfg = require('emag.cfg');
+const biz = require('emag.biz');
+
+const logger = require('log4js').getLogger('biz.pushCake');
 
 (() => {
   function p1(trans, user_id){
