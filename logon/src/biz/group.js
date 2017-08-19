@@ -165,7 +165,7 @@ const logger = require('log4js').getLogger('biz.group');
         .then(group_user => { cb(null, group_user); })
         .catch(err => {
           trans.rollback(() => { cb(err); });
-        })
+        });
 
       });
     });
