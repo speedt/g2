@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50623
 File Encoding         : 65001
 
-Date: 2017-08-19 08:38:02
+Date: 2017-08-20 16:48:16
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -24,21 +24,21 @@ CREATE TABLE `g_group` (
   `group_name` varchar(32) DEFAULT NULL,
   `group_type` varchar(32) DEFAULT NULL,
   `create_time` datetime DEFAULT NULL,
+  `create_user_id` varchar(32) DEFAULT NULL,
   `status` int(2) DEFAULT NULL,
   `status_time` datetime DEFAULT NULL,
-  `fund` int(11) DEFAULT NULL,
-  `round_count` int(11) DEFAULT NULL,
   `visitor_count` int(11) DEFAULT NULL,
-  `user_id` varchar(32) DEFAULT NULL,
-  `banker_user_id` varchar(32) DEFAULT NULL,
+  `extend_fund` int(11) DEFAULT NULL,
+  `extend_round_count` int(11) DEFAULT NULL,
+  `extend_current_banker_user_id` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of g_group
 -- ----------------------------
-INSERT INTO `g_group` VALUES ('557177', '房间名1503027452807', null, '2017-08-17 11:42:28', '0', null, '1000', '4', '6', '9c012a33aa8b4ecc8aaf20ea149a6f25', null);
-INSERT INTO `g_group` VALUES ('785500', '房间名1502957398830', null, '2017-08-17 11:44:02', '0', null, '1000', '4', '6', '1', null);
+INSERT INTO `g_group` VALUES ('557177', '房间名1503027452807', null, '2017-08-17 11:42:28', '9c012a33aa8b4ecc8aaf20ea149a6f25', '0', null, '6', '1000', '4', null);
+INSERT INTO `g_group` VALUES ('785500', '房间名1502957398830', null, '2017-08-17 11:44:02', '1', '0', null, '6', '1000', '4', null);
 
 -- ----------------------------
 -- Table structure for `g_group_user`
@@ -49,8 +49,8 @@ CREATE TABLE `g_group_user` (
   `user_id` varchar(32) NOT NULL,
   `create_time` datetime DEFAULT NULL,
   `status` int(2) DEFAULT NULL,
-  `seat` int(4) DEFAULT NULL,
   `status_time` datetime DEFAULT NULL,
+  `seat` int(4) DEFAULT NULL,
   PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -126,7 +126,7 @@ CREATE TABLE `s_user` (
   `qq` varchar(32) DEFAULT NULL,
   `weixin` varchar(128) DEFAULT NULL,
   `email` varchar(128) DEFAULT NULL,
-  `current_score` int(11) DEFAULT NULL,
+  `current_score` int(11) DEFAULT NULL COMMENT '现有积分',
   `tool_1` int(11) DEFAULT NULL,
   `tool_2` int(11) DEFAULT NULL,
   `tool_3` int(11) DEFAULT NULL,
@@ -137,12 +137,12 @@ CREATE TABLE `s_user` (
   `tool_8` int(11) DEFAULT NULL,
   `tool_9` int(11) DEFAULT NULL,
   `vip` int(2) DEFAULT NULL,
-  `consume_count` int(11) DEFAULT NULL,
-  `win_count` int(11) DEFAULT NULL,
-  `lose_count` int(11) DEFAULT NULL,
-  `win_score_count` int(11) DEFAULT NULL,
-  `lose_score_count` int(11) DEFAULT NULL,
-  `line_gone_count` int(11) DEFAULT NULL,
+  `consume_count` int(11) DEFAULT NULL COMMENT '消费（¥）',
+  `win_count` int(11) DEFAULT NULL COMMENT '胜利（次数）',
+  `lose_count` int(11) DEFAULT NULL COMMENT '失败（次数）',
+  `win_score_count` int(11) DEFAULT NULL COMMENT '胜利（总分）',
+  `lose_score_count` int(11) DEFAULT NULL COMMENT '失败（总分）',
+  `line_gone_count` int(11) DEFAULT NULL COMMENT '掉线（次数）',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

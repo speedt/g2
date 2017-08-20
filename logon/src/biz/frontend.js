@@ -33,9 +33,12 @@ const redis = require('emag.db').redis;
 })();
 
 /**
+ * 可用的服务器
  *
- * @return 可用的服务器
+ * @return
  */
-exports.available = function(cb){
-  cb(null, '68');
+exports.available = function(){
+  return new Promise((resolve, reject) => {
+    resolve('68');
+  });
 };

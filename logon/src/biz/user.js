@@ -27,8 +27,13 @@ const logger = require('log4js').getLogger('biz.user');
 (() => {
   var sql = 'SELECT a.* FROM s_user a WHERE a.status=? ORDER BY a.create_time DESC';
 
-  exports.findAll = function(status, cb){
-    mysql.query(sql, [status], cb);
+  exports.findAll = function(status){
+    return new Promise((resolve, reject) => {
+      mysql.query(sql, [status], (err, docs) => {
+        if(err) return reject(err);
+        resolve(docs);
+      });
+    });
   };
 })();
 
@@ -39,10 +44,12 @@ const logger = require('log4js').getLogger('biz.user');
    *
    * @return
    */
-  exports.getByName = function(user_name, cb){
-    mysql.query(sql, [user_name], (err, docs) => {
-      if(err) return cb(err);
-      cb(null, mysql.checkOnly(docs) ? docs[0] : null);
+  exports.getByName = function(user_name){
+    return new Promise((resolve, reject) => {
+      mysql.query(sql, [user_name], (err, docs) => {
+        if(err) return reject(err);
+        resolve(mysql.checkOnly(docs) ? docs[0] : null);
+      });
     });
   };
 })();
@@ -60,11 +67,12 @@ const logger = require('log4js').getLogger('biz.user');
    *
    * @return
    */
-  exports.getById = function(id, cb){
-
-    mysql.query(sql, [id], (err, docs) => {
-      if(err) return cb(err);
-      cb(null, mysql.checkOnly(docs) ? docs[0] : null);
+  exports.getById = function(id){
+    return new Promise((resolve, reject) => {
+      mysql.query(sql, [id], (err, docs) => {
+        if(err) return reject(err);
+        resolve(mysql.checkOnly(docs) ? docs[0] : null);
+      });
     });
   };
 })();
@@ -281,50 +289,24 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
 })();
 
 (() => {
-  const seconds   = 15;  //令牌有效期 5s
+  const seconds   = 5;  //令牌有效期 5s
   const numkeys   = 4;
   const sha1      = 'd8f515be193e9d7a0bce3bbb27d358702b6150f6';
 
   /**
    * 令牌授权
    *
+   * @param user
    * @return 登陆令牌
    */
-  exports.authorize = function(doc, cb){
-    var code = utils.replaceAll(uuid.v4(), '-', '');
-
-    delete doc.user_pass;
-
-    redis.evalsha(sha1, numkeys,
-      conf.redis.database, conf.app.client_id, doc.id, code,
-      seconds,
-      JSON.stringify(doc),
-      doc.user_name,
-      doc.sex              || 0,
-      doc.create_time,
-      doc.mobile           || '',
-      doc.qq               || '',
-      doc.weixin           || '',
-      doc.email            || '',
-      doc.current_score    || 0,  // 当前总分
-      doc.tool_1           || 0,
-      doc.tool_2           || 0,
-      doc.tool_3           || 0,
-      doc.tool_4           || 0,
-      doc.tool_5           || 0,
-      doc.tool_6           || 0,
-      doc.tool_7           || 0,
-      doc.tool_8           || 0,
-      doc.tool_9           || 0,
-      doc.nickname         || doc.user_name,
-      doc.vip              || 0,
-      doc.consume_count    || 0,  // 消费（¥）
-      doc.win_count        || 0,  // 胜利（次数）
-      doc.lose_count       || 0,  // 失败（次数）
-      doc.win_score_count  || 0,  // 胜利（总分）
-      doc.lose_score_count || 0,  // 失败（总分）
-      doc.line_gone_count  || 0,  // 掉线（次数）
-      cb);
+  exports.authorize = function(user){
+    return new Promise((resolve, reject) => {
+      var code = utils.replaceAll(uuid.v4(), '-', '');
+      redis.evalsha(sha1, numkeys, conf.redis.database, conf.app.client_id, user.id, code, seconds, (err, code) => {
+        if(err) return reject(err);
+        resolve(code);
+      });
+    });
   };
 })();
 
