@@ -322,14 +322,6 @@ const logger = require('log4js').getLogger('biz.group');
 // };
 
 (() => {
-  function p1(group_id){
-    return new Promise((resolve, reject) => {
-      if(!_.isString(group_id)) return reject('INVALID_PARAMS');
-      group_id = _.trim(group_id);
-      if('' === group_id) return reject('INVALID_PARAMS');
-      resolve(group_id);
-    });
-  }
 
   function p2_1(group_user){
     return new Promise((resolve, reject) => {
@@ -387,9 +379,34 @@ const logger = require('log4js').getLogger('biz.group');
   //   });
   // };
 
+  function p1(group_id){
+    return new Promise((resolve, reject) => {
+      if(!_.isString(group_id)) return reject('INVALID_PARAMS');
+      group_id = _.trim(group_id);
+      if('' === group_id) return reject('INVALID_PARAMS');
+      resolve(group_id);
+    });
+  }
 
-  function p1(group_id, user){
+  function p2(server_id, channel_id, group_id){
+    return new Promise((resolve, reject) => {
+      biz.user.getByChannelId(server_id, channel_id)
+      .then(p3.bind(null, group_id))
+      .then(docs => { resolve(docs); })
+      .catch(reject);
+    });
+  }
 
+  function p3(group_id, user){
+    return new Promise((resolve, reject) => {
+
+
+      biz.group.getById(group_id)
+      .catch(reject);
+
+
+
+    });
   }
 
   /**
@@ -399,11 +416,16 @@ const logger = require('log4js').getLogger('biz.group');
   exports.entry = function(server_id, channel_id, group_id){
     return new Promise((resolve, reject) => {
 
-
-      biz.user.getByChannelId(server_id, channel_id)
-      .then(p1.bind(null, group_id))
+      p1(group_id)
+      .then(p2.bind(null, server_id, channel_id))
       .then(docs => { resolve(docs); })
       .catch(reject);
+
+
+      // biz.user.getByChannelId(server_id, channel_id)
+      // .then(p1.bind(null, group_id))
+      // .then(docs => { resolve(docs); })
+      // .catch(reject);
 
 
       // p1(group_id)
