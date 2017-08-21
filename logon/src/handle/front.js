@@ -6,7 +6,7 @@
 'use strict';
 
 const _      = require('underscore');
-const logger = require('log4js').getLogger('handle');
+const logger = require('log4js').getLogger('handle.front');
 
 exports.start = function(send, msg){
   if(!msg.body) return logger.error('front start empty');
