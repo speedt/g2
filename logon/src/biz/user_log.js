@@ -19,10 +19,25 @@ const mysql = require('emag.db').mysql;
 const redis = require('emag.db').redis;
 
 (() => {
-  var sql = 'SELECT a.*, b.user_name FROM (SELECT * FROM s_user_log WHERE user_id=?) a LEFT JOIN s_user b ON (a.user_id=b.id) WHERE b.id IS NOT NULL ORDER BY a.create_time DESC';
-
-  exports.findAll = function(user_id, cb){
-    mysql.query(sql, [user_id], cb);
+  var sql = 'SELECT '+
+              'b.user_name, '+
+              'a.* '+
+            'FROM '+
+              '(SELECT * FROM s_user_log WHERE user_id=?) a '+
+              'LEFT JOIN s_user b ON (a.user_id=b.id) '+
+            'WHERE '+
+              'b.id IS NOT NULL '+
+            'ORDER BY a.create_time DESC';
+  /**
+   *
+   */
+  exports.findAll = function(user_id, trans){
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [user_id], (err, docs) => {
+        if(err) return reject(err);
+        resolve(docs);
+      });
+    });
   };
 })();
 
@@ -33,16 +48,23 @@ const redis = require('emag.db').redis;
    *
    * @return
    */
-  exports.saveNew = function(newInfo, cb){
+  exports.saveNew = function(newInfo, trans){
 
-    var postData = [
-      utils.replaceAll(uuid.v1(), '-', ''),
-      newInfo.log_desc,
-      newInfo.log_type || 1,
-      new Date(),
-      newInfo.user_id,
-    ];
+    newInfo.id = utils.replaceAll(uuid.v1(), '-', '');
+    newInfo.log_type = newInfo.log_type || 1;
+    newInfo.create_time = new Date();
 
-    mysql.query(sql, postData, cb);
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [
+        newInfo.id,
+        newInfo.log_desc,
+        newInfo.log_type,
+        newInfo.create_time,
+        newInfo.user_id,
+      ], err => {
+        if(err) return reject(err);
+        resolve(newInfo);
+      });
+    });
   };
 })();

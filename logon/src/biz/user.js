@@ -322,14 +322,12 @@ const logger = require('log4js').getLogger('biz.user');
     user.server_id = server_id;
     user.channel_id = channel_id;
 
-    var postData = [
-      user.server_id,
-      user.channel_id,
-      user.id,
-    ];
-
     return new Promise((resolve, reject) => {
-      (trans || mysql).query(sql, postData, err => {
+      (trans || mysql).query(sql, [
+        user.server_id,
+        user.channel_id,
+        user.id,
+      ], err => {
         if(err) return reject(err);
         resolve(user);
       });
