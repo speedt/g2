@@ -10,15 +10,22 @@ const cwd  = process.cwd();
 const conf = require(path.join(cwd, 'settings'));
 
 const EventProxy = require('eventproxy');
+const uuid       = require('node-uuid');
 
-const uuid  = require('node-uuid');
 const md5   = require('speedt-utils').md5;
 const utils = require('speedt-utils').utils;
-const _     = require('underscore');
 
 const mysql = require('emag.db').mysql;
 const redis = require('emag.db').redis;
-const cfg   = require('emag.cfg');
+
+const cfg = require('emag.cfg');
+const biz = require('emag.biz');
+
+const _  = require('underscore');
+_.str    = require('underscore.string');
+_.mixin(_.str.exports());
+
+const logger = require('log4js').getLogger('biz.manager');
 
 (() => {
   var sql = 'SELECT a.* FROM s_manager a WHERE a.user_name=?';
@@ -27,10 +34,12 @@ const cfg   = require('emag.cfg');
    *
    * @return
    */
-  exports.getByName = function(user_name, cb){
-    mysql.query(sql, [user_name], (err, docs) => {
-      if(err) return cb(err);
-      cb(null, mysql.checkOnly(docs) ? docs[0] : null);
+  exports.getByName = function(user_name, trans){
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [user_name], (err, docs) => {
+        if(err) return reject(err);
+        resolve(mysql.checkOnly(docs) ? docs[0] : null);
+      });
     });
   };
 })();
@@ -42,72 +51,91 @@ const cfg   = require('emag.cfg');
    *
    * @return
    */
-  exports.getById = function(id, cb){
-    mysql.query(sql, [id], (err, docs) => {
-      if(err) return cb(err);
-      cb(null, mysql.checkOnly(docs) ? docs[0] : null);
+  exports.getById = function(id, trans){
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [id], (err, docs) => {
+        if(err) return reject(err);
+        resolve(mysql.checkOnly(docs) ? docs[0] : null);
+      });
     });
   };
 })();
 
-/**
- *
- * @code 01 用户不存在
- * @code 02 禁止登陆
- * @code 03 用户名或密码输入错误
- *
- * @return
- */
-exports.login = function(logInfo /* 用户名及密码 */, cb){
-  var self = this;
-
-  self.getByName(logInfo.user_name, (err, doc) => {
-    if(err)  return cb(err);
-    if(!doc) return cb(null, '01');
-
-    // 用户的状态
-    if(1 !== doc.status) return cb(null, '02');
-
-    // 验证密码
-    if(md5.hex(logInfo.user_pass) !== doc.user_pass)
-      return cb(null, '03');
-
-    cb(null, null, doc);
-  });
-};
-
 (() => {
-  var sql = 'UPDATE s_manager set user_pass=? WHERE id=?';
+  function p1(logInfo, user){
+    return new Promise((resolve, reject) => {
+      if(!user) return reject('用户名或密码输入错误');
+      // 用户状态
+      if(1 !== user.status) return reject('禁止登陆');
+      // 验证密码
+      if(md5.hex(logInfo.user_pass) !== user.user_pass)
+        return reject('用户名或密码输入错误');
+      resolve(user);
+    });
+  }
 
   /**
-   *
-   * @code 01 新密码不能为空
-   * @code 02 用户不存在
-   * @code 03 原始密码错误
+   * 用户登陆
    *
    * @return
    */
-  exports.changePwd = function(newInfo, cb){
-    newInfo.user_pass = utils.isEmpty(newInfo.user_pass);
-    if(!newInfo.user_pass) return cb(null, '01');
-
-    this.getById(newInfo.id, function (err, doc){
-      if(err)  return cb(err);
-      if(!doc) return cb(null, '02');
-
-      if(md5.hex(newInfo.old_pass) !== doc.user_pass){
-        return cb(null, '03');
-      }
-
-      var postData = [
-        md5.hex(newInfo.user_pass),
-        newInfo.id
-      ];
-
-      mysql.query(sql, postData, function (err, status){
-        if(err) return cb(err);
-        cb(null, null, status);
-      });
+  exports.login = function(logInfo /* 用户名及密码 */){
+    return new Promise((resolve, reject) => {
+      biz.manager.getByName(logInfo.user_name)
+      .then(p1.bind(null, logInfo))
+      .then(user => { resolve(user); })
+      .catch(reject);
     });
   };
-})()
+})();
+
+(() => {
+  function p1(user){
+    return new Promise((resolve, reject) => {
+      user.user_pass = utils.isEmpty(user.user_pass);
+      if(!user.user_pass) return reject('新密码不能为空');
+      resolve(user);
+    });
+  }
+
+  function p2(user){
+    return new Promise((resolve, reject) => {
+      if(!doc) return reject('用户不存在');
+      if(md5.hex(user.old_pass) !== doc.user_pass)
+        return reject(null, '原始密码错误');
+      resolve(user);
+    });
+  }
+
+  function p3(user, trans){
+    return new Promise((resolve, reject) => {
+      user.user_pass = md5.hex(user.user_pass);
+
+      (trans || mysql).query(sql, [
+        user.user_pass,
+        user.id,
+      ], err => {
+        if(err) return reject(err);
+        resolve();
+      });
+    });
+  }
+
+  var sql = 'UPDATE s_manager set user_pass=? WHERE id=?';
+
+  /**
+   * 修改密码
+   *
+   * @return
+   */
+  exports.changePwd = function(user){
+    return new Promise((resolve, reject) => {
+      p1(user)
+      .then(biz.manager.getById.bind(null, user.id))
+      .then(p2)
+      .then(p3.bind(null, user))
+      .then(() => { resolve(); })
+      .catch(reject);
+    });
+  };
+})();

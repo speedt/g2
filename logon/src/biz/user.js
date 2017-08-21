@@ -11,7 +11,6 @@ const conf = require(path.join(cwd, 'settings'));
 
 const EventProxy = require('eventproxy');
 const uuid       = require('node-uuid');
-const _          = require('underscore');
 
 const md5   = require('speedt-utils').md5;
 const utils = require('speedt-utils').utils;
@@ -22,14 +21,18 @@ const redis = require('emag.db').redis;
 const cfg = require('emag.cfg');
 const biz = require('emag.biz');
 
+const _  = require('underscore');
+_.str    = require('underscore.string');
+_.mixin(_.str.exports());
+
 const logger = require('log4js').getLogger('biz.user');
 
 (() => {
   var sql = 'SELECT a.* FROM s_user a WHERE a.status=? ORDER BY a.create_time DESC';
 
-  exports.findAll = function(status){
+  exports.findAll = function(status, trans){
     return new Promise((resolve, reject) => {
-      mysql.query(sql, [status], (err, docs) => {
+      (trans || mysql).query(sql, [status], (err, docs) => {
         if(err) return reject(err);
         resolve(docs);
       });
@@ -44,9 +47,9 @@ const logger = require('log4js').getLogger('biz.user');
    *
    * @return
    */
-  exports.getByName = function(user_name){
+  exports.getByName = function(user_name, trans){
     return new Promise((resolve, reject) => {
-      mysql.query(sql, [user_name], (err, docs) => {
+      (trans || mysql).query(sql, [user_name], (err, docs) => {
         if(err) return reject(err);
         resolve(mysql.checkOnly(docs) ? docs[0] : null);
       });
@@ -67,9 +70,9 @@ const logger = require('log4js').getLogger('biz.user');
    *
    * @return
    */
-  exports.getById = function(id){
+  exports.getById = function(id, trans){
     return new Promise((resolve, reject) => {
-      mysql.query(sql, [id], (err, docs) => {
+      (trans || mysql).query(sql, [id], (err, docs) => {
         if(err) return reject(err);
         resolve(mysql.checkOnly(docs) ? docs[0] : null);
       });
@@ -85,135 +88,176 @@ const logger = require('log4js').getLogger('biz.user');
 
   /**
    *
-   * @code 01 昵称不能为空
-   * @code 02 密码不能为空
-   *
    * @return
    */
   function formVali(newInfo){
-    newInfo.user_name = newInfo.user_name || '';
-    newInfo.user_name = newInfo.user_name.trim();
-    if(!regex_user_name.test(newInfo.user_name)) return '01';
+    return new Promise((resolve, reject) => {
+      newInfo.user_name = newInfo.user_name || '';
+      newInfo.user_name = _.trim(newInfo.user_name);
+      if(!regex_user_name.test(newInfo.user_name)) return reject('INVALID_PARAMS');
 
-    newInfo.user_pass = newInfo.user_pass || '';
-    newInfo.user_pass = newInfo.user_pass.trim();
-    if(!regex_user_name.test(newInfo.user_pass)) return '02';
+      newInfo.user_pass = newInfo.user_pass || '';
+      newInfo.user_name = _.trim(newInfo.user_pass);
+      if(!regex_user_name.test(newInfo.user_pass)) return reject('INVALID_PARAMS');
+    });
+  }
+
+  function p1(user){
+    return new Promise((resolve, reject) => {
+      if(user) return resolve(user);
+      reject('NOT_FOUND_USER');
+    });
   }
 
   var sql = 'INSERT INTO s_user (id, user_name, user_pass, status, sex, create_time, mobile, qq, weixin, email, current_score, tool_1, tool_2, tool_3, tool_4, tool_5, tool_6, tool_7, tool_8, tool_9, nickname, vip, consume_count, win_count, lose_count, win_score_count, lose_score_count, line_gone_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
+  function p2(user, trans){
+    user.id = utils.replaceAll(uuid.v1(), '-', '');
+    user.user_pass = md5.hex(user.user_pass);
+    user.status = user.status || 1;
+    user.sex = user.sex || 1;
+    user.create_time = new Date();
+    user.current_score = user.current_score || 0;
+    user.tool_1 = 0;
+    user.tool_2 = 0;
+    user.tool_3 = 0;
+    user.tool_4 = 0;
+    user.tool_5 = 0;
+    user.tool_6 = 0;
+    user.tool_7 = 0;
+    user.tool_8 = 0;
+    user.tool_9 = 0;
+    user.nickname = user.user_name;
+    user.vip              = 0;
+    user.consume_count    = 0;
+    user.win_count        = 0;
+    user.lose_count       = 0;
+    user.win_score_count  = 0;
+    user.lose_score_count = 0;
+    user.line_gone_count  = 0;
+
+    return new Promise((resolve, reject) => {
+
+      var postData = [
+        user.id,
+        user.user_name,
+        user.user_pass,
+        user.status,
+        user.sex,
+        user.create_time,
+        user.mobile,
+        user.qq,
+        user.weixin,
+        user.email,
+        user.current_score,
+        user.tool_1,
+        user.tool_2,
+        user.tool_3,
+        user.tool_4,
+        user.tool_5,
+        user.tool_6,
+        user.tool_7,
+        user.tool_8,
+        user.tool_9,
+        user.nickname,
+        user.vip,
+        user.consume_count,
+        user.win_count,
+        user.lose_count,
+        user.win_score_count,
+        user.lose_score_count,
+        user.line_gone_count,
+      ];
+
+      (trans || mysql).query(sql, postData, err => {
+        if(err) return reject(err);
+        resolve(user);
+      });
+    });
+  }
+
   /**
    * 用户注册
    *
-   * @code 01 昵称已经存在
-   *
    * @return
    */
-  exports.register = function(newInfo, cb){
-    var self = this;
-
-    var code = formVali(newInfo);
-    if(code) return cb(null, 'formVali_'+ code);
-
-    self.getByName(newInfo.user_name, function (err, doc){
-      if(err) return cb(err);
-      if(doc) return cb(null, '01');
-
-      // params
-      var postData = [
-        utils.replaceAll(uuid.v1(), '-', ''),
-        newInfo.user_name,
-        md5.hex(newInfo.user_pass),
-        newInfo.status        || 1,
-        newInfo.sex           || 1,
-        new Date(),
-        newInfo.mobile        || '',
-        newInfo.qq            || '',
-        newInfo.weixin        || '',
-        newInfo.email         || '',
-        newInfo.current_score || 0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        newInfo.user_name || '',
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-      ];
-
-      mysql.query(sql, postData, function (err, status){
-        if(err) return cb(err);
-        cb(null, null, postData);
-      });
+  exports.register = function(newInfo){
+    return new Promise((resolve, reject) => {
+      formVali(newInfo)
+      .then(biz.user.getByName.bind(null, newInfo.user_name))
+      .then(p1)
+      .then(p2)
+      .then(user => resolve(user))
+      .catch(reject);
     });
   };
 })();
 
-/**
- * 用户登陆
- *
- * @code 01 用户名或密码输入错误
- * @code 02 禁止登陆
- * @code 03 用户名或密码输入错误
- *
- * @return
- */
-exports.login = function(logInfo /* 用户名及密码 */, cb){
-  var self = this;
-
-  self.getByName(logInfo.user_name, (err, doc) => {
-    if(err)  return cb(err);
-    if(!doc) return cb(null, '01');
-
-    // 用户的状态
-    if(1 !== doc.status) return cb(null, '02');
-
-    // 验证密码
-    if(md5.hex(logInfo.user_pass) !== doc.user_pass)
-      return cb(null, '03');
-
-    var p1 = new Promise((resolve, reject) => {
-      self.authorize(doc, (err, code) => {
-        if(err) return reject(err);
-        resolve(code);
-      });
+(() => {
+  function p1(logInfo, user){
+    return new Promise((resolve, reject) => {
+      if(!user) return reject('用户名或密码输入错误');
+      // 用户状态
+      if(1 !== user.status) return reject('禁止登陆');
+      // 验证密码
+      if(md5.hex(logInfo.user_pass) !== user.user_pass)
+        return reject('用户名或密码输入错误');
+      resolve(user);
     });
+  }
 
-    var p2 = new Promise((resolve, reject) => {
-      // 服务器可用性
-      biz.frontend.available((err, info) => {
-        if(err) return reject(err);
-        resolve(info);
-      });
+  function p2(user){
+    return new Promise((resolve, reject) => {
+      Promise.all([
+        biz.user.authorize.bind(null, user),
+        biz.frontend.available
+      ]).then(values => {
+        resolve(values);
+      }).catch(reject);
     });
+  }
 
-    Promise.all([p1, p2]).then(values => {
-      cb(null, null, values);
-    }).catch(cb);
-
-  });
-};
+  /**
+   * 用户登陆
+   *
+   * @return
+   */
+  exports.login = function(logInfo /* 用户名及密码 */){
+    return new Promise((resolve, reject) => {
+      biz.user.getByName(logInfo.user_name)
+      .then(p1.bind(null, logInfo))
+      .then(p2)
+      .then(docs => { resolve(docs); })
+      .catch(reject);
+    });
+  };
+})();
 
 (() => {
-  var sql = 'UPDATE s_user SET status=? WHERE id=?';
-
   /**
    * 并不是真删，而是改变状态
    *
    * @return
    */
-  exports.del = function(id, status, cb){
-    mysql.query(sql, [status || 0, id], cb);
+  exports.del = function(id, trans){
+    return biz.user.editStatus(id, 0, trans);
+  };
+
+  var sql = 'UPDATE s_user SET status=?, status_time=? WHERE id=?';
+
+  /**
+   * 编辑用户状态
+   *
+   * @return
+   */
+  exports.editStatus = function(id, status, trans){
+    var status_time = new Date();
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [status, status_time, id], err => {
+        if(err) return reject(err);
+        resolve(status_time);
+      });
+    });
   };
 })();
 
@@ -225,8 +269,14 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
    *
    * @return
    */
-  exports.resetPwd = function(id, user_pass, cb){
-    mysql.query(sql, [md5.hex(user_pass), id], cb);
+  exports.resetPwd = function(id, user_pass, trans){
+    user_pass = md5.hex(user_pass || '123456');
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [user_pass, id], err => {
+        if(err) return reject(err);
+        resolve(user_pass);
+      });
+    });
   };
 })();
 
@@ -238,16 +288,24 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
    *
    * @return
    */
-  exports.editInfo = function(newInfo, cb){
+  exports.editInfo = function(user, cb){
+
+    user.current_score = user.current_score || 0;
+    user.vip = user.vip || 0;
 
     var postData = [
-      newInfo.nickname,
-      newInfo.current_score,
-      newInfo.vip,
-      newInfo.id
+      user.nickname,
+      user.current_score,
+      user.vip,
+      user.id
     ];
 
-    mysql.query(sql, postData, cb);
+    return new Promise((resolve, reject) => {
+      mysql.query(sql, postData, err => {
+        if(err) return reject(err);
+        resolve(user);
+      });
+    });
   };
 })();
 
@@ -259,19 +317,19 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
    *
    * @return
    */
-  exports.registerChannel = function(server_id, channel_id, user){
+  exports.registerChannel = function(server_id, channel_id, user, trans){
+
+    user.server_id = server_id;
+    user.channel_id = channel_id;
+
+    var postData = [
+      user.server_id,
+      user.channel_id,
+      user.id,
+    ];
+
     return new Promise((resolve, reject) => {
-
-      user.server_id = server_id;
-      user.channel_id = channel_id;
-
-      var postData = [
-        user.server_id,
-        user.channel_id,
-        user.id,
-      ];
-
-      mysql.query(sql, postData, (err, status) => {
+      (trans || mysql).query(sql, postData, err => {
         if(err) return reject(err);
         resolve(user);
       });
@@ -283,8 +341,13 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
    *
    * @return
    */
-  exports.clearChannel = function(user_id, cb){
-    mysql.query(sql, ['', '', user_id], cb);
+  exports.clearChannel = function(user_id, trans){
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, ['', '', user_id], err => {
+        if(err) return reject(err);
+        resolve();
+      });
+    });
   };
 })();
 
@@ -311,34 +374,25 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
 })();
 
 (() => {
-
-  /**
-   * 每日登陆摇奖随机一个格子
-   *
-   * @return 格子号
-   */
-  function randomCell(){
-    return _.random(1, _.keys(cfg.daily_turntable).length);
-  }
-
-  /**
-   * 每日登陆摇奖
-   *
-   * @param 01 今天已经领过奖啦
-   * @return
-   */
-  exports.daily_landing_lottery = function(id, cb){
-
-    biz.gift.findGiftByDate(id, 1, null, function (err, docs){
-      if(err) return cb(err);
-      if(0 < docs.length) return cb(err, '01');
-    });
-  };
-})();
-
-(() => {
   const numkeys = 3;
   const sha1    = '3b248050f9965193d8a4836d6258861a1890017f';
+
+  function p1(server_id, channel_id){
+    return new Promise((resolve, reject) => {
+      redis.evalsha(sha1, numkeys, conf.redis.database, server_id, channel_id, (err, code) => {
+        if(err) return reject(err);
+        if(!_.isArray(code)) return reject(code);
+        resolve(utils.arrToObj(code));
+      });
+    });
+  }
+
+  function p2(user){
+    return new Promise((resolve, reject) => {
+      if(user) return resolve(user.id);
+      reject('NOT_FOUND_USER');
+    });
+  }
 
   /**
    * 用户退出（channel_close.lua）
@@ -347,23 +401,11 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
    */
   exports.logout = function(server_id, channel_id){
     return new Promise((resolve, reject) => {
-      redis.evalsha(sha1, numkeys, conf.redis.database, server_id, channel_id, (err, code) => {
-        if(err) return reject(err);
-        if(!_.isArray(code)) return reject(code);
-
-        var user = utils.arrToObj(code);
-
-        biz.user.getById(user.id, (err, doc) => {
-          if(err) return reject(err);
-          if(!doc) return reject('invalid_user_id');
-
-          biz.user.clearChannel(doc.id, (err) => {
-            if(err) return reject(err);
-            resolve(doc);
-          });
-        });
-
-      });
+      p1(server_id, channel_id)
+      .then(p2)
+      .then(biz.user.clearChannel)
+      .then(() => { resolve(); })
+      .catch(reject);
     });
   };
 })();
@@ -372,6 +414,23 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
   const numkeys = 3;
   const sha1    = '6df440fb93a747912f3eae2835c8fec8e90788ca';
 
+  function p1(server_id, channel_id){
+    return new Promise((resolve, reject) => {
+      redis.evalsha(sha1, numkeys, conf.redis.database, server_id, channel_id, (err, code) => {
+        if(err) return reject(err);
+        if(!_.isArray(code)) return reject(code);
+        resolve(utils.arrToObj(code));
+      });
+    });
+  }
+
+  function p2(user){
+    return new Promise((resolve, reject) => {
+      if(user) return resolve(user.id);
+      reject('NOT_FOUND_USER');
+    });
+  }
+
   /**
    * 获取用户信息（user_info_byChannelId.lua）
    *
@@ -379,19 +438,11 @@ exports.login = function(logInfo /* 用户名及密码 */, cb){
    */
   exports.getByChannelId = function(server_id, channel_id){
     return new Promise((resolve, reject) => {
-      redis.evalsha(sha1, numkeys, conf.redis.database, server_id, channel_id, (err, code) => {
-        if(err) return reject(err);
-        if(!_.isArray(code)) return reject(code);
-
-        var user = utils.arrToObj(code);
-
-        biz.user.getById(user.id, (err, doc) => {
-          if(err) return reject(err);
-          if(doc) return resolve(doc);
-          reject('invalid_user_id');
-        });
-
-      });
+      p1(server_id, channel_id)
+      .then(p2)
+      .then(biz.user.getById)
+      .then(user => { resolve(user); })
+      .catch(reject);
     });
   };
 })();
