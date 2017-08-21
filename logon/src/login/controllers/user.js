@@ -13,10 +13,14 @@ const utils = require('speedt-utils').utils;
 exports.register = function(req, res, next){
   var query  = req.body;
 
-  biz.user.register(query, function (err, code, doc){
-    if(err)  return next(err);
-    if(code) return res.send({ error: { msg: code } });
+  biz.user.register(query)
+  .then(() => {
     res.send({});
+  })
+  .catch(err => {
+    if('string' === typeof err)
+      return res.send({ error: { msg: err } });
+    next(err);
   });
 };
 
@@ -30,9 +34,13 @@ exports.loginUI = function(req, res, next){
 exports.login = function(req, res, next){
   var query = req.body;
 
-  biz.user.login(query, (err, code, token /* 授权码及服务器信息 */) => {
-    if(err)  return next(err);
-    if(code) return res.send({ error: { code: code } });
-    res.send({ data: token });
+  biz.user.login(query)
+  .then(token => {
+    res.send({ data: token })
+  })
+  .catch(err => {
+    if('string' === typeof err)
+      return res.send({ error: { msg: err } });
+    next(err);
   });
 };

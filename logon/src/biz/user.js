@@ -211,9 +211,9 @@ const logger = require('log4js').getLogger('biz.user');
       Promise.all([
         biz.user.authorize.bind(null, user),
         biz.frontend.available
-      ]).then(values => {
-        resolve(values);
-      }).catch(reject);
+      ])
+      .then(values => { resolve(values); })
+      .catch(reject);
     });
   }
 
@@ -227,7 +227,7 @@ const logger = require('log4js').getLogger('biz.user');
       biz.user.getByName(logInfo.user_name)
       .then(p1.bind(null, logInfo))
       .then(p2)
-      .then(docs => { resolve(docs); })
+      .then(token => { resolve(token); })
       .catch(reject);
     });
   };
@@ -288,7 +288,7 @@ const logger = require('log4js').getLogger('biz.user');
    *
    * @return
    */
-  exports.editInfo = function(user, cb){
+  exports.editInfo = function(user){
 
     user.current_score = user.current_score || 0;
     user.vip = user.vip || 0;

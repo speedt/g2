@@ -15,7 +15,7 @@ exports.changePwd = function(req, res, next){
 
   query.id = req.session.userId;
 
-  biz.manager.changePwd()
+  biz.manager.changePwd(query)
   .then(() => {
     res.send({});
   })

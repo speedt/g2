@@ -102,21 +102,21 @@ const logger = require('log4js').getLogger('biz.manager');
     return new Promise((resolve, reject) => {
       if(!user) return reject('用户不存在');
       if(md5.hex(logInfo.old_pass) !== user.user_pass)
-        return reject(null, '原始密码错误');
-      resolve(user);
+        return reject('原始密码错误');
+      resolve();
     });
   }
 
-  function p3(user, trans){
+  function p3(logInfo, trans){
     return new Promise((resolve, reject) => {
-      user.user_pass = md5.hex(user.user_pass);
+      logInfo.user_pass = md5.hex(logInfo.user_pass);
 
       (trans || mysql).query(sql, [
-        user.user_pass,
-        user.id,
+        logInfo.user_pass,
+        logInfo.id,
       ], err => {
         if(err) return reject(err);
-        resolve(user);
+        resolve();
       });
     });
   }
@@ -133,8 +133,8 @@ const logger = require('log4js').getLogger('biz.manager');
       p1(logInfo)
       .then(biz.manager.getById.bind(null, logInfo.id))
       .then(p2.bind(null, logInfo))
-      .then(p3)
-      .then(user => { resolve(user); })
+      .then(p3.bind(null, logInfo))
+      .then(() => { resolve(); })
       .catch(reject);
     });
   };
