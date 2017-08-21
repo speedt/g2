@@ -106,8 +106,7 @@ exports.entry = function(send, msg){
   try{ var data = JSON.parse(msg.body);
   }catch(ex){ return; }
 
-  biz.user.getByChannelId(data.serverId, data.channelId)
-  .then(biz.group.entry.bind(null, data.data))
+  biz.group.entry(data.serverId, data.channelId, data.data)
   .then(group_users => {
     var _data = [];
     _data.push(null);
