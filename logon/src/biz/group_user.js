@@ -38,17 +38,9 @@ const logger = require('log4js').getLogger('biz.group_user');
    *
    * @return
    */
-  exports.getByUserId = function(id, cb){
-
-    if(!!cb && 'function' === typeof cb){
-      return mysql.query(sql, [id], (err, docs) => {
-        if(err) return cb(err);
-        cb(null, mysql.checkOnly(docs) ? docs[0] : null);
-      });
-    }
-
+  exports.getByUserId = function(id, trans){
     return new Promise((resolve, reject) => {
-      mysql.query(sql, [id], (err, docs) => {
+      (trans || mysql).query(sql, [id], (err, docs) => {
         if(err) return reject(err);
         resolve(mysql.checkOnly(docs) ? docs[0] : null);
       });
