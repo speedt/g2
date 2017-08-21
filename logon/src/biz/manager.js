@@ -90,18 +90,18 @@ const logger = require('log4js').getLogger('biz.manager');
 })();
 
 (() => {
-  function p1(user){
+  function p1(logInfo){
     return new Promise((resolve, reject) => {
-      user.user_pass = utils.isEmpty(user.user_pass);
-      if(!user.user_pass) return reject('新密码不能为空');
-      resolve(user);
+      logInfo.user_pass = utils.isEmpty(logInfo.user_pass);
+      if(!logInfo.user_pass) return reject('新密码不能为空');
+      resolve(logInfo);
     });
   }
 
-  function p2(user){
+  function p2(logInfo, user){
     return new Promise((resolve, reject) => {
-      if(!doc) return reject('用户不存在');
-      if(md5.hex(user.old_pass) !== doc.user_pass)
+      if(!user) return reject('用户不存在');
+      if(md5.hex(logInfo.old_pass) !== user.user_pass)
         return reject(null, '原始密码错误');
       resolve(user);
     });
@@ -116,7 +116,7 @@ const logger = require('log4js').getLogger('biz.manager');
         user.id,
       ], err => {
         if(err) return reject(err);
-        resolve();
+        resolve(user);
       });
     });
   }
@@ -128,13 +128,13 @@ const logger = require('log4js').getLogger('biz.manager');
    *
    * @return
    */
-  exports.changePwd = function(user){
+  exports.changePwd = function(logInfo){
     return new Promise((resolve, reject) => {
-      p1(user)
-      .then(biz.manager.getById.bind(null, user.id))
-      .then(p2)
-      .then(p3.bind(null, user))
-      .then(() => { resolve(); })
+      p1(logInfo)
+      .then(biz.manager.getById.bind(null, logInfo.id))
+      .then(p2.bind(null, logInfo))
+      .then(p3)
+      .then(user => { resolve(user); })
       .catch(reject);
     });
   };

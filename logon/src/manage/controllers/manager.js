@@ -15,10 +15,14 @@ exports.changePwd = function(req, res, next){
 
   query.id = req.session.userId;
 
-  biz.manager.changePwd(query, function (err, code, status){
-    if(err)  return next(err);
-    if(code) return res.send({ error: { code: code } });
+  biz.manager.changePwd()
+  .then(() => {
     res.send({});
+  })
+  .catch(err => {
+    if('string' === typeof err)
+      return res.send({ error: { msg: err } });
+    next(err);
   });
 };
 
@@ -41,7 +45,6 @@ exports.profileUI = function(req, res, next){
 };
 
 exports.loginUI = function(req, res, next){
-
   res.render('manager/login', {
     conf: conf,
     data: {
@@ -53,17 +56,21 @@ exports.loginUI = function(req, res, next){
 exports.login = function(req, res, next){
   var query = req.body;
 
-  biz.manager.login(query, (err, code, doc) => {
-    if(err)  return next(err);
-    if(code) return res.send({ error: { code: code } });
-
+  biz.manager.login(query)
+  .then(user => {
     // session
-    req.session.userId = doc.id;
-    req.session.user = doc;
+    req.session.userId = user.id;
+    req.session.user = user;
 
     res.send({});
+  })
+  .catch(err => {
+    if('string' === typeof err)
+      return res.send({ error: { msg: err } });
+    next(err);
   });
 };
+
 
 exports.login_validate = function(req, res, next){
   if(req.session.userId) return next();
