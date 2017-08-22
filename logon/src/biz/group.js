@@ -236,6 +236,11 @@ const logger = require('log4js').getLogger('biz.group');
 })();
 
 (() => {
+  /**
+   * 参数验证
+   *
+   * @return
+   */
   function p1(group_info){
     return new Promise((resolve, reject) => {
       if(!_.isNumber(group_info.extend_fund)) return reject('INVALID_PARAMS');
@@ -263,7 +268,7 @@ const logger = require('log4js').getLogger('biz.group');
 
   function p3(user){
     return new Promise((resolve, reject) => {
-      if(!user) return reject('用户没有登陆');
+      if(!user) return reject('通道号不存在');
       if(user.group_id) return reject('请先退出');
       resolve(user);
     });
@@ -541,18 +546,18 @@ const logger = require('log4js').getLogger('biz.group');
   var sql = 'SELECT '+
               'b.* '+
             'FROM '+
-              '(SELECT (SELECT COUNT(1) FROM g_group_user WHERE group_id=a.id) AS group_user_count, a.* FROM g_group a) b '+
+              '(SELECT (SELECT COUNT(1) FROM g_group_user WHERE group_id=a.id) AS group_user_count, a.* FROM g_group a WHERE a.status=0) b '+
             'WHERE '+
-              'b.group_user_count=? '+
+              'b.group_user_count=0 '+
             'LIMIT 1';
   /**
-   * 获取一个空闲的群组
+   * 获取一个空闲群组
    *
    * @return
    */
   exports.getFree = function(trans){
     return new Promise((resolve, reject) => {
-      (trans || mysql).query(sql, [0], (err, docs) => {
+      (trans || mysql).query(sql, null, (err, docs) => {
         if(err) return reject(err);
         resolve(mysql.checkOnly(docs) ? docs[0] : null);
       });
