@@ -56,25 +56,52 @@ const logger = require('log4js').getLogger('biz.group_user');
    */
   function getSeatNum(seat_count){
     switch(seat_count){
-      case 1:  return 2;  // base
-      case 2:  return 1;  // base
-      case 3:  return 4;
-      case 4:  return 1;  // base
-      case 5:  return 2;
-      case 6:  return 1;
-      case 7:  return 8;
-      case 8:  return 1;  // base
-      case 9:  return 2;
-      case 10: return 1;
-      case 11: return 4;
-      case 12: return 1;
-      case 13: return 2;
-      case 14: return 1;
-      default: return 0;
+      case null: return 1;
+      case 1:    return 2;  // base
+      case 2:    return 1;  // base
+      case 3:    return 4;
+      case 4:    return 1;  // base
+      case 5:    return 2;
+      case 6:    return 1;
+      case 7:    return 8;
+      case 8:    return 1;  // base
+      case 9:    return 2;
+      case 10:   return 1;
+      case 11:   return 4;
+      case 12:   return 1;
+      case 13:   return 2;
+      case 14:   return 1;
+      default:   return 0;
     }
   }
 
   const sql = 'INSERT INTO g_group_user (group_id, user_id, create_time, status, seat) VALUES (?, ?, ?, ?, ?)';
+
+  function p1(group){
+    return new Promise((resolve, reject) => {
+      if(!group) return reject('群组不存在');
+      resolve(getSeatNum(group.group_user_seat_sum));
+    });
+  }
+
+  function p2(group_user_info, trans, seat){
+    return new Promise((resolve, reject) => {
+      group_user_info.create_time = new Date();
+      group_user_info.status = 0;
+      group_user_info.seat = seat;
+
+      (trans || mysql).query(sql, [
+        group_user_info.group_id,
+        group_user_info.user_id,
+        group_user_info.create_time,
+        group_user_info.status,
+        group_user_info.seat,
+      ], err => {
+        if(err) return reject(err);
+        resolve(group_user_info);
+      });
+    });
+  }
 
   /**
    *
@@ -83,38 +110,48 @@ const logger = require('log4js').getLogger('biz.group_user');
   exports.saveNew = function(newInfo, trans){
     return new Promise((resolve, reject) => {
 
-      newInfo.create_time = new Date();
-      newInfo.status = 0;
+      // newInfo.create_time = new Date();
+      // newInfo.status = 0;
 
-      var postData = [
-        newInfo.group_id,
-        newInfo.user_id,
-        newInfo.create_time,
-        newInfo.status,
-      ];
+      // var postData = [
+      //   newInfo.group_id,
+      //   newInfo.user_id,
+      //   newInfo.create_time,
+      //   newInfo.status,
+      // ];
 
-      if(newInfo.seat){
-        postData.push(newInfo.seat);
 
-        return (trans || mysql).query(sql, postData, (err, status) => {
-          if(err) return reject(err);
-          resolve(newInfo);
-        });
-      }
+      biz.group.getById(newInfo.group_id, trans)
+      .then(p1)
+      .then(p2.bind(null, newInfo, trans))
+      .then(doc => { resolve(doc); })
+      .catch(reject);
 
-      biz.group_user.getSeatNumCount(newInfo.group_id, (err, doc) => {
-        if(err) return reject(err);
-        if(!doc) return reject(new Error('seat_count_is_null'));
 
-        newInfo.seat = getSeatNum(doc.seat_count);
 
-        postData.push(newInfo.seat);
 
-        (trans || mysql).query(sql, postData, (err, status) => {
-          if(err) return reject(err);
-          resolve(newInfo);
-        });
-      }, trans);
+      // if(newInfo.seat){
+      //   postData.push(newInfo.seat);
+
+      //   return (trans || mysql).query(sql, postData, (err, status) => {
+      //     if(err) return reject(err);
+      //     resolve(newInfo);
+      //   });
+      // }
+
+      // biz.group_user.getSeatNumCount(newInfo.group_id, (err, doc) => {
+      //   if(err) return reject(err);
+      //   if(!doc) return reject(new Error('seat_count_is_null'));
+
+      //   newInfo.seat = getSeatNum(doc.seat_count);
+
+      //   postData.push(newInfo.seat);
+
+      //   (trans || mysql).query(sql, postData, (err, status) => {
+      //     if(err) return reject(err);
+      //     resolve(newInfo);
+      //   });
+      // }, trans);
     });
   };
 })();
