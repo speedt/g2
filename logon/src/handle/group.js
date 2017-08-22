@@ -16,36 +16,23 @@ const logger = require('log4js').getLogger('handle.group');
 
 const _ = require('underscore');
 
-/**
- *
- */
-exports.search = function(send, msg){
-  if(!_.isString(msg.body)) return logger.error('group search empty');
-
-  try{ var data = JSON.parse(msg.body);
-  }catch(ex){ return; }
-
-  try{ var group_info = JSON.parse(data.data);
-  }catch(ex){ return; }
-
-  biz.user.getByChannelId(data.serverId, data.channelId)
-  .then(biz.group.search.bind(null, group_info))
-  .then(group_users => {
+(() => {
+  function p1(send, data, group_users){
     var _data = [];
     _data.push(null);
     _data.push(JSON.stringify([conf.app.ver, 3002, data.seqId, _.now(), group_users]));
 
     for(let i of group_users){
       if(!i.server_id || !i.channel_id) continue;
-
       _data.splice(0, 1, i.channel_id);
 
       send('/queue/back.send.v3.'+ i.server_id, { priority: 9 }, _data, (err, code) => {
         if(err) return logger.error('group search:', err);
       });
     }
-  })
-  .catch(err => {
+  }
+
+  function p2(send, data, err){
     if('string' !== typeof err) return logger.error('group search:', err);
 
     var _data = [];
@@ -55,8 +42,26 @@ exports.search = function(send, msg){
     send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _data, (err, code) => {
       if(err) return logger.error('group search:', err);
     });
-  });
-};
+  }
+
+  /**
+   *
+   */
+  exports.search = function(send, msg){
+    if(!_.isString(msg.body)) return logger.error('group search empty');
+
+    try{ var data = JSON.parse(msg.body);
+    }catch(ex){ return; }
+
+    try{ var group = JSON.parse(data.data);
+    }catch(ex){ return; }
+
+    biz.group.search(data.serverId, data.channelId, group)
+    .then(p1.bind(null, send, data))
+    .then(p2.bind(null, send, data))
+    .catch();
+  };
+})();
 
 /**
  *

@@ -235,9 +235,9 @@ const logger = require('log4js').getLogger('biz.user');
     return new Promise((resolve, reject) => {
       Promise.all([
         biz.user.authorize(user),
-        biz.frontend.available()
+        biz.frontend.available(),
       ])
-      .then(values => { resolve(values); })
+      .then(token => { resolve(token); })
       .catch(reject);
     });
   }

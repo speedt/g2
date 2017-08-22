@@ -186,37 +186,71 @@ const logger = require('log4js').getLogger('biz.group');
 })();
 
 (() => {
-  function p1(group){
+  function p1(group_info){
     return new Promise((resolve, reject) => {
-      if(!_.isNumber(group.extend_fund)) return reject('INVALID_PARAMS');
-      if(999999 < group.extend_fund || 0 > group.fund) return reject('INVALID_PARAMS');
+      if(!_.isNumber(group_info.extend_fund)) return reject('INVALID_PARAMS');
+      if(999999 < group_info.extend_fund || 0 > group_info.extend_fund) return reject('INVALID_PARAMS');
 
-      if(!_.isNumber(group.extend_round_count)) return reject('INVALID_PARAMS');
-      if(4 < group.round_count || 0 > group.round_count)
-        return reject('INVALID_PARAMS');
+      if(!_.isNumber(group_info.extend_round_count)) return reject('INVALID_PARAMS');
+      if(4 < group_info.extend_round_count || 0 > group_info.extend_round_count) return reject('INVALID_PARAMS');
 
-      if(!_.isNumber(group.visitor_count)) return reject('INVALID_PARAMS');
-      if(6 < group.visitor_count || 0 > group.visitor_count)
-        return reject('INVALID_PARAMS');
+      if(!_.isNumber(group_info.visitor_count)) return reject('INVALID_PARAMS');
+      if(6 < group_info.visitor_count || 0 > group_info.visitor_count) return reject('INVALID_PARAMS');
 
-      resolve(group);
+      resolve(group_info);
     });
   }
 
-  function p2(server_id, channel_id, group){
+  function p2(server_id, channel_id, group_info){
     return new Promise((resolve, reject) => {
       biz.user.getByChannelId(server_id, channel_id)
-      .then(p3.bind(null, group))
+      .then(p3)
+      .then(p4.bind(null, group_info))
       .then(docs => { resolve(docs); })
       .catch(reject);
     });
   }
 
-  function p3(group, user){
+  function p3(user){
     return new Promise((resolve, reject) => {
-
+      if(!user) return reject('用户没有登陆');
+      if(user.group_id) return reject('请先退出');
+      resolve(user);
     });
   }
+
+  function p4(group_info, user){
+    return new Promise((resolve, reject) => {
+      biz.group.getFree()
+      .then(p5.bind(null, group_info))
+      .catch(reject);
+    });
+  }
+
+
+  function p5(group_info, group){
+    if(group){
+      group_info.id = group.id;
+
+      biz.group.editInfo(group_info)
+
+
+      return new Promise((resolve, reject) => {
+
+      });
+    }
+  }
+
+  exports.search = function(server_id, channel_id, group_info){
+    return new Promise((resolve, reject) => {
+      p1(group_info)
+      .then(p2.bind(null, server_id, channel_id))
+      .catch(reject);
+    });
+  };
+
+
+
 
   // /**
   //  * 创建群组
