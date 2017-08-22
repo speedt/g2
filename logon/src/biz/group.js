@@ -218,70 +218,70 @@ const logger = require('log4js').getLogger('biz.group');
     });
   }
 
-  /**
-   * 创建群组
-   *
-   * @param group
-   * @return
-   */
-  exports.search = function(server_id, channel_id, group){
-    return new Promise((resolve, reject) => {
+  // /**
+  //  * 创建群组
+  //  *
+  //  * @param group
+  //  * @return
+  //  */
+  // exports.search = function(server_id, channel_id, group){
+  //   return new Promise((resolve, reject) => {
 
-      p1(group)
-      .then(p2.bind(null, server_id, channel_id))
-      .then(biz.group_user.findAllByGroupId)
-      .then(docs => { resolve(docs); })
-      .catch(reject);
-
-
+  //     p1(group)
+  //     .then(p2.bind(null, server_id, channel_id))
+  //     .then(biz.group_user.findAllByGroupId)
+  //     .then(docs => { resolve(docs); })
+  //     .catch(reject);
 
 
-    //   group.create_time = new Date();
-    //   group.status = 0;
 
-    //   p3(user.id)  /* 如果用户已在某一群组，则提示先退出 */
-    //   .then(biz.group.getFree)
-    //   .then(_group => {
 
-    //     if(_group){
-    //       return new Promise((resolve, reject) => {
-    //         group.id = _group.id;
+  //   //   group.create_time = new Date();
+  //   //   group.status = 0;
 
-    //         biz.group.editInfo(group, user, (err, doc) => {
-    //           if(err) return reject(err);
-    //           resolve(doc);
-    //         });
-    //       });
-    //     }
+  //   //   p3(user.id)  /* 如果用户已在某一群组，则提示先退出 */
+  //   //   .then(biz.group.getFree)
+  //   //   .then(_group => {
 
-    //     return new Promise((resolve, reject) => {
-    //       biz.group.genFreeId()
-    //       .then(group_id => {
-    //         return new Promise((resolve, reject) => {
+  //   //     if(_group){
+  //   //       return new Promise((resolve, reject) => {
+  //   //         group.id = _group.id;
 
-    //           group.id = group_id;
-    //           group.user_id = user.id;
+  //   //         biz.group.editInfo(group, user, (err, doc) => {
+  //   //           if(err) return reject(err);
+  //   //           resolve(doc);
+  //   //         });
+  //   //       });
+  //   //     }
 
-    //           biz.group.saveNew(group, (err, doc) => {
-    //             if(err) return reject(err);
-    //             resolve(doc);
-    //           });
-    //         });
-    //       })
-    //       .then(doc => resolve(doc))
-    //       .catch(reject);
-    //     });
-    //   })
-    //   .then(group_user => {
-    //     return new Promise((resolve, reject) => {
-    //       resolve(group_user.group_id);
-    //     });
-    //   })
-    //   .then(biz.group_user.findAllByGroupId)
-    //   .then(docs => resolve(docs))
-    //   .catch(reject);
-    });
-  });
+  //   //     return new Promise((resolve, reject) => {
+  //   //       biz.group.genFreeId()
+  //   //       .then(group_id => {
+  //   //         return new Promise((resolve, reject) => {
+
+  //   //           group.id = group_id;
+  //   //           group.user_id = user.id;
+
+  //   //           biz.group.saveNew(group, (err, doc) => {
+  //   //             if(err) return reject(err);
+  //   //             resolve(doc);
+  //   //           });
+  //   //         });
+  //   //       })
+  //   //       .then(doc => resolve(doc))
+  //   //       .catch(reject);
+  //   //     });
+  //   //   })
+  //   //   .then(group_user => {
+  //   //     return new Promise((resolve, reject) => {
+  //   //       resolve(group_user.group_id);
+  //   //     });
+  //   //   })
+  //   //   .then(biz.group_user.findAllByGroupId)
+  //   //   .then(docs => resolve(docs))
+  //   //   .catch(reject);
+  //   });
+  // });
 })();
 
 (() => {
