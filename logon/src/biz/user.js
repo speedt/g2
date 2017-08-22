@@ -451,11 +451,33 @@ const logger = require('log4js').getLogger('biz.user');
 
         biz.user.clearChannel(user.id, trans)
         .then(biz.group._quit.bind(null, user.id, trans))
+        .then(p5.bind(null, trans))
+        .then(p6.bind(null, user))
         .then(docs => { resolve(docs); })
         .catch(err => {
           trans.rollback(() => { reject(err); });
         });
       });
+    });
+  }
+
+  function p5(trans, docs){
+    return new Promise((resolve, reject) => {
+      trans.commit(err => {
+        if(err) return reject(err);
+        resolve(docs);
+      });
+    });
+  }
+
+  function p6(user, docs){
+    return new Promise((resolve, reject) => {
+      logger.info('user logout: %j', {
+        log_type: 2,
+        user_id: user.id,
+        create_time: _.now(),
+      });
+      resolve(docs);
     });
   }
 
