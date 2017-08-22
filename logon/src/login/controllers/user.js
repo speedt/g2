@@ -10,19 +10,25 @@ const biz = require('emag.biz');
 const conf  = require('../settings');
 const utils = require('speedt-utils').utils;
 
-exports.register = function(req, res, next){
-  var query  = req.body;
-
-  biz.user.register(query)
-  .then(() => {
+(() => {
+  function p1(res, user){
     res.send({});
-  })
-  .catch(err => {
+  }
+
+  function p2(res, next, err){
     if('string' === typeof err)
       return res.send({ error: { msg: err } });
     next(err);
-  });
-};
+  }
+
+  exports.register = function(req, res, next){
+    var query  = req.body;
+
+    biz.user.register(query)
+    .then(p1.bind(null, res))
+    .catch(p2.bind(null, res, next));
+  };
+})();
 
 exports.loginUI = function(req, res, next){
   res.render('user/login', {
@@ -31,16 +37,22 @@ exports.loginUI = function(req, res, next){
   });
 };
 
-exports.login = function(req, res, next){
-  var query = req.body;
+(() => {
+  function p1(res, token){
+    res.send({ data: token });
+  }
 
-  biz.user.login(query)
-  .then(token => {
-    res.send({ data: token })
-  })
-  .catch(err => {
+  function p2(res, next, err){
     if('string' === typeof err)
       return res.send({ error: { msg: err } });
     next(err);
-  });
-};
+  }
+
+  exports.login = function(req, res, next){
+    var query = req.body;
+
+    biz.user.login(query)
+    .then(p1.bind(null, res))
+    .catch(p2.bind(null, res, next));
+  };
+})();

@@ -140,7 +140,7 @@ const logger = require('log4js').getLogger('biz.user');
 
   var sql = 'INSERT INTO s_user (id, user_name, user_pass, status, sex, create_time, mobile, qq, weixin, email, current_score, tool_1, tool_2, tool_3, tool_4, tool_5, tool_6, tool_7, tool_8, tool_9, nickname, vip, consume_count, win_count, lose_count, win_score_count, lose_score_count, line_gone_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
-  function p2(user, trans){
+  function p2(user){
     user.id = utils.replaceAll(uuid.v1(), '-', '');
     user.user_pass = md5.hex(user.user_pass);
     user.status = user.status || 1;
@@ -166,7 +166,7 @@ const logger = require('log4js').getLogger('biz.user');
     user.line_gone_count  = 0;
 
     return new Promise((resolve, reject) => {
-      (trans || mysql).query(sql, [
+      mysql.query(sql, [
         user.id,
         user.user_name,
         user.user_pass,
