@@ -188,92 +188,99 @@ const logger = require('log4js').getLogger('biz.group');
 (() => {
   function p1(group){
     return new Promise((resolve, reject) => {
+      if(!_.isNumber(group.extend_fund)) return reject('INVALID_PARAMS');
+      if(999999 < group.extend_fund || 0 > group.fund) return reject('INVALID_PARAMS');
 
-      if(!_.isNumber(group.extend_fund)) return reject('invalid_params');
-      if(999999 < group.extend_fund || 0 > group.extend_fund)
-        return reject('invalid_params');
+      if(!_.isNumber(group.extend_round_count)) return reject('INVALID_PARAMS');
+      if(4 < group.round_count || 0 > group.round_count)
+        return reject('INVALID_PARAMS');
 
-      if(!_.isNumber(group.extend_round_count)) return reject('invalid_params');
-      if(4 < group.extend_round_count || 0 > group.extend_round_count)
-        return reject('invalid_params');
-
-      if(!_.isNumber(group.visitor_count)) return reject('invalid_params');
+      if(!_.isNumber(group.visitor_count)) return reject('INVALID_PARAMS');
       if(6 < group.visitor_count || 0 > group.visitor_count)
-        return reject('invalid_params');
+        return reject('INVALID_PARAMS');
 
       resolve(group);
     });
   }
 
-  /**
-   *
-   * @param group 群组信息
-   * @return
-   */
-  exports.search = function(group, user){
+  function p2(server_id, channel_id, group){
     return new Promise((resolve, reject) => {
-
-      if(!_.isNumber(group.extend_fund)) return reject('invalid_param');
-      group.fund = group.fund || 0;
-      if(0 > group.fund)          return reject('invalid_param');
-
-      if(!_.isNumber(group.extend_round_count)) return reject('invalid_param');
-      group.round_count = group.round_count || 0;
-      if(  cfg.dynamic.group_type_pushCake.round_count_max < group.round_count
-        || cfg.dynamic.group_type_pushCake.round_count_min > group.round_count)
-        return reject('invalid_param');
-
-      if(!_.isNumber(group.visitor_count)) return reject('invalid_param');
-      group.visitor_count = group.visitor_count || 0;
-      if(  cfg.dynamic.group_type_pushCake.visitor_count_max < group.visitor_count
-        || cfg.dynamic.group_type_pushCake.visitor_count_min > group.visitor_count)
-        return reject('invalid_param');
-
-      group.create_time = new Date();
-      group.status = 0;
-
-      p3(user.id)  /* 如果用户已在某一群组，则提示先退出 */
-      .then(biz.group.getFree)
-      .then(_group => {
-
-        if(_group){
-          return new Promise((resolve, reject) => {
-            group.id = _group.id;
-
-            biz.group.editInfo(group, user, (err, doc) => {
-              if(err) return reject(err);
-              resolve(doc);
-            });
-          });
-        }
-
-        return new Promise((resolve, reject) => {
-          biz.group.genFreeId()
-          .then(group_id => {
-            return new Promise((resolve, reject) => {
-
-              group.id = group_id;
-              group.user_id = user.id;
-
-              biz.group.saveNew(group, (err, doc) => {
-                if(err) return reject(err);
-                resolve(doc);
-              });
-            });
-          })
-          .then(doc => resolve(doc))
-          .catch(reject);
-        });
-      })
-      .then(group_user => {
-        return new Promise((resolve, reject) => {
-          resolve(group_user.group_id);
-        });
-      })
-      .then(biz.group_user.findAllByGroupId)
-      .then(docs => resolve(docs))
+      biz.user.getByChannelId(server_id, channel_id)
+      .then(p3.bind(null, group))
+      .then(docs => { resolve(docs); })
       .catch(reject);
     });
+  }
+
+  function p3(group, user){
+    return new Promise((resolve, reject) => {
+
+    });
+  }
+
+  /**
+   * 创建群组
+   *
+   * @param group
+   * @return
+   */
+  exports.search = function(server_id, channel_id, group){
+    return new Promise((resolve, reject) => {
+
+      p1(group)
+      .then(p2.bind(null, server_id, channel_id))
+      .then(biz.group_user.findAllByGroupId)
+      .then(docs => { resolve(docs); })
+      .catch(reject);
+
+
+
+
+    //   group.create_time = new Date();
+    //   group.status = 0;
+
+    //   p3(user.id)  /* 如果用户已在某一群组，则提示先退出 */
+    //   .then(biz.group.getFree)
+    //   .then(_group => {
+
+    //     if(_group){
+    //       return new Promise((resolve, reject) => {
+    //         group.id = _group.id;
+
+    //         biz.group.editInfo(group, user, (err, doc) => {
+    //           if(err) return reject(err);
+    //           resolve(doc);
+    //         });
+    //       });
+    //     }
+
+    //     return new Promise((resolve, reject) => {
+    //       biz.group.genFreeId()
+    //       .then(group_id => {
+    //         return new Promise((resolve, reject) => {
+
+    //           group.id = group_id;
+    //           group.user_id = user.id;
+
+    //           biz.group.saveNew(group, (err, doc) => {
+    //             if(err) return reject(err);
+    //             resolve(doc);
+    //           });
+    //         });
+    //       })
+    //       .then(doc => resolve(doc))
+    //       .catch(reject);
+    //     });
+    //   })
+    //   .then(group_user => {
+    //     return new Promise((resolve, reject) => {
+    //       resolve(group_user.group_id);
+    //     });
+    //   })
+    //   .then(biz.group_user.findAllByGroupId)
+    //   .then(docs => resolve(docs))
+    //   .catch(reject);
+    // });
   };
 })();
 
