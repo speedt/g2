@@ -48,91 +48,135 @@ const logger = require('log4js').getLogger('biz.group');
 })();
 
 (() => {
-  function p1(trans, newInfo){
+  // function p1(trans, newInfo){
+  //   return new Promise((resolve, reject) => {
+  //     trans.query(sql, newInfo, (err, status) => {
+  //       if(err) return reject(err);
+  //       resolve();
+  //     });
+  //   });
+  // }
+
+  // function p2(trans, group_user){
+  //   return new Promise((resolve, reject) => {
+  //     trans.commit(err => {
+  //       if(err) return reject(err);
+  //       resolve(group_user);
+  //     });
+  //   });
+  // }
+
+  const sql = 'UPDATE g_group SET group_name=?, group_type=?, status=?, status_time=?, extend_fund=?, extend_round_count=?, visitor_count=? WHERE id=?';
+
+  exports.editInfo = function(group_info, trans){
     return new Promise((resolve, reject) => {
-      trans.query(sql, newInfo, (err, status) => {
+      group_info.group_name = group_info.group_name || ('房间'+ group_info.id);
+      group_info.status_time = new Date();
+
+      (trans || mysql).query(sql, [
+        group_info.group_name,
+        group_info.group_type,
+        group_info.status,
+        group_info.status_time,
+        group_info.extend_fund,
+        group_info.extend_round_count,
+        group_info.visitor_count,
+        group_info.id,
+      ], err => {
         if(err) return reject(err);
-        resolve();
-      });
-    });
-  }
-
-  function p2(trans, group_user){
-    return new Promise((resolve, reject) => {
-      trans.commit(err => {
-        if(err) return reject(err);
-        resolve(group_user);
-      });
-    });
-  }
-
-  const sql = 'UPDATE g_group SET group_name=?, group_type=?, status=?, status_time=?, fund=?, round_count=?, visitor_count=? WHERE id=?';
-
-  /**
-   *
-   * @param group 群组
-   * @param user  创建人
-   * @return
-   */
-  exports.editInfo = function(group, user, cb){
-
-    mysql.getPool().getConnection((err, trans) => {
-      if(err) return cb(err);
-
-      trans.beginTransaction(err => {
-        if(err) return cb(err);
-
-        var postData = [
-          group.group_name,
-          group.group_type,
-          group.status,
-          group.status_time,
-          group.fund,
-          group.round_count,
-          group.visitor_count,
-          group.id,
-        ];
-
-        p1(trans, postData)
-        .then(biz.group_user.saveNew.bind(null, {
-          group_id: group.id,
-          user_id: user.id,
-          seat: 1
-        }, trans))
-        .then(p2.bind(null, trans))
-        .then(group_user => { cb(null, group_user); })
-        .catch(err => {
-          trans.rollback(() => { cb(err); });
-        })
-
+        resolve(group_info);
       });
     });
   };
+
+
+  // /**
+  //  *
+  //  * @param group 群组
+  //  * @param user  创建人
+  //  * @return
+  //  */
+  // exports.editInfo = function(group, user, cb){
+
+  //   mysql.getPool().getConnection((err, trans) => {
+  //     if(err) return cb(err);
+
+  //     trans.beginTransaction(err => {
+  //       if(err) return cb(err);
+
+  //       var postData = [
+  //         group.group_name,
+  //         group.group_type,
+  //         group.status,
+  //         group.status_time,
+  //         group.fund,
+  //         group.round_count,
+  //         group.visitor_count,
+  //         group.id,
+  //       ];
+
+  //       p1(trans, postData)
+  //       .then(biz.group_user.saveNew.bind(null, {
+  //         group_id: group.id,
+  //         user_id: user.id,
+  //         seat: 1
+  //       }, trans))
+  //       .then(p2.bind(null, trans))
+  //       .then(group_user => { cb(null, group_user); })
+  //       .catch(err => {
+  //         trans.rollback(() => { cb(err); });
+  //       })
+
+  //     });
+  //   });
+  // };
 })();
 
 (() => {
-  function p1(trans, newInfo){
-    return new Promise((resolve, reject) => {
-      trans.query(sql, newInfo, (err, status) => {
-        if(err) return reject(err);
-        resolve();
-      });
-    });
-  }
+  // function p1(trans, newInfo){
+  //   return new Promise((resolve, reject) => {
+  //     trans.query(sql, newInfo, (err, status) => {
+  //       if(err) return reject(err);
+  //       resolve();
+  //     });
+  //   });
+  // }
 
-  function p2(trans, group){
-    return biz.group_user.saveNew({
-      group_id: group.id,
-      user_id: group.user_id,
-      seat: 1,
-    }, trans);
-  }
+  // function p2(trans, group){
+  //   return biz.group_user.saveNew({
+  //     group_id: group.id,
+  //     user_id: group.user_id,
+  //     seat: 1,
+  //   }, trans);
+  // }
 
-  function p3(trans, group_user){
+  // function p3(trans, group_user){
+  //   return new Promise((resolve, reject) => {
+  //     trans.commit(err => {
+  //       if(err) return reject(err);
+  //       resolve(group_user);
+  //     });
+  //   });
+  // }
+
+  function p1(group_info, trans, group_id){
     return new Promise((resolve, reject) => {
-      trans.commit(err => {
+      group_info.id = group_id;
+      group_info.group_name = group_info.group_name || ('房间'+ group_info.id);
+      group_info.status_time = new Date();
+
+      (trans || mysql).query(sql, [
+        group_info.group_name,
+        group_info.group_type,
+        group_info.status,
+        group_info.status_time,
+        group_info.extend_fund,
+        group_info.extend_round_count,
+        group_info.visitor_count,
+        group_info.id,
+      ], err => {
         if(err) return reject(err);
-        resolve(group_user);
+        resolve(group_info);
       });
     });
   }
@@ -144,43 +188,49 @@ const logger = require('log4js').getLogger('biz.group');
    * @param group 群组
    * @return
    */
-  exports.saveNew = function(group, cb){
-
-
+  exports.saveNew = function(group_info, trans){
     return new Promise((resolve, reject) => {
-
-
-      mysql.getPool().getConnection((err, trans) => {
-        if(err) return cb(err);
-
-        trans.beginTransaction(err => {
-          if(err) return cb(err);
-
-          var postData = [
-            group.id,
-            group.group_name,
-            group.group_type,
-            group.create_time,
-            group.status,
-            group.fund,
-            group.round_count,
-            group.visitor_count,
-            group.user_id,
-          ];
-
-          p1(trans, postData)
-          .then(p2.bind(null, trans, group))
-          .then(p3.bind(null, trans))
-          .then(group_user => { cb(null, group_user); })
-          .catch(err => {
-            trans.rollback(() => { cb(err); });
-          });
-
-        });
-      });
-
-
+      biz.group.genFreeId(trans)
+      .then(p1.bind(null, group_info, trans))
+      .then(group_info => { resolve(group_info); })
+      .catch(reject);
     });
+
+
+    // return new Promise((resolve, reject) => {
+
+
+    //   mysql.getPool().getConnection((err, trans) => {
+    //     if(err) return cb(err);
+
+    //     trans.beginTransaction(err => {
+    //       if(err) return cb(err);
+
+    //       var postData = [
+    //         group.id,
+    //         group.group_name,
+    //         group.group_type,
+    //         group.create_time,
+    //         group.status,
+    //         group.fund,
+    //         group.round_count,
+    //         group.visitor_count,
+    //         group.user_id,
+    //       ];
+
+    //       p1(trans, postData)
+    //       .then(p2.bind(null, trans, group))
+    //       .then(p3.bind(null, trans))
+    //       .then(group_user => { cb(null, group_user); })
+    //       .catch(err => {
+    //         trans.rollback(() => { cb(err); });
+    //       });
+
+    //     });
+    //   });
+
+
+    // });
 
   };
 })();
@@ -441,6 +491,7 @@ const logger = require('log4js').getLogger('biz.group');
 (() => {
   var sql = 'SELECT '+
               '(SELECT COUNT(1) FROM g_group_user WHERE group_id=a.id) AS group_user_count, '+
+              '(SELECT SUM(seat) FROM g_group_user WHERE group_id=a.id) AS group_user_seat_sum, '+
               'a.* '+
             'FROM '+
               'g_group a '+
@@ -461,11 +512,11 @@ const logger = require('log4js').getLogger('biz.group');
 })();
 
 (() => {
-  function p1(cb){
+  function p1(cb, trans){
     var id = _.random(100000, 999999);
-    biz.group.getById(id)
+    biz.group.getById(id, trans)
     .then(group => {
-      if(group) return p1(cb);
+      if(group) return p1(cb, trans);
       cb(null, id);
     })
     .catch(cb);
@@ -476,12 +527,12 @@ const logger = require('log4js').getLogger('biz.group');
    *
    * @return
    */
-  exports.genFreeId = function(){
+  exports.genFreeId = function(trans){
     return new Promise((resolve, reject) => {
       p1((err, id) => {
         if(err) return reject(err);
         resolve(id);
-      });
+      }, trans);
     });
   };
 })();

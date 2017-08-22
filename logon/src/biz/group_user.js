@@ -49,8 +49,6 @@ const logger = require('log4js').getLogger('biz.group_user');
 })();
 
 (() => {
-  const sql = 'INSERT INTO g_group_user (group_id, user_id, create_time, status, seat) VALUES (?, ?, ?, ?, ?)';
-
   /**
    * 获取座位号
    *
@@ -75,6 +73,8 @@ const logger = require('log4js').getLogger('biz.group_user');
       default: return 0;
     }
   }
+
+  const sql = 'INSERT INTO g_group_user (group_id, user_id, create_time, status, seat) VALUES (?, ?, ?, ?, ?)';
 
   /**
    *
@@ -136,17 +136,17 @@ const logger = require('log4js').getLogger('biz.group_user');
    *
    * @return
    */
-  exports.findAllByGroupId = function(id, cb){
+  exports.findAllByGroupId = function(id, trans){
 
-    if(!!cb && 'function' === typeof cb){
-      return mysql.query(sql, [id], (err, docs) => {
-        if(err) return cb(err);
-        cb(null, docs);
-      });
-    }
+    // if(!!cb && 'function' === typeof cb){
+    //   return mysql.query(sql, [id], (err, docs) => {
+    //     if(err) return cb(err);
+    //     cb(null, docs);
+    //   });
+    // }
 
     return new Promise((resolve, reject) => {
-      mysql.query(sql, [id], (err, docs) => {
+      (trans || mysql).query(sql, [id], (err, docs) => {
         if(err) return reject(err);
         resolve(docs);
       });
@@ -164,7 +164,7 @@ const logger = require('log4js').getLogger('biz.group_user');
    * @param group_id
    * @return
    */
-  exports.getStatusCount = function(status, group_id, cb, trans){
+  exports.getStatusCount = function(status, group_id, trans){
     (trans || mysql).query(sql, [status, group_id], (err, docs) => {
       if(err) return cb(err);
       cb(null, mysql.checkOnly(docs) ? docs[0] : null);
@@ -179,8 +179,30 @@ const logger = require('log4js').getLogger('biz.group_user');
    *
    * @return
    */
-  exports.delByUserId = function(id, cb){
-    mysql.query(sql, [id], cb);
+  exports.delByUserId = function(id, trans){
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [id], err => {
+        if(err) return reject(err);
+        resolve();
+      })
+    });
+  };
+})();
+
+(() => {
+  var sql = 'DELETE FROM g_group_user WHERE group_id=?';
+
+  /**
+   *
+   * @return
+   */
+  exports.delByGroupId = function(id, trans){
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [id], err => {
+        if(err) return reject(err);
+        resolve();
+      })
+    });
   };
 })();
 
@@ -232,22 +254,6 @@ const logger = require('log4js').getLogger('biz.group_user');
     mysql.query(sql, [id], (err, docs) => {
       if(err) return cb(err);
       cb(null, docs);
-    });
-  };
-})();
-
-(() => {
-  var sql = 'SELECT SUM(seat) seat_count FROM g_group_user WHERE group_id=?';
-
-  /**
-   * 座位号总和
-   *
-   * @return
-   */
-  exports.getSeatNumCount = function(group_id, cb, trans){
-    (trans || mysql).query(sql, [group_id], (err, docs) => {
-      if(err) return cb(err);
-      cb(null, mysql.checkOnly(docs) ? docs[0] : null);
     });
   };
 })();
