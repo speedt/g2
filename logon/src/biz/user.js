@@ -234,8 +234,8 @@ const logger = require('log4js').getLogger('biz.user');
   function p2(user){
     return new Promise((resolve, reject) => {
       Promise.all([
-        biz.user.authorize.bind(null, user),
-        biz.frontend.available
+        biz.user.authorize(user),
+        biz.frontend.available()
       ])
       .then(values => { resolve(values); })
       .catch(reject);
@@ -369,7 +369,7 @@ const logger = require('log4js').getLogger('biz.user');
       biz.user.getByRedisChannelId(server_id, channel_id)
       .then(p1.bind(null, server_id, channel_id))
       .then(p2)
-      .then(() => { resolve(); });
+      .then(() => { resolve(); })
       .catch(reject)
     });
   };
@@ -394,7 +394,7 @@ const logger = require('log4js').getLogger('biz.user');
 (() => {
   const seconds   = 5;  //令牌有效期 5s
   const numkeys   = 4;
-  const sha1      = 'd8f515be193e9d7a0bce3bbb27d358702b6150f6';
+  const sha1      = '6a63911ac256b0c00cf270c6332119240d52b13e';
 
   /**
    * 令牌授权
