@@ -58,7 +58,14 @@ const logger = require('log4js').getLogger('biz.user');
 })();
 
 (() => {
-  var sql = 'SELECT * FROM s_user WHERE id=?';
+  var sql = 'SELECT '+
+              'c.id group_id, c.group_name, c.status group_status, '+
+              'b.seat group_user_seat, b.status group_user_status, '+
+              'a.* '+
+            'FROM '+
+              '(SELECT * FROM s_user WHERE id=?) a '+
+              'LEFT JOIN g_group_user b ON (a.id=b.user_id) '+
+              'LEFT JOIN g_group c ON (b.group_id=c.id)';
   /**
    *
    * @return
@@ -66,6 +73,29 @@ const logger = require('log4js').getLogger('biz.user');
   exports.getById = function(id, trans){
     return new Promise((resolve, reject) => {
       (trans || mysql).query(sql, [id], (err, docs) => {
+        if(err) return reject(err);
+        resolve(mysql.checkOnly(docs) ? docs[0] : null);
+      });
+    });
+  };
+})();
+
+(() => {
+  var sql = 'SELECT '+
+              'c.id group_id, c.group_name, c.status group_status, '+
+              'b.seat group_user_seat, b.status group_user_status, '+
+              'a.* '+
+            'FROM '+
+              '(SELECT * FROM s_user WHERE server_id=? AND channel_id=?) a '+
+              'LEFT JOIN g_group_user b ON (a.id=b.user_id) '+
+              'LEFT JOIN g_group c ON (b.group_id=c.id)';
+  /**
+   *
+   * @return
+   */
+  exports.getByChannelId = function(server_id, channel_id, trans){
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [server_id, channel_id], (err, docs) => {
         if(err) return reject(err);
         resolve(mysql.checkOnly(docs) ? docs[0] : null);
       });
@@ -398,43 +428,6 @@ const logger = require('log4js').getLogger('biz.user');
       .then(p2)
       .then(biz.user.clearChannel)
       .then(() => { resolve(); })
-      .catch(reject);
-    });
-  };
-})();
-
-(() => {
-  const numkeys = 3;
-  const sha1    = '6df440fb93a747912f3eae2835c8fec8e90788ca';
-
-  function p1(server_id, channel_id){
-    return new Promise((resolve, reject) => {
-      redis.evalsha(sha1, numkeys, conf.redis.database, server_id, channel_id, (err, code) => {
-        if(err) return reject(err);
-        if(!_.isArray(code)) return reject(code);
-        resolve(utils.arrToObj(code));
-      });
-    });
-  }
-
-  function p2(user){
-    return new Promise((resolve, reject) => {
-      if(user) return resolve(user.id);
-      reject('NOT_FOUND_USER');
-    });
-  }
-
-  /**
-   * 获取用户信息（user_info_byChannelId.lua）
-   *
-   * @return
-   */
-  exports.getByChannelId = function(server_id, channel_id){
-    return new Promise((resolve, reject) => {
-      p1(server_id, channel_id)
-      .then(p2)
-      .then(biz.user.getById)
-      .then(user => { resolve(user); })
       .catch(reject);
     });
   };
