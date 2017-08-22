@@ -90,22 +90,28 @@ const logger = require('log4js').getLogger('biz.user');
    *
    * @return
    */
-  function formVali(newInfo){
+  function formVali(user){
     return new Promise((resolve, reject) => {
-      newInfo.user_name = newInfo.user_name || '';
-      newInfo.user_name = _.trim(newInfo.user_name);
-      if(!regex_user_name.test(newInfo.user_name)) return reject('INVALID_PARAMS');
+      if(!_.isString(user.user_name)) return reject('INVALID_PARAMS');
+      user.user_name = _.trim(user.user_name);
+      if(!regex_user_name.test(user.user_name)) return reject('INVALID_PARAMS');
 
-      newInfo.user_pass = newInfo.user_pass || '';
-      newInfo.user_name = _.trim(newInfo.user_pass);
-      if(!regex_user_name.test(newInfo.user_pass)) return reject('INVALID_PARAMS');
+      if(!_.isString(user.user_pass)) return reject('INVALID_PARAMS');
+      user.user_pass = _.trim(user.user_pass);
+      if(!regex_user_name.test(user.user_pass)) return reject('INVALID_PARAMS');
+
+      resolve(user);
     });
   }
 
   function p1(user){
     return new Promise((resolve, reject) => {
-      if(user) return resolve(user);
-      reject('NOT_FOUND_USER');
+      biz.user.getByName(user.user_name)
+      .then(doc => {
+        if(doc) return reject('用户名已存在');
+        resolve(user);
+      })
+      .catch(reject);
     });
   }
 
@@ -137,8 +143,7 @@ const logger = require('log4js').getLogger('biz.user');
     user.line_gone_count  = 0;
 
     return new Promise((resolve, reject) => {
-
-      var postData = [
+      (trans || mysql).query(sql, [
         user.id,
         user.user_name,
         user.user_pass,
@@ -167,9 +172,7 @@ const logger = require('log4js').getLogger('biz.user');
         user.win_score_count,
         user.lose_score_count,
         user.line_gone_count,
-      ];
-
-      (trans || mysql).query(sql, postData, err => {
+      ], err => {
         if(err) return reject(err);
         resolve(user);
       });
@@ -184,10 +187,9 @@ const logger = require('log4js').getLogger('biz.user');
   exports.register = function(newInfo){
     return new Promise((resolve, reject) => {
       formVali(newInfo)
-      .then(biz.user.getByName.bind(null, newInfo.user_name))
       .then(p1)
       .then(p2)
-      .then(user => resolve(user))
+      .then(user => { resolve(user); })
       .catch(reject);
     });
   };

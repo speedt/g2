@@ -280,14 +280,17 @@ const logger = require('log4js').getLogger('biz.group');
 (() => {
   function p1(user){
     return new Promise((resolve, reject) => {
+      if(!user) return reject('用户不存在');
+      if(!user.group_id) return reject('用户不在任何群组');
+
       if(0 === user.group_status || 0 === user.seat){
-        return biz.group_user.delByUserId(user.id, (err, status) => {
+        return biz.group_user.delByUserId(user.id, err => {
           if(err) return reject(err);
           resolve(user.group_id);
         });
       }
 
-      biz.group_user.editStatus(user.id, 2, (err, status) => {
+      biz.group_user.editStatus(user.id, 2, err => {
         if(err) return reject(err);
         resolve(user.group_id);
       });
@@ -298,14 +301,12 @@ const logger = require('log4js').getLogger('biz.group');
    *
    * @return
    */
-  exports.quit = function(user){
+  exports.quit = function(server_id, channel_id){
     return new Promise((resolve, reject) => {
-
-      if(!user.group_id) return reject('not_in_any_group');
-
-      p1(user)
+      biz.user.getByChannelId(server_id, channel_id)
+      .then(p1)
       .then(biz.group_user.findAllByGroupId)
-      .then(docs => resolve(docs))
+      .then(docs => { resolve(docs); })
       .catch(reject);
     });
   };
@@ -322,63 +323,6 @@ const logger = require('log4js').getLogger('biz.group');
 // };
 
 (() => {
-
-  // function p2_1(group_user){
-  //   return new Promise((resolve, reject) => {
-  //     if(group_user) return reject('必须先退出');
-  //     resolve();
-  //   });
-  // }
-
-  // function p2_2(group){
-  //   return new Promise((resolve, reject) => {
-  //     if(!group) return reject('群组不存在');
-  //     if(0 === group.group_user_count) return reject('游戏已经结束');
-  //     // 玩家数+游客数
-  //     var group_user_count = 4 + (group.visitor_count - 0);
-  //     logger.debug('group user count: %s::%s', group.group_user_count, group_user_count);
-  //     if(group.group_user_count >= group_user_count) return reject('群组满员');
-  //     resolve();
-  //   });
-  // }
-
-  // function p2(user, group_id){
-  //   return new Promise((resolve, reject) => {
-  //     biz.group_user.getByUserId(user.id)
-  //     .then(p2_1)
-  //     .then(biz.group.getById.bind(null, group_id))
-  //     .then(p2_2)
-  //     .then(biz.group_user.saveNew.bind(null, {
-  //       group_id: group_id,
-  //       user_id: user.id,
-  //     }))
-  //     .then(biz.group_user.findAllByGroupId.bind(null, group_id))
-  //     .then(docs => { resolve(docs); })
-  //     .catch(reject);
-  //   });
-  // }
-
-  // function p1(group_id){
-  //   return new Promise((resolve, reject) => {
-  //     biz.group.getById(group_id, (err, doc) => {
-  //       if(err) return reject(err);
-  //       if(!doc) return reject('non_existent_group');
-  //       resolve(doc);
-  //     });
-  //   });
-  // }
-
-  // function p2(group){
-  //   return new Promise((resolve, reject) => {
-  //     if(0 === group.user_count) return reject('game_is_over');
-  //     // 玩家数+游客数
-  //     var user_count = (cfg.dynamic.group_type_pushCake.player_count - 0) + group.visitor_count;
-  //     logger.debug('group user count: %s::%s', group.user_count, user_count);
-  //     if(group.user_count >= user_count) return reject('group_is_full');
-  //     resolve();
-  //   });
-  // };
-
   function p1(group_id){
     return new Promise((resolve, reject) => {
       if(!_.isString(group_id)) return reject('INVALID_PARAMS');
@@ -433,46 +377,22 @@ const logger = require('log4js').getLogger('biz.group');
   }
 
   /**
+   * 1、参数验证
+   * 2、验证群组是否存在
+   * 3、验证群组游戏是否已经结束
+   * 4、验证群组是否已经满员
+   * 5、验证用户是否已经在某一个群组内
+   * 6、保存用户在群组内的信息
+   * 7、群发群组内所有用户的信息
    *
    * @return
    */
   exports.entry = function(server_id, channel_id, group_id){
     return new Promise((resolve, reject) => {
-
       p1(group_id)
       .then(p2.bind(null, server_id, channel_id))
       .then(docs => { resolve(docs); })
       .catch(reject);
-
-
-      // biz.user.getByChannelId(server_id, channel_id)
-      // .then(p1.bind(null, group_id))
-      // .then(docs => { resolve(docs); })
-      // .catch(reject);
-
-
-      // p1(group_id)
-      // .then(p2.bind(null, user));
-      // .catch(reject);
-
-
-
-      // biz.group_user.getByUserId(user.id)
-      // .then(p1.bind(null, group_id))
-      // .then(p2)
-      // .catch(reject);
-
-
-      // p3(user.id)  /* 如果用户已在某一群组，则提示先退出 */
-      // .then(p1.bind(null, group_id))  /* 判断群组是否存在 */
-      // .then(p2)  /* 判断群组是否满员 */
-      // .then(biz.group_user.saveNew.bind(null, {
-      //   group_id: group_id,
-      //   user_id: user.id,
-      // }))
-      // .then(biz.group_user.findAllByGroupId.bind(null, group_id))
-      // .then(docs => resolve(docs))
-      // .catch(reject);
     });
   };
 })();
