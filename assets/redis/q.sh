@@ -11,6 +11,10 @@ echo ""
 echo "channel_close.lua"
 /root/my/redis/redis-3.2.6/src/redis-cli -a 123456 -p 12379 script load "$(cat /root/my/git/speedt/g2/assets/redis/channel_close.lua)"
 
+echo ""
+echo "user_info_byChannelId.lua"
+/root/my/redis/redis-3.2.6/src/redis-cli -a 123456 -p 12379 script load "$(cat /root/my/git/speedt/g2/assets/redis/user_info_byChannelId.lua)"
+
 # 
 
 echo ""
