@@ -17,60 +17,68 @@ const logger = require('log4js').getLogger('handle.channel');
 
 const _ = require('underscore');
 
-exports.open = function(send, msg){
-  if(!_.isString(msg.body)) return logger.error('channel open empty');
-
-  var s = msg.body.split('::');
-
-  var data = {
-    serverId: s[0],
-    channelId: s[1],
-  };
-
-  biz.user.registerChannel(data.serverId, data.channelId)
-  .then(() => {
+(() => {
+  function p1(send, data){
     var _data = [data.channelId, JSON.stringify([conf.app.ver, 1, , _.now()])];
     send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _data, (err, code) => {
       if(err) return logger.error('channel open:', err);
     });
-  })
-  .catch(err => {
+  }
+
+  function p2(err){
     logger.error('channel open:', err);
-  });
-};
+  }
 
-exports.close = function(send, msg){
-  if(!_.isString(msg.body)) return logger.error('channel close empty');
+  /**
+   *
+   */
+  exports.open = function(send, msg){
+    if(!_.isString(msg.body)) return logger.error('channel open empty');
 
-  var s = msg.body.split('::');
+    var s = msg.body.split('::');
+    var data = { serverId: s[0], channelId: s[1] };
 
-  var data = {
-    serverId: s[0],
-    channelId: s[1],
+    biz.user.registerChannel(data.serverId, data.channelId)
+    .then(p1.bind(null, send, data))
+    .catch(p2);
   };
+})();
 
-  biz.user.logout(data.serverId, data.channelId)
-  .then(docs => {
+(() => {
+  function p1(send, data, group_users){
     var _data = [];
     _data.push(null);
-    _data.push(JSON.stringify([conf.app.ver, 3006, data.seqId, _.now(), docs]));
+    _data.push(JSON.stringify([conf.app.ver, 3006, data.seqId, _.now(), group_users]));
 
-    for(let i of docs){
+    for(let i of group_users){
       if(!i.server_id || !i.channel_id) continue;
-
       _data.splice(0, 1, i.channel_id);
 
       send('/queue/back.send.v3.'+ i.server_id, { priority: 9 }, _data, (err, code) => {
         if(err) return logger.error('channel close:', err);
       });
     }
-  })
-  .catch(err => {
-    if('string' !== typeof err) return logger.error('channel close:', err);
+  }
 
+  function p2(err){
+    if('string' !== typeof err) return logger.error('channel close:', err);
     switch(err){
       case 'invalid_user_id': return logger.error('channel close:', err);
-      default: return logger.debug('channel close:', err);
+      default: logger.debug('channel close:', err);
     }
-  });
-};
+  }
+
+  /**
+   *
+   */
+  exports.close = function(send, msg){
+    if(!_.isString(msg.body)) return logger.error('channel close empty');
+
+    var s = msg.body.split('::');
+    var data = { serverId: s[0], channelId: s[1] };
+
+    biz.user.logout(data.serverId, data.channelId)
+    .then(p1.bind(null, send, data))
+    .catch(p2);
+  };
+})();
