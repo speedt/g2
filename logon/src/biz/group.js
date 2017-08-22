@@ -280,8 +280,8 @@ const logger = require('log4js').getLogger('biz.group');
     //   .then(biz.group_user.findAllByGroupId)
     //   .then(docs => resolve(docs))
     //   .catch(reject);
-    // });
-  };
+    });
+  });
 })();
 
 (() => {

@@ -299,7 +299,7 @@ const logger = require('log4js').getLogger('biz.user');
       user_pass = md5.hex(user_pass || '123456');
       (trans || mysql).query(sql, [user_pass, id], err => {
         if(err) return reject(err);
-        resolve(user_pass);
+        resolve();
       });
     });
   };
