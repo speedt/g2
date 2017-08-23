@@ -202,7 +202,8 @@ const logger = require('log4js').getLogger('biz.group');
     return new Promise((resolve, reject) => {
       group_info.create_user_id = user.id;
 
-      biz.group.genFreeId()
+      biz.group.clearFree()
+      .then(biz.group.genFreeId)
       .then(p5.bind(null, group_info))
       .then(group_id => { resolve(group_id); })
       .catch(reject);
@@ -247,8 +248,7 @@ const logger = require('log4js').getLogger('biz.group');
    */
   exports.search = function(server_id, channel_id, group_info){
     return new Promise((resolve, reject) => {
-      biz.group.clearFree()
-      .then(p1.bind(null, group_info))
+      p1(group_info)
       .then(p2.bind(null, server_id, channel_id))
       .then(biz.group_user.findAllByGroupId)
       .then(docs => { resolve(docs); })
