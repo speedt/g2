@@ -48,91 +48,6 @@ const logger = require('log4js').getLogger('biz.group');
 })();
 
 (() => {
-  // function p1(trans, newInfo){
-  //   return new Promise((resolve, reject) => {
-  //     trans.query(sql, newInfo, (err, status) => {
-  //       if(err) return reject(err);
-  //       resolve();
-  //     });
-  //   });
-  // }
-
-  // function p2(trans, group_user){
-  //   return new Promise((resolve, reject) => {
-  //     trans.commit(err => {
-  //       if(err) return reject(err);
-  //       resolve(group_user);
-  //     });
-  //   });
-  // }
-
-  const sql = 'UPDATE g_group SET group_name=?, group_type=?, status=?, status_time=?, extend_fund=?, extend_round_count=?, visitor_count=? WHERE id=?';
-
-  exports.editInfo = function(group_info, trans){
-    return new Promise((resolve, reject) => {
-      group_info.group_name = group_info.group_name || ('房间'+ group_info.id);
-      group_info.status_time = new Date();
-
-      (trans || mysql).query(sql, [
-        group_info.group_name,
-        group_info.group_type,
-        group_info.status,
-        group_info.status_time,
-        group_info.extend_fund,
-        group_info.extend_round_count,
-        group_info.visitor_count,
-        group_info.id,
-      ], err => {
-        if(err) return reject(err);
-        resolve(group_info);
-      });
-    });
-  };
-
-
-  // /**
-  //  *
-  //  * @param group 群组
-  //  * @param user  创建人
-  //  * @return
-  //  */
-  // exports.editInfo = function(group, user, cb){
-
-  //   mysql.getPool().getConnection((err, trans) => {
-  //     if(err) return cb(err);
-
-  //     trans.beginTransaction(err => {
-  //       if(err) return cb(err);
-
-  //       var postData = [
-  //         group.group_name,
-  //         group.group_type,
-  //         group.status,
-  //         group.status_time,
-  //         group.fund,
-  //         group.round_count,
-  //         group.visitor_count,
-  //         group.id,
-  //       ];
-
-  //       p1(trans, postData)
-  //       .then(biz.group_user.saveNew.bind(null, {
-  //         group_id: group.id,
-  //         user_id: user.id,
-  //         seat: 1
-  //       }, trans))
-  //       .then(p2.bind(null, trans))
-  //       .then(group_user => { cb(null, group_user); })
-  //       .catch(err => {
-  //         trans.rollback(() => { cb(err); });
-  //       })
-
-  //     });
-  //   });
-  // };
-})();
-
-(() => {
   const sql = 'INSERT INTO g_group (id, group_name, group_type, create_time, create_user_id, status, visitor_count, extend_fund, extend_round_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
   /**
@@ -261,25 +176,20 @@ const logger = require('log4js').getLogger('biz.group');
   function p1(user){
     return new Promise((resolve, reject) => {
       if(!user) return reject('通道号不存在');
+      if(null === user.group_user_status) return reject('用户不在任何群组');
 
-      console.log(user)
-      console.log(user.group_user_status === null)
+      if(user.group_id){
+        if((0 < user.group_status) && (0 < user.group_user_seat)){
+          biz.group_user.editStatus(user.id, 2)
+          .then(() => { resolve(user.group_id); })
+          .catch(reject);
+          return;
+        }
+      }
 
-
-
-      // if(!user.group_id) return reject('用户不在任何群组');
-
-      // if(0 === user.group_status || 0 === user.seat){
-      //   return biz.group_user.delByUserId(user.id, err => {
-      //     if(err) return reject(err);
-      //     resolve(user.group_id);
-      //   });
-      // }
-
-      // biz.group_user.editStatus(user.id, 2, err => {
-      //   if(err) return reject(err);
-      //   resolve(user.group_id);
-      // });
+      biz.group_user.delByUserId(user.id)
+      .then(() => { resolve(user.group_id); })
+      .catch(reject);
     });
   }
 
@@ -297,16 +207,6 @@ const logger = require('log4js').getLogger('biz.group');
     });
   };
 })();
-
-// function p3(user_id){
-//   return new Promise((resolve, reject) => {
-//     biz.group_user.getByUserId(user_id, (err, doc) => {
-//       if(err) return reject(err);
-//       if(doc) return reject('must_be_quit');
-//       resolve();
-//     });
-//   });
-// };
 
 (() => {
   function p1(group_id){
