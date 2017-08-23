@@ -64,7 +64,7 @@ const logger = require('log4js').getLogger('biz.user');
               'a.* '+
             'FROM '+
               '(SELECT * FROM s_user WHERE id=?) a '+
-              'LEFT JOIN g_group_user b ON (a.id=b.user_id) '+
+              'LEFT JOIN g_group_user b ON (b.user_id=a.id) '+
               'LEFT JOIN g_group c ON (b.group_id=c.id)';
   /**
    *
@@ -109,30 +109,26 @@ const logger = require('log4js').getLogger('biz.user');
   // 6-16个字符，支持英文大小写、数字、下划线，区分大小写
   var regex_user_pass = /^[a-zA-Z0-9_]{6,16}$/;
 
-  /**
-   *
-   * @return
-   */
-  function formVali(user){
+  function formVali(user_info){
     return new Promise((resolve, reject) => {
-      if(!_.isString(user.user_name)) return reject('INVALID_PARAMS');
-      user.user_name = _.trim(user.user_name);
-      if(!regex_user_name.test(user.user_name)) return reject('INVALID_PARAMS');
+      if(!_.isString(user_info.user_name)) return reject('INVALID_PARAMS');
+      user_info.user_name = _.trim(user_info.user_name);
+      if(!regex_user_name.test(user_info.user_name)) return reject('INVALID_PARAMS');
 
-      if(!_.isString(user.user_pass)) return reject('INVALID_PARAMS');
-      user.user_pass = _.trim(user.user_pass);
-      if(!regex_user_name.test(user.user_pass)) return reject('INVALID_PARAMS');
+      if(!_.isString(user_info.user_pass)) return reject('INVALID_PARAMS');
+      user_info.user_pass = _.trim(user_info.user_pass);
+      if(!regex_user_name.test(user_info.user_pass)) return reject('INVALID_PARAMS');
 
-      resolve(user);
+      resolve(user_info);
     });
   }
 
-  function p1(user){
+  function p1(user_info){
     return new Promise((resolve, reject) => {
-      biz.user.getByName(user.user_name)
+      biz.user.getByName(user_info.user_name)
       .then(doc => {
         if(doc) return reject('用户名已存在');
-        resolve(user);
+        resolve(user_info);
       })
       .catch(reject);
     });
@@ -140,64 +136,64 @@ const logger = require('log4js').getLogger('biz.user');
 
   var sql = 'INSERT INTO s_user (id, user_name, user_pass, status, sex, create_time, mobile, qq, weixin, email, current_score, tool_1, tool_2, tool_3, tool_4, tool_5, tool_6, tool_7, tool_8, tool_9, nickname, vip, consume_count, win_count, lose_count, win_score_count, lose_score_count, line_gone_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
-  function p2(user){
-    user.id = utils.replaceAll(uuid.v1(), '-', '');
-    user.user_pass = md5.hex(user.user_pass);
-    user.status = user.status || 1;
-    user.sex = user.sex || 1;
-    user.create_time = new Date();
-    user.current_score = user.current_score || 0;
-    user.tool_1 = 0;
-    user.tool_2 = 0;
-    user.tool_3 = 0;
-    user.tool_4 = 0;
-    user.tool_5 = 0;
-    user.tool_6 = 0;
-    user.tool_7 = 0;
-    user.tool_8 = 0;
-    user.tool_9 = 0;
-    user.nickname = user.user_name;
-    user.vip              = 0;
-    user.consume_count    = 0;
-    user.win_count        = 0;
-    user.lose_count       = 0;
-    user.win_score_count  = 0;
-    user.lose_score_count = 0;
-    user.line_gone_count  = 0;
+  function p2(user_info){
+    user_info.id = utils.replaceAll(uuid.v1(), '-', '');
+    user_info.user_pass = md5.hex(user_info.user_pass);
+    user_info.status = 1;
+    user_info.sex = user_info.sex || 1;
+    user_info.create_time = new Date();
+    user_info.current_score = 0;
+    user_info.tool_1 = 0;
+    user_info.tool_2 = 0;
+    user_info.tool_3 = 0;
+    user_info.tool_4 = 0;
+    user_info.tool_5 = 0;
+    user_info.tool_6 = 0;
+    user_info.tool_7 = 0;
+    user_info.tool_8 = 0;
+    user_info.tool_9 = 0;
+    user_info.nickname = user_info.user_name;
+    user_info.vip              = 0;
+    user_info.consume_count    = 0;
+    user_info.win_count        = 0;
+    user_info.lose_count       = 0;
+    user_info.win_score_count  = 0;
+    user_info.lose_score_count = 0;
+    user_info.line_gone_count  = 0;
 
     return new Promise((resolve, reject) => {
       mysql.query(sql, [
-        user.id,
-        user.user_name,
-        user.user_pass,
-        user.status,
-        user.sex,
-        user.create_time,
-        user.mobile,
-        user.qq,
-        user.weixin,
-        user.email,
-        user.current_score,
-        user.tool_1,
-        user.tool_2,
-        user.tool_3,
-        user.tool_4,
-        user.tool_5,
-        user.tool_6,
-        user.tool_7,
-        user.tool_8,
-        user.tool_9,
-        user.nickname,
-        user.vip,
-        user.consume_count,
-        user.win_count,
-        user.lose_count,
-        user.win_score_count,
-        user.lose_score_count,
-        user.line_gone_count,
+        user_info.id,
+        user_info.user_name,
+        user_info.user_pass,
+        user_info.status,
+        user_info.sex,
+        user_info.create_time,
+        user_info.mobile,
+        user_info.qq,
+        user_info.weixin,
+        user_info.email,
+        user_info.current_score,
+        user_info.tool_1,
+        user_info.tool_2,
+        user_info.tool_3,
+        user_info.tool_4,
+        user_info.tool_5,
+        user_info.tool_6,
+        user_info.tool_7,
+        user_info.tool_8,
+        user_info.tool_9,
+        user_info.nickname,
+        user_info.vip,
+        user_info.consume_count,
+        user_info.win_count,
+        user_info.lose_count,
+        user_info.win_score_count,
+        user_info.lose_score_count,
+        user_info.line_gone_count,
       ], err => {
         if(err) return reject(err);
-        resolve(user);
+        resolve(user_info);
       });
     });
   }
@@ -212,7 +208,7 @@ const logger = require('log4js').getLogger('biz.user');
       formVali(newInfo)
       .then(p1)
       .then(p2)
-      .then(user => { resolve(user); })
+      .then(user_info => { resolve(user_info); })
       .catch(reject);
     });
   };
@@ -237,7 +233,7 @@ const logger = require('log4js').getLogger('biz.user');
         biz.user.authorize(user),
         biz.frontend.available(),
       ])
-      .then(token => { resolve(token); })
+      .then(token => resolve(token))
       .catch(reject);
     });
   }
@@ -277,10 +273,9 @@ const logger = require('log4js').getLogger('biz.user');
    */
   exports.editStatus = function(id, status, trans){
     return new Promise((resolve, reject) => {
-      var status_time = new Date();
-      (trans || mysql).query(sql, [status, status_time, id], err => {
+      (trans || mysql).query(sql, [status, new Date(), id], err => {
         if(err) return reject(err);
-        resolve(status_time);
+        resolve();
       });
     });
   };
@@ -296,8 +291,7 @@ const logger = require('log4js').getLogger('biz.user');
    */
   exports.resetPwd = function(id, user_pass, trans){
     return new Promise((resolve, reject) => {
-      user_pass = md5.hex(user_pass || '123456');
-      (trans || mysql).query(sql, [user_pass, id], err => {
+      (trans || mysql).query(sql, [md5.hex(user_pass || '123456'), id], err => {
         if(err) return reject(err);
         resolve();
       });
@@ -314,10 +308,10 @@ const logger = require('log4js').getLogger('biz.user');
    * @return
    */
   exports.editInfo = function(user, trans){
-    return new Promise((resolve, reject) => {
-      user.current_score = user.current_score || 0;
-      user.vip = user.vip || 0;
+    user.current_score = user.current_score || 0;
+    user.vip = user.vip || 0;
 
+    return new Promise((resolve, reject) => {
       (trans || mysql).query(sql, [
         user.nickname,
         user.current_score,
@@ -332,11 +326,8 @@ const logger = require('log4js').getLogger('biz.user');
 })();
 
 (() => {
-  function p1(server_id, channel_id, user){
+  function p1(user){
     return new Promise((resolve, reject) => {
-      user.server_id = server_id;
-      user.channel_id = channel_id;
-
       mysql.query(sql, [
         user.server_id,
         user.channel_id,
@@ -344,18 +335,7 @@ const logger = require('log4js').getLogger('biz.user');
       ], err => {
         if(err) return reject(err);
         resolve(user);
-      })
-    });
-  }
-
-  function p2(user){
-    return new Promise((resolve, reject) => {
-      logger.info('user login: %j', {
-        log_type: 1,
-        user_id: user.id,
-        create_time: _.now(),
       });
-      resolve();
     });
   }
 
@@ -367,9 +347,15 @@ const logger = require('log4js').getLogger('biz.user');
   exports.registerChannel = function(server_id, channel_id){
     return new Promise((resolve, reject) => {
       biz.user.getByRedisChannelId(server_id, channel_id)
-      .then(p1.bind(null, server_id, channel_id))
-      .then(p2)
-      .then(() => { resolve(); })
+      .then(p1)
+      .then(user => {
+        logger.info('user login: %j', {
+          log_type:    1,
+          user_id:     user.id,
+          create_time: _.now(),
+        });
+        resolve();
+      })
       .catch(reject)
     });
   };
@@ -385,7 +371,7 @@ const logger = require('log4js').getLogger('biz.user');
     return new Promise((resolve, reject) => {
       (trans || mysql).query(sql, ['', '', user_id], err => {
         if(err) return reject(err);
-        resolve(user_id);
+        resolve();
       });
     });
   };
@@ -404,8 +390,12 @@ const logger = require('log4js').getLogger('biz.user');
    */
   exports.authorize = function(user){
     return new Promise((resolve, reject) => {
-      var code = utils.replaceAll(uuid.v4(), '-', '');
-      redis.evalsha(sha1, numkeys, conf.redis.database, conf.app.client_id, user.id, code, seconds, (err, code) => {
+      redis.evalsha(sha1, numkeys,
+        conf.redis.database,
+        conf.app.client_id,
+        user.id,
+        utils.replaceAll(uuid.v4(), '-', ''),
+        seconds, (err, code) => {
         if(err) return reject(err);
         resolve(code);
       });
