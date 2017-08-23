@@ -157,7 +157,7 @@ const logger = require('log4js').getLogger('biz.group');
   //   });
   // }
 
-  const sql = 'INSERT INTO g_group (id, group_name, group_type, create_time, status, visitor_count, extend_fund, extend_round_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+  const sql = 'INSERT INTO g_group (id, group_name, group_type, create_time, create_user_id, status, visitor_count, extend_fund, extend_round_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
   /**
    *
@@ -175,6 +175,7 @@ const logger = require('log4js').getLogger('biz.group');
         group_info.group_name,
         group_info.group_type,
         group_info.create_time,
+        group_info.create_user_id,
         group_info.status,
         group_info.visitor_count,
         group_info.extend_fund,
@@ -279,10 +280,10 @@ const logger = require('log4js').getLogger('biz.group');
         user_id:  group_info.create_user_id,
         status:   0,
         seat:     1,
-      }
+      };
 
       biz.group.saveNew(group_info, trans)
-      .then(biz.group_user.saveNew.bind(null, group_user_info))
+      .then(biz.group_user.saveNew.bind(null, group_user_info, trans))
       .then(p9.bind(null, trans))
       .then(() => { resolve(group_info.id); })
       .catch(err => {

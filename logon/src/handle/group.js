@@ -58,8 +58,7 @@ const _ = require('underscore');
 
     biz.group.search(data.serverId, data.channelId, group)
     .then(p1.bind(null, send, data))
-    .then(p2.bind(null, send, data))
-    .catch();
+    .catch(p2.bind(null, send, data));
   };
 })();
 

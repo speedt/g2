@@ -111,18 +111,18 @@ const logger = require('log4js').getLogger('biz.group_user');
    */
   exports.saveNew = function(newInfo, trans){
     return new Promise((resolve, reject) => {
-      group_user_info.create_time = new Date();
-      group_user_info.status = 0;
+      newInfo.create_time = new Date();
+      newInfo.status = 0;
 
       (trans || mysql).query(sql, [
-        group_user_info.group_id,
-        group_user_info.user_id,
-        group_user_info.create_time,
-        group_user_info.status,
-        group_user_info.seat,
+        newInfo.group_id,
+        newInfo.user_id,
+        newInfo.create_time,
+        newInfo.status,
+        newInfo.seat,
       ], err => {
         if(err) return reject(err);
-        resolve(group_user_info);
+        resolve(newInfo);
       });
     });
   };
