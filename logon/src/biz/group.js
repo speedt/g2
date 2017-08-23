@@ -133,9 +133,39 @@ const logger = require('log4js').getLogger('biz.group');
 })();
 
 (() => {
-  function p1(group_info, trans, group_id){
+  // function p1(group_info, trans, group_id){
+  //   return new Promise((resolve, reject) => {
+  //     group_info.id = group_id;
+  //     group_info.group_name = group_info.group_name || ('房间'+ group_info.id);
+  //     group_info.create_time = new Date();
+  //     group_info.status = 0;
+
+  //     (trans || mysql).query(sql, [
+  //       group_info.id,
+  //       group_info.group_name,
+  //       group_info.group_type,
+  //       group_info.create_time,
+  //       group_info.create_user_id,
+  //       group_info.status,
+  //       group_info.visitor_count,
+  //       group_info.extend_fund,
+  //       group_info.extend_round_count,
+  //     ], err => {
+  //       if(err) return reject(err);
+  //       resolve(group_info);
+  //     });
+  //   });
+  // }
+
+  const sql = 'INSERT INTO g_group (id, group_name, group_type, create_time, status, visitor_count, extend_fund, extend_round_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+
+  /**
+   *
+   * @param group 群组
+   * @return
+   */
+  exports.saveNew = function(group_info, trans){
     return new Promise((resolve, reject) => {
-      group_info.id = group_id;
       group_info.group_name = group_info.group_name || ('房间'+ group_info.id);
       group_info.create_time = new Date();
       group_info.status = 0;
@@ -145,7 +175,6 @@ const logger = require('log4js').getLogger('biz.group');
         group_info.group_name,
         group_info.group_type,
         group_info.create_time,
-        group_info.create_user_id,
         group_info.status,
         group_info.visitor_count,
         group_info.extend_fund,
@@ -155,31 +184,19 @@ const logger = require('log4js').getLogger('biz.group');
         resolve(group_info);
       });
     });
-  }
-
-  const sql = 'INSERT INTO g_group (id, group_name, group_type, create_time, create_user_id, status, visitor_count, extend_fund, extend_round_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
-
-  /**
-   *
-   * @param group 群组
-   * @return
-   */
-  exports.saveNew = function(group_info, trans){
-    return new Promise((resolve, reject) => {
-      biz.group.genFreeId(trans)
-      .then(p1.bind(null, group_info, trans))
-      .then(doc => { resolve(doc); })
-      .catch(reject);
-    });
   };
+
+  // exports.saveNew = function(group_info, trans){
+  //   return new Promise((resolve, reject) => {
+  //     biz.group.genFreeId(trans)
+  //     .then(p1.bind(null, group_info, trans))
+  //     .then(doc => { resolve(doc); })
+  //     .catch(reject);
+  //   });
+  // };
 })();
 
 (() => {
-  /**
-   * 参数验证
-   *
-   * @return
-   */
   function p1(group_info){
     return new Promise((resolve, reject) => {
       if(!_.isNumber(group_info.extend_fund)) return reject('INVALID_PARAMS');
@@ -200,7 +217,7 @@ const logger = require('log4js').getLogger('biz.group');
       biz.user.getByChannelId(server_id, channel_id)
       .then(p3)
       .then(p4.bind(null, group_info))
-      .then(docs => { resolve(docs); })
+      .then(group_id => { resolve(group_id); })
       .catch(reject);
     });
   }
@@ -215,15 +232,28 @@ const logger = require('log4js').getLogger('biz.group');
 
   function p4(group_info, user){
     return new Promise((resolve, reject) => {
-      p5()
-      .then(p6)
-      .then(p7.bind(null, group_info, user))
-      .then(docs => { resolve(docs); })
+      group_info.create_user_id = user.id;
+
+      biz.group.genFreeId()
+      .then(p5.bind(null, group_info))
+      .then(group_id => { resolve(group_id); })
       .catch(reject);
     });
   }
 
-  function p5(){
+  function p5(group_info, group_id){
+    return new Promise((resolve, reject) => {
+      group_info.id = group_id;
+
+      p6()
+      .then(p7)
+      .then(p8.bind(null, group_info))
+      .then(group_id => { resolve(group_id); })
+      .catch(reject);
+    });
+  }
+
+  function p6(){
     return new Promise((resolve, reject) => {
       mysql.getPool().getConnection((err, trans) => {
         if(err) return reject(err);
@@ -232,7 +262,7 @@ const logger = require('log4js').getLogger('biz.group');
     });
   }
 
-  function p6(trans){
+  function p7(trans){
     return new Promise((resolve, reject) => {
       trans.beginTransaction(err => {
         if(err) return reject(err);
@@ -241,12 +271,31 @@ const logger = require('log4js').getLogger('biz.group');
     });
   }
 
-  function p7(group_info, user, trans){
+  function p8(group_info, trans){
     return new Promise((resolve, reject) => {
+
+      var group_user_info = {
+        group_id: group_info.id,
+        user_id:  group_info.create_user_id,
+        status:   0,
+        seat:     1,
+      }
+
       biz.group.saveNew(group_info, trans)
-      .then(biz.group_user.saveNew.bind(null, group_info, trans))
+      .then(biz.group_user.saveNew.bind(null, group_user_info))
+      .then(p9.bind(null, trans))
+      .then(() => { resolve(group_info.id); })
       .catch(err => {
         trans.rollback(() => { reject(err); });
+      });
+    });
+  }
+
+  function p9(trans){
+    return new Promise((resolve, reject) => {
+      trans.commit(err => {
+        if(err) return reject(err);
+        resolve();
       });
     });
   }
@@ -259,6 +308,7 @@ const logger = require('log4js').getLogger('biz.group');
     return new Promise((resolve, reject) => {
       p1(group_info)
       .then(p2.bind(null, server_id, channel_id))
+      .then(biz.group_user.findAllByGroupId)
       .then(docs => { resolve(docs); })
       .catch(reject);
     });

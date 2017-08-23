@@ -75,35 +75,35 @@ const logger = require('log4js').getLogger('biz.group_user');
     }
   }
 
-  function p1(group){
-    return new Promise((resolve, reject) => {
-      if(!group) return reject('群组不存在');
-      resolve(getSeatNum(group.group_user_seat_sum));
-    });
-  }
+  // function p1(group){
+  //   return new Promise((resolve, reject) => {
+  //     if(!group) return reject('群组不存在');
+  //     resolve(getSeatNum(group.group_user_seat_sum));
+  //   });
+  // }
 
-  function p2(group_user_info, trans, seat){
-    return new Promise((resolve, reject) => {
-      group_user_info.create_time = new Date();
-      group_user_info.status = 0;
-      group_user_info.status_time = group_user_info.create_time;
-      group_user_info.seat = seat;
+  // function p2(group_user_info, trans, seat){
+  //   return new Promise((resolve, reject) => {
+  //     group_user_info.create_time = new Date();
+  //     group_user_info.status = 0;
+  //     group_user_info.status_time = group_user_info.create_time;
+  //     group_user_info.seat = seat;
 
-      (trans || mysql).query(sql, [
-        group_user_info.group_id,
-        group_user_info.user_id,
-        group_user_info.create_time,
-        group_user_info.status,
-        group_user_info.status_time,
-        group_user_info.seat,
-      ], err => {
-        if(err) return reject(err);
-        resolve(group_user_info);
-      });
-    });
-  }
+  //     (trans || mysql).query(sql, [
+  //       group_user_info.group_id,
+  //       group_user_info.user_id,
+  //       group_user_info.create_time,
+  //       group_user_info.status,
+  //       group_user_info.status_time,
+  //       group_user_info.seat,
+  //     ], err => {
+  //       if(err) return reject(err);
+  //       resolve(group_user_info);
+  //     });
+  //   });
+  // }
 
-  const sql = 'INSERT INTO g_group_user (group_id, user_id, create_time, status, status_time, seat) VALUES (?, ?, ?, ?, ?, ?)';
+  const sql = 'INSERT INTO g_group_user (group_id, user_id, create_time, status, seat) VALUES (?, ?, ?, ?, ?)';
 
   /**
    *
@@ -111,13 +111,35 @@ const logger = require('log4js').getLogger('biz.group_user');
    */
   exports.saveNew = function(newInfo, trans){
     return new Promise((resolve, reject) => {
-      biz.group.getById(newInfo.group_id, trans)
-      .then(p1)
-      .then(p2.bind(null, newInfo, trans))
-      .then(doc => { resolve(doc); })
-      .catch(reject);
+      group_user_info.create_time = new Date();
+      group_user_info.status = 0;
+
+      (trans || mysql).query(sql, [
+        group_user_info.group_id,
+        group_user_info.user_id,
+        group_user_info.create_time,
+        group_user_info.status,
+        group_user_info.seat,
+      ], err => {
+        if(err) return reject(err);
+        resolve(group_user_info);
+      });
     });
   };
+
+  // /**
+  //  *
+  //  * @return
+  //  */
+  // exports.saveNew = function(newInfo, trans){
+  //   return new Promise((resolve, reject) => {
+  //     biz.group.getById(newInfo.group_id, trans)
+  //     .then(p1)
+  //     .then(p2.bind(null, newInfo, trans))
+  //     .then(doc => { resolve(doc); })
+  //     .catch(reject);
+  //   });
+  // };
 })();
 
 (() => {
@@ -138,14 +160,6 @@ const logger = require('log4js').getLogger('biz.group_user');
    * @return
    */
   exports.findAllByGroupId = function(id, trans){
-
-    // if(!!cb && 'function' === typeof cb){
-    //   return mysql.query(sql, [id], (err, docs) => {
-    //     if(err) return cb(err);
-    //     cb(null, docs);
-    //   });
-    // }
-
     return new Promise((resolve, reject) => {
       (trans || mysql).query(sql, [id], (err, docs) => {
         if(err) return reject(err);
