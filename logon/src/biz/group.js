@@ -246,31 +246,33 @@ const logger = require('log4js').getLogger('biz.group');
     return new Promise((resolve, reject) => {
       group_info.id = group_id;
 
-      p6()
-      .then(p7)
+      // p6()
+      // .then(p7)
+
+      mysql.beginTransaction()
       .then(p8.bind(null, group_info))
       .then(group_id => { resolve(group_id); })
       .catch(reject);
     });
   }
 
-  function p6(){
-    return new Promise((resolve, reject) => {
-      mysql.getPool().getConnection((err, trans) => {
-        if(err) return reject(err);
-        resolve(trans);
-      });
-    });
-  }
+  // function p6(){
+  //   return new Promise((resolve, reject) => {
+  //     mysql.getPool().getConnection((err, trans) => {
+  //       if(err) return reject(err);
+  //       resolve(trans);
+  //     });
+  //   });
+  // }
 
-  function p7(trans){
-    return new Promise((resolve, reject) => {
-      trans.beginTransaction(err => {
-        if(err) return reject(err);
-        resolve(trans);
-      });
-    });
-  }
+  // function p7(trans){
+  //   return new Promise((resolve, reject) => {
+  //     trans.beginTransaction(err => {
+  //       if(err) return reject(err);
+  //       resolve(trans);
+  //     });
+  //   });
+  // }
 
   function p8(group_info, trans){
     return new Promise((resolve, reject) => {
@@ -284,7 +286,11 @@ const logger = require('log4js').getLogger('biz.group');
 
       biz.group.saveNew(group_info, trans)
       .then(biz.group_user.saveNew.bind(null, group_user_info, trans))
-      .then(p9.bind(null, trans))
+      // .then(p9.bind(null, trans))
+
+      .then(mysql.commitTransaction.bind(null, trans))
+
+
       .then(() => { resolve(group_info.id); })
       .catch(err => {
         trans.rollback(() => { reject(err); });
@@ -292,14 +298,14 @@ const logger = require('log4js').getLogger('biz.group');
     });
   }
 
-  function p9(trans){
-    return new Promise((resolve, reject) => {
-      trans.commit(err => {
-        if(err) return reject(err);
-        resolve();
-      });
-    });
-  }
+  // function p9(trans){
+  //   return new Promise((resolve, reject) => {
+  //     trans.commit(err => {
+  //       if(err) return reject(err);
+  //       resolve();
+  //     });
+  //   });
+  // }
 
   /**
    *
