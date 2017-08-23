@@ -143,33 +143,6 @@ const logger = require('log4js').getLogger('biz.group_user');
 })();
 
 (() => {
-  var sql = 'SELECT '+
-              'c.group_name, c.status group_status, '+
-              'b.user_name, b.server_id, b.channel_id, '+
-              'a.* '+
-            'FROM '+
-              '(SELECT * FROM g_group_user WHERE group_id=?) a '+
-              'LEFT JOIN s_user b ON (a.user_id=b.id) '+
-              'LEFT JOIN g_group c ON (a.group_id=c.id) '+
-            'WHERE '+
-              'b.id IS NOT NULL AND '+
-              'c.id IS NOT NULL '+
-            'ORDER BY a.create_time ASC';
-  /**
-   *
-   * @return
-   */
-  exports.findAllByGroupId = function(id, trans){
-    return new Promise((resolve, reject) => {
-      (trans || mysql).query(sql, [id], (err, docs) => {
-        if(err) return reject(err);
-        resolve(docs);
-      });
-    });
-  };
-})();
-
-(() => {
   var sql = 'SELECT COUNT(1) status_count FROM g_group_user WHERE status=? AND group_id=?';
 
   /**
@@ -233,8 +206,13 @@ const logger = require('log4js').getLogger('biz.group_user');
    *
    * @return
    */
-  exports.editStatus = function(user_id, status, cb, trans){
-    (trans || mysql).query(sql, [status, new Date(), user_id], cb);
+  exports.editStatus = function(user_id, status, trans){
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [status, new Date(), user_id], err => {
+        if(err) return reject(err);
+        resolve();
+      });
+    });
   };
 })();
 
@@ -255,20 +233,39 @@ const logger = require('log4js').getLogger('biz.group_user');
    *
    * @return
    */
-  exports.findAllByUserId = function(id, cb){
-
-    if(!cb){
-      return new Promise((resolve, reject) => {
-        mysql.query(sql, [id], (err, docs) => {
-          if(err) return reject(err);
-          resolve(docs);
-        });
+  exports.findAllByUserId = function(id, trans){
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [id], (err, docs) => {
+        if(err) return reject(err);
+        resolve(docs);
       });
-    }
+    });
+  };
+})();
 
-    mysql.query(sql, [id], (err, docs) => {
-      if(err) return cb(err);
-      cb(null, docs);
+(() => {
+  var sql = 'SELECT '+
+              'c.group_name, c.status group_status, '+
+              'b.user_name, b.server_id, b.channel_id, '+
+              'a.* '+
+            'FROM '+
+              '(SELECT * FROM g_group_user WHERE group_id=?) a '+
+              'LEFT JOIN s_user b ON (a.user_id=b.id) '+
+              'LEFT JOIN g_group c ON (a.group_id=c.id) '+
+            'WHERE '+
+              'b.id IS NOT NULL AND '+
+              'c.id IS NOT NULL '+
+            'ORDER BY a.create_time ASC';
+  /**
+   *
+   * @return
+   */
+  exports.findAllByGroupId = function(id, trans){
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [id], (err, docs) => {
+        if(err) return reject(err);
+        resolve(docs);
+      });
     });
   };
 })();

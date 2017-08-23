@@ -247,7 +247,8 @@ const logger = require('log4js').getLogger('biz.group');
    */
   exports.search = function(server_id, channel_id, group_info){
     return new Promise((resolve, reject) => {
-      p1(group_info)
+      biz.group.clearFree()
+      .then(p1.bind(null, group_info))
       .then(p2.bind(null, server_id, channel_id))
       .then(biz.group_user.findAllByGroupId)
       .then(docs => { resolve(docs); })
@@ -259,7 +260,7 @@ const logger = require('log4js').getLogger('biz.group');
 (() => {
   function p1(user){
     return new Promise((resolve, reject) => {
-      if(!user) return reject('用户不存在');
+      if(!user) return reject('通道号不存在');
       if(!user.group_id) return reject('用户不在任何群组');
 
       if(0 === user.group_status || 0 === user.seat){
@@ -421,6 +422,26 @@ const logger = require('log4js').getLogger('biz.group');
         if(err) return reject(err);
         resolve(id);
       }, trans);
+    });
+  };
+})();
+
+(() => {
+  var sql = 'DELETE '+
+            'FROM '+
+              'g_group '+
+            'WHERE '+
+              'id IN (SELECT b.id FROM (SELECT (SELECT COUNT(1) FROM g_group_user WHERE group_id=a.id) AS group_user_count, a.* FROM g_group a WHERE a.status=0) b WHERE b.group_user_count=0)';
+  /**
+   *
+   * @return
+   */
+  exports.clearFree = function(trans){
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, null, err => {
+        if(err) return reject(err);
+        resolve();
+      });
     });
   };
 })();
