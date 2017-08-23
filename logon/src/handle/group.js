@@ -53,10 +53,10 @@ const _ = require('underscore');
     try{ var data = JSON.parse(msg.body);
     }catch(ex){ return; }
 
-    try{ var group = JSON.parse(data.data);
+    try{ var group_info = JSON.parse(data.data);
     }catch(ex){ return; }
 
-    biz.group.search(data.serverId, data.channelId, group)
+    biz.group.search(data.serverId, data.channelId, group_info)
     .then(p1.bind(null, send, data))
     .catch(p2.bind(null, send, data));
   };

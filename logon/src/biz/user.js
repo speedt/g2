@@ -87,7 +87,7 @@ const logger = require('log4js').getLogger('biz.user');
               'a.* '+
             'FROM '+
               '(SELECT * FROM s_user WHERE server_id=? AND channel_id=?) a '+
-              'LEFT JOIN g_group_user b ON (a.id=b.user_id) '+
+              'LEFT JOIN g_group_user b ON (b.user_id=a.id) '+
               'LEFT JOIN g_group c ON (b.group_id=c.id)';
   /**
    *

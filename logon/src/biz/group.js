@@ -133,30 +133,6 @@ const logger = require('log4js').getLogger('biz.group');
 })();
 
 (() => {
-  // function p1(group_info, trans, group_id){
-  //   return new Promise((resolve, reject) => {
-  //     group_info.id = group_id;
-  //     group_info.group_name = group_info.group_name || ('房间'+ group_info.id);
-  //     group_info.create_time = new Date();
-  //     group_info.status = 0;
-
-  //     (trans || mysql).query(sql, [
-  //       group_info.id,
-  //       group_info.group_name,
-  //       group_info.group_type,
-  //       group_info.create_time,
-  //       group_info.create_user_id,
-  //       group_info.status,
-  //       group_info.visitor_count,
-  //       group_info.extend_fund,
-  //       group_info.extend_round_count,
-  //     ], err => {
-  //       if(err) return reject(err);
-  //       resolve(group_info);
-  //     });
-  //   });
-  // }
-
   const sql = 'INSERT INTO g_group (id, group_name, group_type, create_time, create_user_id, status, visitor_count, extend_fund, extend_round_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
   /**
@@ -186,15 +162,6 @@ const logger = require('log4js').getLogger('biz.group');
       });
     });
   };
-
-  // exports.saveNew = function(group_info, trans){
-  //   return new Promise((resolve, reject) => {
-  //     biz.group.genFreeId(trans)
-  //     .then(p1.bind(null, group_info, trans))
-  //     .then(doc => { resolve(doc); })
-  //     .catch(reject);
-  //   });
-  // };
 })();
 
 (() => {
@@ -246,66 +213,33 @@ const logger = require('log4js').getLogger('biz.group');
     return new Promise((resolve, reject) => {
       group_info.id = group_id;
 
-      // p6()
-      // .then(p7)
-
       mysql.beginTransaction()
-      .then(p8.bind(null, group_info))
-      .then(group_id => { resolve(group_id); })
+      .then(p6.bind(null, group_info))
+      .then(() => { resolve(group_id); })
       .catch(reject);
     });
   }
 
-  // function p6(){
-  //   return new Promise((resolve, reject) => {
-  //     mysql.getPool().getConnection((err, trans) => {
-  //       if(err) return reject(err);
-  //       resolve(trans);
-  //     });
-  //   });
-  // }
-
-  // function p7(trans){
-  //   return new Promise((resolve, reject) => {
-  //     trans.beginTransaction(err => {
-  //       if(err) return reject(err);
-  //       resolve(trans);
-  //     });
-  //   });
-  // }
-
-  function p8(group_info, trans){
+  function p6(group_info, trans){
     return new Promise((resolve, reject) => {
-
-      var group_user_info = {
-        group_id: group_info.id,
-        user_id:  group_info.create_user_id,
-        status:   0,
-        seat:     1,
-      };
-
       biz.group.saveNew(group_info, trans)
-      .then(biz.group_user.saveNew.bind(null, group_user_info, trans))
-      // .then(p9.bind(null, trans))
-
+      .then(p7.bind(null, group_info, trans))
       .then(mysql.commitTransaction.bind(null, trans))
-
-
-      .then(() => { resolve(group_info.id); })
+      .then(() => { resolve(); })
       .catch(err => {
         trans.rollback(() => { reject(err); });
       });
     });
   }
 
-  // function p9(trans){
-  //   return new Promise((resolve, reject) => {
-  //     trans.commit(err => {
-  //       if(err) return reject(err);
-  //       resolve();
-  //     });
-  //   });
-  // }
+  function p7(group_info, trans){
+    return biz.group_user.saveNew({
+      group_id: group_info.id,
+      user_id:  group_info.create_user_id,
+      status:   0,
+      seat:     1,
+    }, trans);
+  }
 
   /**
    *
