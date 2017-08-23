@@ -208,7 +208,7 @@ const logger = require('log4js').getLogger('biz.user');
       formVali(newInfo)
       .then(p1)
       .then(p2)
-      .then(user_info => { resolve(user_info); })
+      .then(user_info => resolve(user_info))
       .catch(reject);
     });
   };
@@ -248,7 +248,7 @@ const logger = require('log4js').getLogger('biz.user');
       biz.user.getByName(logInfo.user_name)
       .then(p1.bind(null, logInfo))
       .then(p2)
-      .then(token => { resolve(token); })
+      .then(token => resolve(token))
       .catch(reject);
     });
   };
