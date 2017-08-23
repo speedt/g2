@@ -49,6 +49,29 @@ const logger = require('log4js').getLogger('biz.group_user');
 })();
 
 (() => {
+  var sql = 'SELECT '+
+              'c.group_name, c.status group_status, '+
+              'a.user_name, '+
+              'b.* '+
+            'FROM '+
+              '(SELECT * FROM s_user WHERE server_id=? AND channel_id=?) a '+
+              'LEFT JOIN g_group_user b ON (b.user_id=a.id) '+
+              'LEFT JOIN g_group c ON (b.group_id=c.id)';
+  /**
+   *
+   * @return
+   */
+  exports.getByChannelId = function(server_id, channel_id, trans){
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [server_id, channel_id], (err, docs) => {
+        if(err) return reject(err);
+        resolve(mysql.checkOnly(docs) ? docs[0] : null);
+      });
+    });
+  };
+})();
+
+(() => {
   /**
    * 获取座位号
    *
