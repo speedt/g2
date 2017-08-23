@@ -261,19 +261,25 @@ const logger = require('log4js').getLogger('biz.group');
   function p1(user){
     return new Promise((resolve, reject) => {
       if(!user) return reject('通道号不存在');
-      if(!user.group_id) return reject('用户不在任何群组');
 
-      if(0 === user.group_status || 0 === user.seat){
-        return biz.group_user.delByUserId(user.id, err => {
-          if(err) return reject(err);
-          resolve(user.group_id);
-        });
-      }
+      console.log(user)
+      console.log(user.group_user_status === null)
 
-      biz.group_user.editStatus(user.id, 2, err => {
-        if(err) return reject(err);
-        resolve(user.group_id);
-      });
+
+
+      // if(!user.group_id) return reject('用户不在任何群组');
+
+      // if(0 === user.group_status || 0 === user.seat){
+      //   return biz.group_user.delByUserId(user.id, err => {
+      //     if(err) return reject(err);
+      //     resolve(user.group_id);
+      //   });
+      // }
+
+      // biz.group_user.editStatus(user.id, 2, err => {
+      //   if(err) return reject(err);
+      //   resolve(user.group_id);
+      // });
     });
   }
 
