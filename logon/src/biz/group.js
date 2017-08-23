@@ -52,15 +52,14 @@ const logger = require('log4js').getLogger('biz.group');
 
   /**
    *
-   * @param group 群组
    * @return
    */
   exports.saveNew = function(group_info, trans){
-    return new Promise((resolve, reject) => {
-      group_info.group_name = group_info.group_name || ('房间'+ group_info.id);
-      group_info.create_time = new Date();
-      group_info.status = 0;
+    group_info.group_name = group_info.group_name || ('Room'+ group_info.id);
+    group_info.create_time = new Date();
+    group_info.status = 0;
 
+    return new Promise((resolve, reject) => {
       (trans || mysql).query(sql, [
         group_info.id,
         group_info.group_name,
@@ -80,32 +79,32 @@ const logger = require('log4js').getLogger('biz.group');
 })();
 
 (() => {
-  function p1(group_info){
+  function formVali(group_info){
     return new Promise((resolve, reject) => {
+      if(!_.isNumber(group_info.visitor_count)) return reject('INVALID_PARAMS');
+      if(6 < group_info.visitor_count || 0 > group_info.visitor_count) return reject('INVALID_PARAMS');
+
       if(!_.isNumber(group_info.extend_fund)) return reject('INVALID_PARAMS');
       if(999999 < group_info.extend_fund || 0 > group_info.extend_fund) return reject('INVALID_PARAMS');
 
       if(!_.isNumber(group_info.extend_round_count)) return reject('INVALID_PARAMS');
       if(4 < group_info.extend_round_count || 0 > group_info.extend_round_count) return reject('INVALID_PARAMS');
 
-      if(!_.isNumber(group_info.visitor_count)) return reject('INVALID_PARAMS');
-      if(6 < group_info.visitor_count || 0 > group_info.visitor_count) return reject('INVALID_PARAMS');
-
       resolve(group_info);
     });
   }
 
-  function p2(server_id, channel_id, group_info){
+  function p1(server_id, channel_id, group_info){
     return new Promise((resolve, reject) => {
       biz.user.getByChannelId(server_id, channel_id)
-      .then(p3)
-      .then(p4.bind(null, group_info))
-      .then(group_id => { resolve(group_id); })
+      .then(p2)
+      .then(p3.bind(null, group_info))
+      .then(group_id => resolve(group_id))
       .catch(reject);
     });
   }
 
-  function p3(user){
+  function p2(user){
     return new Promise((resolve, reject) => {
       if(!user) return reject('通道号不存在');
       if(user.group_id) return reject('请先退出');
@@ -113,33 +112,33 @@ const logger = require('log4js').getLogger('biz.group');
     });
   }
 
-  function p4(group_info, user){
-    return new Promise((resolve, reject) => {
-      group_info.create_user_id = user.id;
+  function p3(group_info, user){
+    group_info.create_user_id = user.id;
 
+    return new Promise((resolve, reject) => {
       biz.group.clearFree()
       .then(biz.group.genFreeId)
-      .then(p5.bind(null, group_info))
+      .then(p4.bind(null, group_info))
       .then(group_id => { resolve(group_id); })
       .catch(reject);
     });
   }
 
-  function p5(group_info, group_id){
+  function p4(group_info, group_id){
     return new Promise((resolve, reject) => {
       group_info.id = group_id;
 
       mysql.beginTransaction()
-      .then(p6.bind(null, group_info))
+      .then(p5.bind(null, group_info))
       .then(() => { resolve(group_id); })
       .catch(reject);
     });
   }
 
-  function p6(group_info, trans){
+  function p5(group_info, trans){
     return new Promise((resolve, reject) => {
       biz.group.saveNew(group_info, trans)
-      .then(p7.bind(null, group_info, trans))
+      .then(p6.bind(null, group_info, trans))
       .then(mysql.commitTransaction.bind(null, trans))
       .then(() => { resolve(); })
       .catch(err => {
@@ -148,7 +147,7 @@ const logger = require('log4js').getLogger('biz.group');
     });
   }
 
-  function p7(group_info, trans){
+  function p6(group_info, trans){
     return biz.group_user.saveNew({
       group_id: group_info.id,
       user_id:  group_info.create_user_id,
@@ -163,10 +162,10 @@ const logger = require('log4js').getLogger('biz.group');
    */
   exports.search = function(server_id, channel_id, group_info){
     return new Promise((resolve, reject) => {
-      p1(group_info)
-      .then(p2.bind(null, server_id, channel_id))
+      formVali(group_info)
+      .then(p1.bind(null, server_id, channel_id))
       .then(biz.group_user.findAllByGroupId)
-      .then(docs => { resolve(docs); })
+      .then(docs => resolve(docs))
       .catch(reject);
     });
   };
