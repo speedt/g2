@@ -391,10 +391,10 @@ const logger = require('log4js').getLogger('biz.user');
   exports.authorize = function(user){
     return new Promise((resolve, reject) => {
       redis.evalsha(sha1, numkeys,
-        conf.redis.database,
-        conf.app.client_id,
-        user.id,
-        utils.replaceAll(uuid.v4(), '-', ''),
+        conf.redis.database,                   /**/
+        conf.app.client_id,                    /**/
+        user.id,                               /**/
+        utils.replaceAll(uuid.v4(), '-', ''),  /**/
         seconds, (err, code) => {
         if(err) return reject(err);
         resolve(code);
@@ -407,80 +407,45 @@ const logger = require('log4js').getLogger('biz.user');
   const numkeys = 3;
   const sha1    = '3b248050f9965193d8a4836d6258861a1890017f';
 
-  function p1(server_id, channel_id){
+  exports.closeChannel = function(server_id, channel_id){
     return new Promise((resolve, reject) => {
-      redis.evalsha(sha1, numkeys, conf.redis.database, server_id, channel_id, (err, code) => {
+      redis.evalsha(sha1, numkeys,
+        conf.redis.database,  /**/
+        server_id,            /**/
+        channel_id,           /**/
+        (err, code) => {
         if(err) return reject(err);
         if(!_.isArray(code)) return reject(code);
         resolve(utils.arrToObj(code));
       });
     });
-  }
+  };
+})();
 
-  function p2(user){
+(() => {
+  function p1(user){
     return new Promise((resolve, reject) => {
-      p3()
-      .then(p4.bind(null, user))
-      .catch(reject);
-    });
-  }
-
-  function p3(){
-    return new Promise((resolve, reject) => {
-      mysql.getPool().getConnection((err, trans) => {
-        if(err) return reject(err);
-        resolve(trans);
-      });
-    });
-  }
-
-  function p4(user, trans){
-    return new Promise((resolve, reject) => {
-      trans.beginTransaction(err => {
-        if(err) return reject(err);
-
-        biz.user.clearChannel(user.id, trans)
-        .then(biz.group._quit.bind(null, user.id, trans))
-        .then(p5.bind(null, trans))
-        .then(p6.bind(null, user))
-        .then(docs => { resolve(docs); })
-        .catch(err => {
-          trans.rollback(() => { reject(err); });
-        });
-      });
-    });
-  }
-
-  function p5(trans, docs){
-    return new Promise((resolve, reject) => {
-      trans.commit(err => {
-        if(err) return reject(err);
-        resolve(docs);
-      });
-    });
-  }
-
-  function p6(user, docs){
-    return new Promise((resolve, reject) => {
-      logger.info('user logout: %j', {
-        log_type: 2,
-        user_id: user.id,
-        create_time: _.now(),
-      });
-      resolve(docs);
+      resolve();
     });
   }
 
   /**
-   * 用户退出（channel_close.lua）
    *
    * @return
    */
   exports.logout = function(server_id, channel_id){
     return new Promise((resolve, reject) => {
-      p1(server_id, channel_id)
-      .then(p2)
-      .then(docs => { resolve(docs); })
+      biz.user.closeChannel(server_id, channel_id)
+      .then(user => {
+        logger.info('user logout: %j', {
+          log_type: 2,
+          user_id: user.id,
+          create_time: _.now(),
+        });
+        resolve(user);
+      })
+      .then(p1)
+      .then(() => resolve())
       .catch(reject);
     });
   };
