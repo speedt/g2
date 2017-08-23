@@ -176,15 +176,12 @@ const logger = require('log4js').getLogger('biz.group');
   function p1(user){
     return new Promise((resolve, reject) => {
       if(!user) return reject('通道号不存在');
-      if(null === user.group_user_status) return reject('用户不在任何群组');
+      if(null === user.group_user_seat) return reject('用户不在任何群组');
 
-      if(user.group_id){
-        if((0 < user.group_status) && (0 < user.group_user_seat)){
-          biz.group_user.editStatus(user.id, 2)
-          .then(() => { resolve(user.group_id); })
-          .catch(reject);
-          return;
-        }
+      if((0 < user.group_status) && (0 < user.group_user_seat)){
+        return biz.group_user.editStatus(user.id, 2)
+        .then(() => { resolve(user.group_id); })
+        .catch(reject);
       }
 
       biz.group_user.delByUserId(user.id)

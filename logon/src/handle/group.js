@@ -105,32 +105,23 @@ const _ = require('underscore');
   };
 })();
 
-/**
- *
- */
-exports.entry = function(send, msg){
-  if(!_.isString(msg.body)) return logger.error('group entry empty');
-
-  try{ var data = JSON.parse(msg.body);
-  }catch(ex){ return; }
-
-  biz.group.entry(data.serverId, data.channelId, data.data)
-  .then(group_users => {
+(() => {
+  function p1(send, data, group_users){
     var _data = [];
     _data.push(null);
     _data.push(JSON.stringify([conf.app.ver, 3008, data.seqId, _.now(), group_users]));
 
     for(let i of group_users){
       if(!i.server_id || !i.channel_id) continue;
-
       _data.splice(0, 1, i.channel_id);
 
       send('/queue/back.send.v3.'+ i.server_id, { priority: 9 }, _data, (err, code) => {
         if(err) return logger.error('group entry:', err);
       });
     }
-  })
-  .catch(err => {
+  }
+
+  function p2(send, data, err){
     if('string' !== typeof err) return logger.error('group entry:', err);
 
     var _data = [];
@@ -140,5 +131,19 @@ exports.entry = function(send, msg){
     send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _data, (err, code) => {
       if(err) return logger.error('group entry:', err);
     });
-  });
-};
+  }
+
+  /**
+   *
+   */
+  exports.entry = function(send, msg){
+    if(!_.isString(msg.body)) return logger.error('group entry empty');
+
+    try{ var data = JSON.parse(msg.body);
+    }catch(ex){ return; }
+
+    biz.group.entry(data.serverId, data.channelId, data.data)
+    .then(p1.bind(null, send, data))
+    .catch(p2.bind(null, send, data));
+  };
+})();
