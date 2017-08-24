@@ -27,58 +27,6 @@ _.mixin(_.str.exports());
 const logger = require('log4js').getLogger('biz.group');
 
 (() => {
-  var sql = 'UPDATE g_group SET status=?, status_time=? WHERE id=?';
-
-  /**
-   * 用户状态
-   *
-   * 0、默认
-   * 1、4人举手（游戏开始）
-   *
-   * @return
-   */
-  exports.editStatus = function(id, status, trans){
-    return new Promise((resolve, reject) => {
-      (trans || mysql).query(sql, [status, new Date(), id], err => {
-        if(err) return reject(err);
-        resolve();
-      });
-    });
-  };
-})();
-
-(() => {
-  const sql = 'INSERT INTO g_group (id, group_name, group_type, create_time, create_user_id, status, visitor_count, extend_fund, extend_round_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
-
-  /**
-   *
-   * @return
-   */
-  exports.saveNew = function(group_info, trans){
-    group_info.group_name = group_info.group_name || ('Room'+ group_info.id);
-    group_info.create_time = new Date();
-    group_info.status = 0;
-
-    return new Promise((resolve, reject) => {
-      (trans || mysql).query(sql, [
-        group_info.id,
-        group_info.group_name,
-        group_info.group_type,
-        group_info.create_time,
-        group_info.create_user_id,
-        group_info.status,
-        group_info.visitor_count,
-        group_info.extend_fund,
-        group_info.extend_round_count,
-      ], err => {
-        if(err) return reject(err);
-        resolve(group_info);
-      });
-    });
-  };
-})();
-
-(() => {
   function formVali(group_info){
     return new Promise((resolve, reject) => {
       if(!_.isNumber(group_info.visitor_count)) return reject('INVALID_PARAMS');
@@ -306,7 +254,7 @@ const logger = require('log4js').getLogger('biz.group');
             'FROM '+
               'g_group '+
             'WHERE '+
-              'id IN (SELECT b.id FROM (SELECT (SELECT COUNT(1) FROM g_group_user WHERE group_id=a.id) AS group_user_count, a.* FROM g_group a) b WHERE b.group_user_count=0)';
+              'id IN (SELECT b.id FROM (SELECT (SELECT COUNT(1) FROM g_group_user WHERE group_id=a.id) AS group_user_count, a.* FROM g_group a WHERE a.status=0) b WHERE b.group_user_count=0)';
   /**
    *
    * @return
@@ -316,6 +264,69 @@ const logger = require('log4js').getLogger('biz.group');
       (trans || mysql).query(sql, null, err => {
         if(err) return reject(err);
         resolve();
+      });
+    });
+  };
+})();
+
+(() => {
+  var sql = 'UPDATE g_group SET status=?, round_id=?, round_time=? WHERE id=?';
+
+  /**
+   * 用户状态
+   *
+   * 1、4人举手（游戏开始）
+   *
+   * @return
+   */
+  exports.editReady = function(id, trans){
+    var group_info = {
+      id:         id,
+      status:     1,
+      round_id:   utils.replaceAll(uuid.v4(), '-', ''),
+      round_time: new Date(),
+    };
+
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [
+        group_info.status,
+        group_info.round_id,
+        group_info.round_time,
+        group_info.id,
+      ], err => {
+        if(err) return reject(err);
+        resolve(group_info);
+      });
+    });
+  };
+})();
+
+(() => {
+  const sql = 'INSERT INTO g_group (id, group_name, group_type, create_time, create_user_id, status, visitor_count, extend_fund, extend_round_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+
+  /**
+   *
+   * @return
+   */
+  exports.saveNew = function(group_info, trans){
+    group_info.group_name = group_info.group_name || ('Room'+ group_info.id);
+    group_info.create_time = new Date();
+    group_info.status = 0;
+
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [
+        group_info.id,
+        group_info.group_name,
+        group_info.group_type,
+        group_info.create_time,
+        group_info.create_user_id,
+        group_info.status,
+        group_info.visitor_count,
+        group_info.extend_fund,
+        group_info.extend_round_count,
+      ], err => {
+        if(err) return reject(err);
+        resolve(group_info);
       });
     });
   };
