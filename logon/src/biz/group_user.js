@@ -24,31 +24,6 @@ const biz = require('emag.biz');
 const logger = require('log4js').getLogger('biz.group_user');
 
 (() => {
-  var sql = 'SELECT '+
-              'c.group_name, c.status group_status, '+
-              'b.user_name, '+
-              'a.* '+
-            'FROM '+
-              '(SELECT * FROM g_group_user WHERE user_id=?) a '+
-              'LEFT JOIN s_user b ON (a.user_id=b.id) '+
-              'LEFT JOIN g_group c ON (a.group_id=c.id) '+
-            'WHERE '+
-              'b.id IS NOT NULL';
-  /**
-   *
-   * @return
-   */
-  exports.getByUserId = function(id, trans){
-    return new Promise((resolve, reject) => {
-      (trans || mysql).query(sql, [id], (err, docs) => {
-        if(err) return reject(err);
-        resolve(mysql.checkOnly(docs) ? docs[0] : null);
-      });
-    });
-  };
-})();
-
-(() => {
   /**
    * 获取座位号
    *
@@ -107,14 +82,16 @@ const logger = require('log4js').getLogger('biz.group_user');
   /**
    * 获取群组状态的数量
    *
-   * @param status
    * @param group_id
+   * @param status
    * @return
    */
-  exports.getStatusCount = function(status, group_id, trans){
-    (trans || mysql).query(sql, [status, group_id], (err, docs) => {
-      if(err) return cb(err);
-      cb(null, mysql.checkOnly(docs) ? docs[0] : null);
+  exports.getStatusCount = function(group_id, status, trans){
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [status, group_id], (err, docs) => {
+        if(err) return reject(err);
+        resolve(mysql.checkOnly(docs) ? (docs[0]).status_count : null);
+      });
     });
   };
 })();

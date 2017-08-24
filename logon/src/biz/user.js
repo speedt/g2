@@ -425,7 +425,20 @@ const logger = require('log4js').getLogger('biz.user');
 (() => {
   function p1(user){
     return new Promise((resolve, reject) => {
-      resolve();
+      logger.info('user logout: %j', {
+        log_type:    2,
+        user_id:     user.id,
+        create_time: _.now(),
+      });
+      resolve(user);
+    });
+  }
+
+  function p2(user){
+    return new Promise((resolve, reject) => {
+      biz.user.clearChannel(user.id)
+      .then(() => resolve())
+      .catch(reject);
     });
   }
 
@@ -436,16 +449,9 @@ const logger = require('log4js').getLogger('biz.user');
   exports.logout = function(server_id, channel_id){
     return new Promise((resolve, reject) => {
       biz.user.closeChannel(server_id, channel_id)
-      .then(user => {
-        logger.info('user logout: %j', {
-          log_type: 2,
-          user_id: user.id,
-          create_time: _.now(),
-        });
-        resolve(user);
-      })
       .then(p1)
-      .then(() => resolve())
+      .then(p2)
+      .then(() => resolve([]))
       .catch(reject);
     });
   };
