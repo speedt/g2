@@ -10,9 +10,12 @@ const cwd   = process.cwd();
 const conf  = require(path.join(cwd, 'settings'));
 
 const biz    = require('emag.biz');
-const _      = require('underscore');
 
 const logger = require('log4js').getLogger('handle');
+
+const _  = require('underscore');
+_.str    = require('underscore.string');
+_.mixin(_.str.exports());
 
 /**
  *
@@ -32,46 +35,34 @@ exports.one_for_one = function(send, msg){
   });
 };
 
-/**
- *
- */
-exports.one_for_group = function(send, msg){
-  if(!_.isString(msg.body)) return logger.error('chat one_for_group empty');
-
-  try{ var data = JSON.parse(msg.body);
-  }catch(ex){ return; }
-
-  var send_msg = filter(data.data);
-  if(!send_msg) return;
-
-  var msg_info = [send_msg];
-
-  biz.user.getByChannelId(data.serverId, data.channelId)
-  .then(user => {
+(() => {
+  function formVali(data, user){
     return new Promise((resolve, reject) => {
-      msg_info.push(user.id);
-      resolve(user.id);
-    });
-  })
-  .then(biz.group_user.findAllByUserId)
-  .then(group_users => {
+      if(!user) return reject('通道不存在');
+      if(!_.isNumber(user.group_user_seat)) return reject('不在任何群组');
+      if(!user.group_id) return reject('不在任何群组');
 
+      data.user_id  = user.id;
+      resolve(user.group_id);
+    });
+  }
+
+  function p1(send, data, group_users){
     var _data = [];
     _data.push(null);
-    _data.push(JSON.stringify([conf.app.ver, 2004, data.seqId, data.timestamp, msg_info]));
+    _data.push(JSON.stringify([conf.app.ver, 2004, data.seqId, _.now(), [data.user_id, data.data]]));
 
     for(let i of group_users){
       if(!i.server_id || !i.channel_id) continue;
-
       _data.splice(0, 1, i.channel_id);
 
       send('/queue/back.send.v3.'+ i.server_id, { priority: 9 }, _data, (err, code) => {
         if(err) return logger.error('chat one_for_group:', err);
       });
     }
+  }
 
-  })
-  .catch(err => {
+  function p2(send, data, err){
     if('string' !== typeof err) return logger.error('chat one_for_group:', err);
 
     var _data = [];
@@ -81,8 +72,27 @@ exports.one_for_group = function(send, msg){
     send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _data, (err, code) => {
       if(err) return logger.error('chat one_for_group:', err);
     });
-  });
-};
+  }
+
+  /**
+   *
+   */
+  exports.one_for_group = function(send, msg){
+    if(!_.isString(msg.body)) return logger.error('chat one_for_group empty');
+
+    try{ var data = JSON.parse(msg.body);
+    }catch(ex){ return; }
+
+    data.data = filter(data.data);
+    if(!data.data) return;
+
+    biz.user.getByChannelId(data.serverId, data.channelId)
+    .then(formVali.bind(null, data))
+    .then(biz.group_user.findAllByGroupId)
+    .then(p1.bind(null, send, data))
+    .catch(p2.bind(null, send, data));
+  };
+})();
 
 /**
  *
@@ -91,5 +101,6 @@ exports.one_for_group = function(send, msg){
  * @return
  */
 function filter(msg){
-  return msg;
+  if(!_.isString(msg)) return;
+  return _.trim(msg);
 }
