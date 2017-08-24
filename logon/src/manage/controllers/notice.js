@@ -89,8 +89,8 @@ exports.del = function(req, res, next){
 exports.send = function(req, res, next){
   var query = req.body;
 
-  biz.frontend.findAll(function (err, docs){
-    if(err) return next(err);
+  biz.frontend.findAll()
+  .then(docs => {
     if(0 === docs.length) return next(new Error('前置机未启动'));
 
     biz.notice.getById(query.id, function (err, doc){
@@ -108,5 +108,6 @@ exports.send = function(req, res, next){
 
       res.send({});
     });
-  });
+  })
+  .catch(next);
 };
