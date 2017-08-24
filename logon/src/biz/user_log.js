@@ -31,9 +31,9 @@ const redis = require('emag.db').redis;
   /**
    *
    */
-  exports.findAll = function(user_id, trans){
+  exports.findAllByUserId = function(id, trans){
     return new Promise((resolve, reject) => {
-      (trans || mysql).query(sql, [user_id], (err, docs) => {
+      (trans || mysql).query(sql, [id], (err, docs) => {
         if(err) return reject(err);
         resolve(docs);
       });
@@ -49,7 +49,6 @@ const redis = require('emag.db').redis;
    * @return
    */
   exports.saveNew = function(newInfo, trans){
-
     newInfo.id = utils.replaceAll(uuid.v1(), '-', '');
     newInfo.log_type = newInfo.log_type || 1;
     newInfo.create_time = new Date();

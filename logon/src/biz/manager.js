@@ -83,7 +83,7 @@ const logger = require('log4js').getLogger('biz.manager');
     return new Promise((resolve, reject) => {
       biz.manager.getByName(logInfo.user_name)
       .then(p1.bind(null, logInfo))
-      .then(user => { resolve(user); })
+      .then(user => resolve(user))
       .catch(reject);
     });
   };
@@ -92,13 +92,24 @@ const logger = require('log4js').getLogger('biz.manager');
 (() => {
   function p1(logInfo){
     return new Promise((resolve, reject) => {
-      logInfo.user_pass = utils.isEmpty(logInfo.user_pass);
-      if(!logInfo.user_pass) return reject('新密码不能为空');
+      if(!_.isString(logInfo.user_pass)) return reject('INVALID_PARAMS');
+      logInfo.user_pass = _.trim(logInfo.user_pass);
+      if('' === logInfo.user_pass) return reject('INVALID_PARAMS');
       resolve(logInfo);
     });
   }
 
-  function p2(logInfo, user){
+  function p2(logInfo){
+    return new Promise((resolve, reject) => {
+      biz.manager.getById(logInfo.id)
+      .then(p3.bind(null, logInfo))
+      .then(p4.bind(null, logInfo))
+      .then(() => resolve())
+      .catch(reject);
+    });
+  }
+
+  function p3(logInfo, user){
     return new Promise((resolve, reject) => {
       if(!user) return reject('用户不存在');
       if(md5.hex(logInfo.old_pass) !== user.user_pass)
@@ -107,11 +118,11 @@ const logger = require('log4js').getLogger('biz.manager');
     });
   }
 
-  function p3(logInfo, trans){
-    return new Promise((resolve, reject) => {
-      logInfo.user_pass = md5.hex(logInfo.user_pass);
+  function p4(logInfo){
+    logInfo.user_pass = md5.hex(logInfo.user_pass);
 
-      (trans || mysql).query(sql, [
+    return new Promise((resolve, reject) => {
+      mysql.query(sql, [
         logInfo.user_pass,
         logInfo.id,
       ], err => {
@@ -131,10 +142,8 @@ const logger = require('log4js').getLogger('biz.manager');
   exports.changePwd = function(logInfo){
     return new Promise((resolve, reject) => {
       p1(logInfo)
-      .then(biz.manager.getById.bind(null, logInfo.id))
-      .then(p2.bind(null, logInfo))
-      .then(p3.bind(null, logInfo))
-      .then(() => { resolve(); })
+      .then(p2)
+      .then(() => resolve())
       .catch(reject);
     });
   };
