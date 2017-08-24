@@ -209,73 +209,32 @@ const logger = require('log4js').getLogger('biz.group');
       var group_user_count = 4 + (group.visitor_count - 0);
       logger.debug('group user count: %s::%s', group.group_user_count, group_user_count);
       if(group.group_user_count >= group_user_count) return reject('群组满员');
-      resolve();
+
+      resolve({
+        group_id: group.id,
+        seat:     biz.group_user.getSeatNum(group.group_user_seat_sum),
+      });
     });
   }
 
-  function p2(user){
+  function p2(server_id, channel_id, group_user_info){
     return new Promise((resolve, reject) => {
-      if(!user) return reject('通道号不存在');
-      if(null !== user.group_user_seat) return reject('必须先退出');
-      resolve(user.id);
+      biz.user.getByChannelId(server_id, channel_id)
+      .then(p3.bind(null, group_user_info))
+      .then(biz.group_user.saveNew)
+      .then(() => resolve(group_user_info.group_id))
+      .catch(reject);
     });
   }
 
-  function p3(group_id, user_id){
+  function p3(group_user_info, user){
     return new Promise((resolve, reject) => {
-
+      if(!user) return reject('通道不存在');
+      if(_.isNumber(user.group_user_seat)) return reject('请先退出');
+      group_user_info.user_id = user.id;
+      resolve(group_user_info);
     });
   }
-
-  // function p2(server_id, channel_id, group_id){
-  //   return new Promise((resolve, reject) => {
-  //     biz.user.getByChannelId(server_id, channel_id)
-  //     .then(p3)
-  //     .then(() => resolve(group_id))
-  //     .catch(reject);
-  //   });
-  // }
-
-  // function p3(user){
-  //   return new Promise((resolve, reject) => {
-  //     if(!user) return reject('通道号不存在');
-  //   });
-  // }
-
-  // function p3(group_id, user){
-  //   return new Promise((resolve, reject) => {
-  //     biz.group.getById(group_id)
-  //     .then(p4)
-  //     .then(biz.group_user.getByUserId.bind(null, user.id))
-  //     .then(p5)
-  //     .then(biz.group_user.saveNew.bind(null, {
-  //       group_id: group_id,
-  //       user_id: user.id,
-  //     }))
-  //     .then(biz.group_user.findAllByGroupId.bind(null, group_id))
-  //     .then(docs => { resolve(docs); })
-  //     .catch(reject);
-  //   });
-  // }
-
-  // function p4(group){
-  //   return new Promise((resolve, reject) => {
-  //     if(!group) return reject('群组不存在');
-  //     if(0 === group.group_user_count) return reject('游戏已经结束');
-  //     // 玩家数+游客数
-  //     var group_user_count = 4 + (group.visitor_count - 0);
-  //     logger.debug('group user count: %s::%s', group.group_user_count, group_user_count);
-  //     if(group.group_user_count >= group_user_count) return reject('群组满员');
-  //     resolve();
-  //   });
-  // }
-
-  // function p5(group_user){
-  //   return new Promise((resolve, reject) => {
-  //     if(group_user) return reject('必须先退出');
-  //     resolve();
-  //   });
-  // }
 
   /**
    *
@@ -285,10 +244,7 @@ const logger = require('log4js').getLogger('biz.group');
     return new Promise((resolve, reject) => {
       biz.group.getById(group_id)
       .then(p1)
-      .then(biz.user.getByChannelId.bind(null, server_id, channel_id))
-      .then(p2)
-      .then(p3.bind(null, group_id))
-      .then(() => resolve(group_id))
+      .then(p2.bind(null, server_id, channel_id))
       .then(biz.group_user.findAllByGroupId)
       .then(docs => resolve(docs))
       .catch(reject);
