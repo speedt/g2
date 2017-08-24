@@ -169,8 +169,8 @@ const logger = require('log4js').getLogger('biz.group');
 (() => {
   function p1(user){
     return new Promise((resolve, reject) => {
-      if(!user) return reject('通道号不存在');
-      if(null === user.group_user_seat) return reject('用户不在任何群组');
+      if(!user) return reject('通道不存在');
+      if(!_.isNumber(user.group_user_seat)) return reject('不在任何群组');
 
       p2(user)
       .then(() => resolve(user.group_id))
@@ -194,7 +194,7 @@ const logger = require('log4js').getLogger('biz.group');
       biz.user.getByChannelId(server_id, channel_id)
       .then(p1)
       .then(biz.group_user.findAllByGroupId)
-      .then(docs => { resolve(docs); })
+      .then(docs => resolve(docs))
       .catch(reject);
     });
   };
