@@ -58,10 +58,10 @@ const logger = require('log4js').getLogger('biz.group_user');
    * @return
    */
   exports.saveNew = function(newInfo, trans){
-    return new Promise((resolve, reject) => {
-      newInfo.create_time = new Date();
-      newInfo.status = 0;
+    newInfo.create_time = new Date();
+    newInfo.status = 0;
 
+    return new Promise((resolve, reject) => {
       (trans || mysql).query(sql, [
         newInfo.group_id,
         newInfo.user_id,

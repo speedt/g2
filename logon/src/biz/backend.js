@@ -18,6 +18,8 @@ const _     = require('underscore');
 
   /**
    * back_open.lua
+   *
+   * @return
    */
   exports.open = function(back_id, cb){
     redis.evalsha(sha1, numkeys, conf.redis.database, back_id, _.now(), cb);
@@ -30,6 +32,8 @@ const _     = require('underscore');
 
   /**
    * back_close.lua
+   *
+   * @return
    */
   exports.close = function(back_id, cb){
     redis.evalsha(sha1, numkeys, conf.redis.database, back_id, cb);
@@ -41,9 +45,7 @@ const _     = require('underscore');
   const sha1    = 'bb198c5798cefca1522ca3f30f76a32f3758dc8c';
 
   /**
-   * 获取全部后置机id
-   *
-   * back_list.lua
+   * 获取全部后置机id（back_list.lua）
    *
    * @return
    */
