@@ -424,22 +424,42 @@ const logger = require('log4js').getLogger('biz.user');
 
 (() => {
   function p1(user){
+    logger.info('user logout: %j', {
+      log_type:    2,
+      user_id:     user.id,
+      create_time: _.now(),
+    });
+
     return new Promise((resolve, reject) => {
-      logger.info('user logout: %j', {
-        log_type:    2,
-        user_id:     user.id,
-        create_time: _.now(),
-      });
-      resolve(user);
+      resolve(user.id);
     });
   }
 
   function p2(user){
     return new Promise((resolve, reject) => {
       biz.user.clearChannel(user.id)
+      .then(p3.bind(null, user))
+      .then(() => resolve(user.group_id))
+      .catch(reject);
+    });
+  }
+
+  function p3(user){
+    return new Promise((resolve, reject) => {
+      if(!user) return reject('通道不存在');
+      if(!_.isNumber(user.group_user_seat)) return reject('不在任何群组');
+
+      p4(user)
       .then(() => resolve())
       .catch(reject);
     });
+  }
+
+  function p4(user){
+    if((0 < user.group_status) && (0 < user.group_user_seat)){
+      return biz.group_user.editStatus(user.id, 2);
+    }
+    return biz.group_user.delByUserId(user.id);
   }
 
   /**
@@ -450,8 +470,10 @@ const logger = require('log4js').getLogger('biz.user');
     return new Promise((resolve, reject) => {
       biz.user.closeChannel(server_id, channel_id)
       .then(p1)
+      .then(biz.user.getById)
       .then(p2)
-      .then(() => resolve([]))
+      .then(biz.group_user.findAllByGroupId)
+      .then(docs => resolve(docs))
       .catch(reject);
     });
   };
