@@ -51,24 +51,10 @@ exports.add = function(req, res, next){
 exports.editUI = function(req, res, next){
   var id = req.query.id;
 
-  var p1 = new Promise((resolve, reject) => {
-
-    biz.goods.getById(id, function (err, doc){
-      if(err)  return reject(err);
-      if(!doc) return reject(new Error('Not Found'));
-      resolve(doc);
-    });
-  });
-
-  var p2 = new Promise((resolve, reject) => {
-
-    biz.goods.findDetailById(id, function (err, docs){
-      if(err) return reject(err);
-      resolve(docs);
-    });
-  });
-
-  Promise.all([p1, p2]).then(values => {
+  Promise.all([
+    biz.goods.getById(id),
+    biz.goods.findDetailById(id),
+  ]).then(values => {
 
     res.render('goods/edit', {
       conf: conf,

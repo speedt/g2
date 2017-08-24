@@ -36,7 +36,12 @@ const redis = require('emag.db').redis;
    * @return
    */
   exports.findDetailById = function(id, cb){
-    mysql.query(sql, [id], cb);
+    return new Promise((resolve, reject) => {
+      mysql.query(sql, [id], (err, docs) => {
+        if(err) return reject(err);
+        resolve(docs);
+      })
+    });
   };
 })();
 
@@ -95,9 +100,11 @@ const redis = require('emag.db').redis;
    * @return
    */
   exports.getById = function(id, cb){
-    mysql.query(sql, [id], (err, docs) => {
-      if(err) return cb(err);
-      cb(null, mysql.checkOnly(docs) ? docs[0] : null);
+    return new Promise((resolve, reject) => {
+      mysql.query(sql, [id], (err, docs) => {
+        if(err) return reject(err);
+        resolve(mysql.checkOnly(docs) ? docs[0] : null);
+      });
     });
   };
 })();

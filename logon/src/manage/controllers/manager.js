@@ -20,9 +20,8 @@ exports.changePwd = function(req, res, next){
     res.send({});
   })
   .catch(err => {
-    if('string' === typeof err)
-      return res.send({ error: { msg: err } });
-    next(err);
+    if('string' !== typeof err) return next(err);
+    res.send({ error: { code: err } });
   });
 };
 
@@ -65,9 +64,8 @@ exports.login = function(req, res, next){
     res.send({});
   })
   .catch(err => {
-    if('string' === typeof err)
-      return res.send({ error: { msg: err } });
-    next(err);
+    if('string' !== typeof err) return next(err);
+    res.send({ error: { code: err } });
   });
 };
 

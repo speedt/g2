@@ -13,26 +13,22 @@ const utils = require('speedt-utils').utils;
 exports.resetPwd = function(req, res, next){
   var query = req.body;
 
-  biz.user.resetPwd(query.id, '123456', function (err, status){
-    if(err) return next(err);
-    res.send({});
-  });
+  biz.user.resetPwd(query.id, '123456')
+  .then(() => res.send({}))
+  .catch(next);
 };
 
 exports.del = function(req, res, next){
   var query = req.body;
 
-  biz.user.del(query.id, 0, function (err, status){
-    if(err) return next(err);
-    res.send({});
-  });
+  biz.user.del(query.id)
+  .then(() => res.send({}))
+  .catch(next);
 };
 
 exports.indexUI = function(req, res, next){
-
-  biz.user.findAll(1, function (err, docs){
-    if(err) return next(err);
-
+  biz.user.findAll(1)
+  .then(docs => {
     res.render('user/index', {
       conf: conf,
       data: {
@@ -41,14 +37,15 @@ exports.indexUI = function(req, res, next){
         nav_choose:   ',03,0301,'
       }
     });
-  });
+  })
+  .catch(next);
 };
 
 exports.editUI = function(req, res, next){
   var id = req.query.id;
 
-  biz.user.getById(id, function (err, doc){
-    if(err)  return next(err);
+  biz.user.getById(id)
+  .then(doc => {
     if(!doc) return next(new Error('Not Found'));
 
     res.render('user/edit', {
@@ -59,16 +56,16 @@ exports.editUI = function(req, res, next){
         nav_choose:   ',03,0301,'
       }
     });
-  });
+  })
+  .catch(next);
 };
 
 exports.edit = function(req, res, next){
   var query = req.body;
 
-  biz.user.editInfo(query, function (err, status){
-    if(err) return next(err);
-    res.send({});
-  });
+  biz.user.editInfo(query)
+  .then(() => res.send({}))
+  .catch(next);
 };
 
 exports.giftUI = function(req, res, next){
