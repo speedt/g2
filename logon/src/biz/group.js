@@ -97,40 +97,40 @@ const logger = require('log4js').getLogger('biz.group');
   function p1(server_id, channel_id, group_info){
     return new Promise((resolve, reject) => {
       biz.user.getByChannelId(server_id, channel_id)
-      .then(p2)
-      .then(p3.bind(null, group_info))
+      .then(p2.bind(null, group_info))
+      .then(p3)
       .then(group_id => resolve(group_id))
       .catch(reject);
     });
   }
 
-  function p2(user){
+  function p2(group_info, user){
     return new Promise((resolve, reject) => {
-      if(!user) return reject('通道号不存在');
-      if(user.group_id) return reject('请先退出');
-      resolve(user);
+      if(!user) return reject('通道不存在');
+      if(_.isNumber(user.group_user_seat)) return reject('请先退出');
+
+      group_info.create_user_id = user.id;
+      resolve(group_info);
     });
   }
 
-  function p3(group_info, user){
-    group_info.create_user_id = user.id;
-
+  function p3(group_info){
     return new Promise((resolve, reject) => {
       biz.group.clearFree()
       .then(biz.group.genFreeId)
       .then(p4.bind(null, group_info))
-      .then(group_id => { resolve(group_id); })
+      .then(group_id => resolve(group_id))
       .catch(reject);
     });
   }
 
   function p4(group_info, group_id){
-    return new Promise((resolve, reject) => {
-      group_info.id = group_id;
+    group_info.id = group_id;
 
+    return new Promise((resolve, reject) => {
       mysql.beginTransaction()
       .then(p5.bind(null, group_info))
-      .then(() => { resolve(group_id); })
+      .then(() => resolve(group_id))
       .catch(reject);
     });
   }
@@ -138,22 +138,17 @@ const logger = require('log4js').getLogger('biz.group');
   function p5(group_info, trans){
     return new Promise((resolve, reject) => {
       biz.group.saveNew(group_info, trans)
-      .then(p6.bind(null, group_info, trans))
+      .then(biz.group_user.saveNew.bind(null, {
+        group_id: group_info.id,
+        user_id:  group_info.create_user_id,
+        seat:     1,
+      }, trans))
       .then(mysql.commitTransaction.bind(null, trans))
-      .then(() => { resolve(); })
+      .then(() => resolve())
       .catch(err => {
         trans.rollback(() => { reject(err); });
       });
     });
-  }
-
-  function p6(group_info, trans){
-    return biz.group_user.saveNew({
-      group_id: group_info.id,
-      user_id:  group_info.create_user_id,
-      status:   0,
-      seat:     1,
-    }, trans);
   }
 
   /**
@@ -355,7 +350,7 @@ const logger = require('log4js').getLogger('biz.group');
             'FROM '+
               'g_group '+
             'WHERE '+
-              'id IN (SELECT b.id FROM (SELECT (SELECT COUNT(1) FROM g_group_user WHERE group_id=a.id) AS group_user_count, a.* FROM g_group a WHERE a.status=0) b WHERE b.group_user_count=0)';
+              'id IN (SELECT b.id FROM (SELECT (SELECT COUNT(1) FROM g_group_user WHERE group_id=a.id) AS group_user_count, a.* FROM g_group a) b WHERE b.group_user_count=0)';
   /**
    *
    * @return

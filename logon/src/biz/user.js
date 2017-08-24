@@ -60,7 +60,7 @@ const logger = require('log4js').getLogger('biz.user');
 (() => {
   var sql = 'SELECT '+
               'c.id group_id, c.group_name, c.status group_status, '+
-              'b.seat group_user_seat, b.status group_user_status, '+
+              'b.status group_user_status, b.seat group_user_seat, '+
               'a.* '+
             'FROM '+
               '(SELECT * FROM s_user WHERE id=?) a '+
@@ -83,7 +83,7 @@ const logger = require('log4js').getLogger('biz.user');
 (() => {
   var sql = 'SELECT '+
               'c.id group_id, c.group_name, c.status group_status, '+
-              'b.seat group_user_seat, b.status group_user_status, '+
+              'b.status group_user_status, b.seat group_user_seat, '+
               'a.* '+
             'FROM '+
               '(SELECT * FROM s_user WHERE server_id=? AND channel_id=?) a '+
