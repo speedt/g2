@@ -24,9 +24,36 @@ const biz = require('emag.biz');
 const logger = require('log4js').getLogger('biz.pushCake');
 
 (() => {
-  function p1(){
+  function p1(user){
     return new Promise((resolve, reject) => {
-      resolve();
+      if(!user) return reject('invalid_user_id');
+      if(!user.group_id) return reject('不在任何群组');
+      mysql.beginTransaction()
+      .then(p2.bind(null, user))
+      .then(() => resolve(user.group_id))
+      .catch(reject);
+    });
+  }
+
+  function p2(user, trans){
+    return new Promise((resolve, reject) => {
+      biz.group_user.editStatus(user.id, 1, trans)
+      .then(biz.group.getById.bind(null, user.group_id, trans))
+      .then(p3.bind(null, trans))
+      .then(mysql.commitTransaction.bind(null, trans))
+      .then(() => resolve())
+      .catch(err => {
+        trans.rollback(() => reject(err));
+      });
+    });
+  }
+
+  function p3(trans, group){
+    return new Promise((resolve, reject) => {
+      if(3 !== group.group_user_seat_sum) return resolve();
+      biz.group.editReady(group.id, trans)
+      .then(() => resolve())
+      .catch(reject);
     });
   }
 
@@ -36,7 +63,8 @@ const logger = require('log4js').getLogger('biz.pushCake');
    */
   exports.ready = function(server_id, channel_id){
     return new Promise((resolve, reject) => {
-      p1()
+      biz.user.getByChannelId(server_id, channel_id)
+      .then(p1)
       .then(biz.group_user.findAllByGroupId)
       .then(docs => resolve(docs))
       .catch(reject);
