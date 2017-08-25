@@ -110,3 +110,34 @@ const _ = require('underscore');
     .catch(p2);
   };
 })();
+
+(() => {
+  function p1(send, data, user){
+    var _data = [data.channelId, JSON.stringify([conf.app.ver, 1002, data.seqId, _.now(), user])];
+    send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _data, (err, code) => {
+      if(err) return logger.error('channel info:', err);
+    });
+  }
+
+  function p2(err){
+    if('string' !== typeof err) return logger.error('channel info:', err);
+    switch(err){
+      case 'invalid_user_id': return logger.error('channel info:', err);
+      default: logger.debug('channel info:', err);
+    }
+  }
+
+  /**
+   *
+   */
+  exports.info = function(send, msg){
+    if(!_.isString(msg.body)) return logger.error('channel info empty');
+
+    try{ var data = JSON.parse(msg.body);
+    }catch(ex){ return; }
+
+    biz.user.getByChannelId(data.serverId, data.channelId)
+    .then(p1.bind(null, send, data))
+    .catch(p2);
+  };
+})();

@@ -70,10 +70,11 @@ amq.getClient((err) => {
   if(err) return logger.error('amq client:', err);
 
   amq.injection('/queue/front.start', handle.front.start, () => {});
-  amq.injection('/queue/front.stop',  handle.front.stop, () => {});
+  amq.injection('/queue/front.stop',  handle.front.stop,  () => {});
 
-  amq.injection('/queue/channel.open',  handle.channel.open, () => {});
+  amq.injection('/queue/channel.open',  handle.channel.open,  () => {});
   amq.injection('/queue/channel.close', handle.channel.close, () => {});
+  amq.injection('/queue/qq.1001',       handle.channel.info,  () => {});
 
   amq.injection('/queue/qq.2001',   handle.chat.one_for_one, () => {});
   amq.injection('/queue/qq.2003', handle.chat.one_for_group, () => {});
