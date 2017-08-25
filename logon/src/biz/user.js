@@ -111,13 +111,13 @@ const logger = require('log4js').getLogger('biz.user');
 
   function formVali(user_info){
     return new Promise((resolve, reject) => {
-      if(!_.isString(user_info.user_name)) return reject('INVALID_PARAMS');
+      if(!_.isString(user_info.user_name)) return reject('invalid_params');
       user_info.user_name = _.trim(user_info.user_name);
-      if(!regex_user_name.test(user_info.user_name)) return reject('INVALID_PARAMS');
+      if(!regex_user_name.test(user_info.user_name)) return reject('invalid_params');
 
-      if(!_.isString(user_info.user_pass)) return reject('INVALID_PARAMS');
+      if(!_.isString(user_info.user_pass)) return reject('invalid_params');
       user_info.user_pass = _.trim(user_info.user_pass);
-      if(!regex_user_name.test(user_info.user_pass)) return reject('INVALID_PARAMS');
+      if(!regex_user_name.test(user_info.user_pass)) return reject('invalid_params');
 
       resolve(user_info);
     });
@@ -127,7 +127,7 @@ const logger = require('log4js').getLogger('biz.user');
     return new Promise((resolve, reject) => {
       biz.user.getByName(user_info.user_name)
       .then(doc => {
-        if(doc) return reject('用户名已存在');
+        if(doc) return reject('exists_user');  /* 用户已存在 */
         resolve(user_info);
       })
       .catch(reject);
@@ -467,8 +467,8 @@ const logger = require('log4js').getLogger('biz.user');
 
   function p3(user){
     return new Promise((resolve, reject) => {
-      if(!user) return reject('通道不存在');
-      if(!_.isNumber(user.group_user_seat)) return reject('不在任何群组');
+      if(!user) return reject('invalid_user_id');
+      if(!_.isNumber(user.group_user_seat)) return reject('group_user_quit');
 
       p4(user)
       .then(() => resolve())

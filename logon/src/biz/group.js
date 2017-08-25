@@ -29,14 +29,14 @@ const logger = require('log4js').getLogger('biz.group');
 (() => {
   function formVali(group_info){
     return new Promise((resolve, reject) => {
-      if(!_.isNumber(group_info.visitor_count)) return reject('INVALID_PARAMS');
-      if(6 < group_info.visitor_count || 0 > group_info.visitor_count) return reject('INVALID_PARAMS');
+      if(!_.isNumber(group_info.visitor_count)) return reject('invalid_params');
+      if(6 < group_info.visitor_count || 0 > group_info.visitor_count) return reject('invalid_params');
 
-      if(!_.isNumber(group_info.extend_fund)) return reject('INVALID_PARAMS');
-      if(999999 < group_info.extend_fund || 0 > group_info.extend_fund) return reject('INVALID_PARAMS');
+      if(!_.isNumber(group_info.extend_fund)) return reject('invalid_params');
+      if(999999 < group_info.extend_fund || 0 > group_info.extend_fund) return reject('invalid_params');
 
-      if(!_.isNumber(group_info.extend_round_count)) return reject('INVALID_PARAMS');
-      if(4 < group_info.extend_round_count || 0 > group_info.extend_round_count) return reject('INVALID_PARAMS');
+      if(!_.isNumber(group_info.extend_round_count)) return reject('invalid_params');
+      if(4 < group_info.extend_round_count || 0 > group_info.extend_round_count) return reject('invalid_params');
 
       resolve(group_info);
     });
@@ -54,8 +54,8 @@ const logger = require('log4js').getLogger('biz.group');
 
   function p2(group_info, user){
     return new Promise((resolve, reject) => {
-      if(!user) return reject('通道不存在');
-      if(_.isNumber(user.group_user_seat)) return reject('请先退出');
+      if(!user) return reject('invalid_user_id');
+      if(_.isNumber(user.group_user_seat)) return reject('exist_user_seat');  /* 已经在某个群组中 */
 
       group_info.create_user_id = user.id;
       resolve(group_info);
@@ -117,8 +117,8 @@ const logger = require('log4js').getLogger('biz.group');
 (() => {
   function p1(user){
     return new Promise((resolve, reject) => {
-      if(!user) return reject('通道不存在');
-      if(!_.isNumber(user.group_user_seat)) return reject('不在任何群组');
+      if(!user) return reject('invalid_user_id');
+      if(!_.isNumber(user.group_user_seat)) return reject('group_user_quit');  /* 已经退出 */
 
       p2(user)
       .then(() => resolve(user.group_id))
@@ -151,12 +151,12 @@ const logger = require('log4js').getLogger('biz.group');
 (() => {
   function p1(group){
     return new Promise((resolve, reject) => {
-      if(!group) return reject('群组不存在');
-      if(0 === group.group_user_count) return reject('游戏已经结束');
+      if(!group) return reject('non_existent_group');  /* 群组不存在 */
+      if(0 === group.group_user_count) return reject('non_existent_group');  /* 游戏已经结束 */
       // 玩家数+游客数
       var group_user_count = 4 + (group.visitor_count - 0);
       logger.debug('group user count: %s::%s', group.group_user_count, group_user_count);
-      if(group.group_user_count >= group_user_count) return reject('群组满员');
+      if(group.group_user_count >= group_user_count) return reject('full_group');  /* 群组满员 */
 
       resolve({
         group_id: group.id,
@@ -177,8 +177,8 @@ const logger = require('log4js').getLogger('biz.group');
 
   function p3(group_user_info, user){
     return new Promise((resolve, reject) => {
-      if(!user) return reject('通道不存在');
-      if(_.isNumber(user.group_user_seat)) return reject('请先退出');
+      if(!user) return reject('invalid_user_id');
+      if(_.isNumber(user.group_user_seat)) return reject('exist_user_seat');
       group_user_info.user_id = user.id;
       resolve(group_user_info);
     });
