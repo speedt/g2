@@ -327,8 +327,35 @@ const logger = require('log4js').getLogger('biz.user');
 
 (() => {
   function p1(user){
+    logger.info('user login: %j', {
+      log_type:    1,
+      user_id:     user.id,
+      create_time: _.now(),
+    });
+
     return new Promise((resolve, reject) => {
-      mysql.query(sql, [
+      mysql.beginTransaction()
+      .then(p2.bind(null, user))
+      .then(() => resolve(user.id))
+      .catch(reject);
+    });
+  }
+
+  function p2(user, trans){
+    return new Promise((resolve, reject) => {
+      p3(user, trans)
+      .then(biz.group_user.editStatus.bind(null, user.id, 1, trans))
+      .then(mysql.commitTransaction.bind(null, trans))
+      .then(() => resolve())
+      .catch(err => {
+        trans.rollback(() => { reject(err); });
+      });
+    });
+  }
+
+  function p3(user, trans){
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [
         user.server_id,
         user.channel_id,
         user.id,
@@ -348,14 +375,8 @@ const logger = require('log4js').getLogger('biz.user');
     return new Promise((resolve, reject) => {
       biz.user.getByRedisChannelId(server_id, channel_id)
       .then(p1)
-      .then(user => {
-        logger.info('user login: %j', {
-          log_type:    1,
-          user_id:     user.id,
-          create_time: _.now(),
-        });
-        resolve();
-      })
+      .then(biz.group_user.findAllByUserId)
+      .then(docs => resolve(docs))
       .catch(reject)
     });
   };
