@@ -28,6 +28,9 @@ const logger = require('log4js').getLogger('biz.pushCake');
     return new Promise((resolve, reject) => {
       if(!user) return reject('invalid_user_id');
       if(!user.group_id) return reject('不在任何群组');
+      if(0 < user.group_user_status) return reject('已经举过手了');
+      if(0 === user.group_user_seat) return reject('你是钓鱼的');
+
       mysql.beginTransaction()
       .then(p2.bind(null, user))
       .then(() => resolve(user.group_id))
@@ -50,7 +53,7 @@ const logger = require('log4js').getLogger('biz.pushCake');
 
   function p3(trans, group){
     return new Promise((resolve, reject) => {
-      if(3 !== group.group_user_seat_sum) return resolve();
+      if(3 > group.group_user_seat_sum) return resolve();
       biz.group.editReady(group.id, trans)
       .then(() => resolve())
       .catch(reject);
