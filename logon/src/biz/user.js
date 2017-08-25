@@ -30,13 +30,8 @@ const logger = require('log4js').getLogger('biz.user');
 (() => {
   var sql = 'SELECT a.* FROM s_user a WHERE a.status=? ORDER BY a.create_time DESC';
 
-  exports.findAll = function(status, trans){
-    return new Promise((resolve, reject) => {
-      (trans || mysql).query(sql, [status], (err, docs) => {
-        if(err) return reject(err);
-        resolve(docs);
-      });
-    });
+  exports.findAll = function(status, cb){
+    mysql.query(sql, [status], cb);
   };
 })();
 
@@ -260,8 +255,8 @@ const logger = require('log4js').getLogger('biz.user');
    *
    * @return
    */
-  exports.del = function(id, trans){
-    return biz.user.editStatus(id, 0, trans);
+  exports.del = function(id, cb){
+    this.editStatus(id, 0, cb);
   };
 
   var sql = 'UPDATE s_user SET status=?, status_time=? WHERE id=?';
@@ -271,13 +266,8 @@ const logger = require('log4js').getLogger('biz.user');
    *
    * @return
    */
-  exports.editStatus = function(id, status, trans){
-    return new Promise((resolve, reject) => {
-      (trans || mysql).query(sql, [status, new Date(), id], err => {
-        if(err) return reject(err);
-        resolve();
-      });
-    });
+  exports.editStatus = function(id, status, cb){
+    mysql.query(sql, [status, new Date(), id], cb);
   };
 })();
 
@@ -289,13 +279,8 @@ const logger = require('log4js').getLogger('biz.user');
    *
    * @return
    */
-  exports.resetPwd = function(id, user_pass, trans){
-    return new Promise((resolve, reject) => {
-      (trans || mysql).query(sql, [md5.hex(user_pass || '123456'), id], err => {
-        if(err) return reject(err);
-        resolve();
-      });
-    });
+  exports.resetPwd = function(id, user_pass, cb){
+    mysql.query(sql, [md5.hex(user_pass || '123456'), id], cb)
   };
 })();
 

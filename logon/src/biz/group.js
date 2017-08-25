@@ -94,7 +94,7 @@ const logger = require('log4js').getLogger('biz.group');
       .then(mysql.commitTransaction.bind(null, trans))
       .then(() => resolve())
       .catch(err => {
-        trans.rollback(() => { reject(err); });
+        trans.rollback(() => reject(err));
       });
     });
   }
