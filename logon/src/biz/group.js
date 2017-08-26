@@ -54,8 +54,8 @@ const logger = require('log4js').getLogger('biz.group');
 
   function p2(group_info, user){
     return new Promise((resolve, reject) => {
-      if(!user) return reject('invalid_user_id');
-      if(_.isNumber(user.group_user_seat)) return reject('exist_user_seat');  /* 已经在某个群组中 */
+      if(!user) return reject('用户不存在');
+      if(_.isNumber(user.group_user_seat)) return reject('已经在某个群组中');
 
       group_info.create_user_id = user.id;
       resolve(group_info);
@@ -93,10 +93,23 @@ const logger = require('log4js').getLogger('biz.group');
       }, trans))
       .then(mysql.commitTransaction.bind(null, trans))
       .then(() => resolve())
-      .catch(err => {
-        trans.rollback(() => reject(err));
-      });
+      .catch(p6.bind(null, reject, trans));
     });
+  }
+
+  function p6(reject, trans, err){
+    trans.rollback(() => reject(err));
+  }
+
+  function p7(resolve, docs){
+    var result = [];
+    if(0 === docs.length) return resolve(result);
+    result.push(docs);
+    let data = [];
+    data.push(docs);
+    data.push(docs[0]);
+    result.push(data);
+    resolve(result);
   }
 
   /**
@@ -108,7 +121,7 @@ const logger = require('log4js').getLogger('biz.group');
       formVali(group_info)
       .then(p1.bind(null, server_id, channel_id))
       .then(biz.group_user.findAllByGroupId)
-      .then(docs => resolve(docs))
+      .then(p7.bind(null, resolve))
       .catch(reject);
     });
   };
@@ -117,8 +130,8 @@ const logger = require('log4js').getLogger('biz.group');
 (() => {
   function p1(user){
     return new Promise((resolve, reject) => {
-      if(!user) return reject('invalid_user_id');
-      if(!_.isNumber(user.group_user_seat)) return reject('group_user_quit');  /* 已经退出 */
+      if(!user) return reject('用户不存在');
+      if(!_.isNumber(user.group_user_seat)) return reject('用户不在任何群组');
 
       p2(user)
       .then(() => resolve(user.group_id))
@@ -127,10 +140,20 @@ const logger = require('log4js').getLogger('biz.group');
   }
 
   function p2(user){
-    if((0 < user.group_status) && (0 < user.group_user_seat)){
-      return biz.group_user.editStatus(user.id, 2);
-    }
+    if((0 < user.group_status) && (0 < user.group_user_seat))
+      return biz.group_user.forcedSignOut(user.id);
     return biz.group_user.delByUserId(user.id);
+  }
+
+  function p3(resolve, docs){
+    var result = [];
+    if(0 === docs.length) return resolve(result);
+    result.push(docs);
+    let data = [];
+    data.push(docs);
+    data.push(docs[0]);
+    result.push(data);
+    resolve(result);
   }
 
   /**
@@ -142,7 +165,7 @@ const logger = require('log4js').getLogger('biz.group');
       biz.user.getByChannelId(server_id, channel_id)
       .then(p1)
       .then(biz.group_user.findAllByGroupId)
-      .then(docs => resolve(docs))
+      .then(p3.bind(null, resolve))
       .catch(reject);
     });
   };
@@ -151,12 +174,12 @@ const logger = require('log4js').getLogger('biz.group');
 (() => {
   function p1(group){
     return new Promise((resolve, reject) => {
-      if(!group) return reject('non_existent_group');  /* 群组不存在 */
-      if(0 === group.group_user_count) return reject('non_existent_group');  /* 游戏已经结束 */
+      if(!group) return reject('群组不存在');
+      if(0 === group.group_user_count) return reject('群组关闭');
       // 玩家数+游客数
       var group_user_count = 4 + (group.visitor_count - 0);
       logger.debug('group user count: %s::%s', group.group_user_count, group_user_count);
-      if(group.group_user_count >= group_user_count) return reject('full_group');  /* 群组满员 */
+      if(group.group_user_count >= group_user_count) return reject('群组满员');
 
       resolve({
         group_id: group.id,
@@ -177,11 +200,22 @@ const logger = require('log4js').getLogger('biz.group');
 
   function p3(group_user_info, user){
     return new Promise((resolve, reject) => {
-      if(!user) return reject('invalid_user_id');
-      if(_.isNumber(user.group_user_seat)) return reject('exist_user_seat');
+      if(!user) return reject('用户不存在');
+      if(_.isNumber(user.group_user_seat)) return reject('已经在某个群组中');
       group_user_info.user_id = user.id;
       resolve(group_user_info);
     });
+  }
+
+  function p4(resolve, docs){
+    var result = [];
+    if(0 === docs.length) return resolve(result);
+    result.push(docs);
+    let data = [];
+    data.push(docs);
+    data.push(docs[0]);
+    result.push(data);
+    resolve(result);
   }
 
   /**
@@ -194,7 +228,7 @@ const logger = require('log4js').getLogger('biz.group');
       .then(p1)
       .then(p2.bind(null, server_id, channel_id))
       .then(biz.group_user.findAllByGroupId)
-      .then(docs => resolve(docs))
+      .then(p4.bind(null, resolve))
       .catch(reject);
     });
   };
@@ -227,8 +261,8 @@ const logger = require('log4js').getLogger('biz.group');
   function p1(cb, trans){
     var id = _.random(100000, 999999);
     biz.group.getById(id, trans)
-    .then(group => {
-      if(group) return p1(cb, trans);
+    .then(doc => {
+      if(doc) return p1(cb, trans);
       cb(null, id);
     })
     .catch(cb);
@@ -281,10 +315,10 @@ const logger = require('log4js').getLogger('biz.group');
    */
   exports.editReady = function(id, trans){
     var group_info = {
-      id:         id,
       status:     1,
       round_id:   utils.replaceAll(uuid.v4(), '-', ''),
       round_time: new Date(),
+      id:         id,
     };
 
     return new Promise((resolve, reject) => {

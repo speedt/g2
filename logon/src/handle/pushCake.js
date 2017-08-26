@@ -17,12 +17,14 @@ const logger = require('log4js').getLogger('handle.pushCake');
 const _ = require('underscore');
 
 (() => {
-  function p1(send, data, group_users){
+  function p1(send, data, result){
+    if(0 === result.length) return;
+
     var _data = [];
     _data.push(null);
-    _data.push(JSON.stringify([conf.app.ver, 5006, data.seqId, _.now(), group_users]));
+    _data.push(JSON.stringify([conf.app.ver, 5006, data.seqId, _.now(), result[1]]));
 
-    for(let i of group_users){
+    for(let i of result[0]){
       if(!i.server_id || !i.channel_id) continue;
       _data.splice(0, 1, i.channel_id);
 

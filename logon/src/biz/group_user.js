@@ -77,26 +77,6 @@ const logger = require('log4js').getLogger('biz.group_user');
 })();
 
 (() => {
-  var sql = 'SELECT COUNT(1) status_count FROM g_group_user WHERE status=? AND group_id=?';
-
-  /**
-   * 获取群组状态的数量
-   *
-   * @param group_id
-   * @param status
-   * @return
-   */
-  exports.getStatusCount = function(group_id, status, trans){
-    return new Promise((resolve, reject) => {
-      (trans || mysql).query(sql, [status, group_id], (err, docs) => {
-        if(err) return reject(err);
-        resolve(mysql.checkOnly(docs) ? (docs[0]).status_count : null);
-      });
-    });
-  };
-})();
-
-(() => {
   var sql = 'DELETE FROM g_group_user WHERE user_id=?';
 
   /**

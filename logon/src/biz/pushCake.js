@@ -26,7 +26,7 @@ const logger = require('log4js').getLogger('biz.pushCake');
 (() => {
   function p1(user){
     return new Promise((resolve, reject) => {
-      if(!user) return reject('invalid_user_id');
+      if(!user) return reject('用户不存在');
       if(!user.group_id) return reject('不在任何群组');
       if(0 < user.group_user_status) return reject('已经举过手了');
       if(0 === user.group_user_seat) return reject('你是钓鱼的');
@@ -40,14 +40,12 @@ const logger = require('log4js').getLogger('biz.pushCake');
 
   function p2(user, trans){
     return new Promise((resolve, reject) => {
-      biz.group_user.editStatus(user.id, 1, trans)
+      biz.group_user.ready(user.id, trans)
       .then(biz.group.getById.bind(null, user.group_id, trans))
       .then(p3.bind(null, trans))
       .then(mysql.commitTransaction.bind(null, trans))
       .then(() => resolve())
-      .catch(err => {
-        trans.rollback(() => reject(err));
-      });
+      .catch(p4.bind(null, reject, trans));
     });
   }
 
@@ -60,6 +58,21 @@ const logger = require('log4js').getLogger('biz.pushCake');
     });
   }
 
+  function p4(reject, trans, err){
+    trans.rollback(() => reject(err));
+  }
+
+  function p5(resolve, docs){
+    var result = [];
+    if(0 === docs.length) return resolve(result);
+    result.push(docs);
+    let data = [];
+    data.push(docs);
+    data.push(docs[0]);
+    result.push(data);
+    resolve(result);
+  }
+
   /**
    *
    * @return
@@ -69,7 +82,7 @@ const logger = require('log4js').getLogger('biz.pushCake');
       biz.user.getByChannelId(server_id, channel_id)
       .then(p1)
       .then(biz.group_user.findAllByGroupId)
-      .then(docs => resolve(docs))
+      .then(p5.bind(null, resolve))
       .catch(reject);
     });
   };
