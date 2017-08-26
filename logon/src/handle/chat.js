@@ -38,9 +38,9 @@ exports.one_for_one = function(send, msg){
 (() => {
   function formVali(data, user){
     return new Promise((resolve, reject) => {
-      if(!user) return reject('通道不存在');
-      if(!_.isNumber(user.group_user_seat)) return reject('不在任何群组');
-      if(!user.group_id) return reject('不在任何群组');
+      if(!user) return reject('用户不存在');
+      if(!_.isNumber(user.group_user_seat)) return reject('用户不在任何群组');
+      if(!user.group_id) return reject('用户不在任何群组');
 
       data.user_id  = user.id;
       resolve(user.group_id);
@@ -48,6 +48,8 @@ exports.one_for_one = function(send, msg){
   }
 
   function p1(send, data, group_users){
+    if(0 === group_users.length) return;
+
     var _data = [];
     _data.push(null);
     _data.push(JSON.stringify([2004, data.seqId, _.now(), [data.user_id, data.data]]));

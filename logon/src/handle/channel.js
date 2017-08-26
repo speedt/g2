@@ -50,7 +50,7 @@ const _ = require('underscore');
   }
 
   function p3(send, data){
-    var _data = [data.channelId, JSON.stringify([1, , _.now(), [conf.app.ver]])];
+    var _data = [data.channelId, JSON.stringify([1, , _.now(), conf.app.ver])];
     send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _data, (err, code) => {
       if(err) return logger.error('channel open:', err);
     });
