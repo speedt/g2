@@ -30,7 +30,6 @@ const redis = require('emag.db').redis;
  * @return
  */
 exports.findAll = function(status, cb){
-
   var sql = 'SELECT a.* FROM s_cfg a';
   if(null !== status){ sql += ' WHERE a.status=?'; }
   sql += ' ORDER BY a.title ASC';
@@ -50,18 +49,18 @@ exports.findAll = function(status, cb){
    * @return
    */
   exports.saveNew = function(newInfo, cb){
+    newInfo.create_time = new Date();
+    newInfo.status = newInfo.status || 0;
 
-    var postData = [
+    mysql.query(sql, [
       newInfo.type_,
       newInfo.key_,
       newInfo.value_,
       newInfo.title,
-      new Date(),
+      newInfo.create_time,
       newInfo.comment,
-      newInfo.status || 0,
-    ];
-
-    mysql.query(sql, postData, function (err, status){
+      newInfo.status,
+    ], function (err, status){
       if(err) return cb(err);
 
       redis.select(conf.redis.database, function (err){
@@ -69,7 +68,6 @@ exports.findAll = function(status, cb){
         redis.hset('cfg::'+ newInfo.type_, newInfo.key_, newInfo.value_, redis.print);
         cb(null, newInfo);
       });
-
     });
   };
 })();
@@ -88,13 +86,11 @@ exports.findAll = function(status, cb){
    */
   exports.editInfo = function(newInfo, cb){
 
-    var postData = [
+    mysql.query(sql, [
       newInfo.value_,
       newInfo.key_,
       newInfo.type_,
-    ];
-
-    mysql.query(sql, postData, function (err, status){
+    ], function (err, status){
       if(err) return cb(err);
 
       redis.select(conf.redis.database, function (err){
@@ -102,7 +98,6 @@ exports.findAll = function(status, cb){
         redis.hset('cfg::'+ newInfo.type_, newInfo.key_, newInfo.value_, redis.print);
         cb(null, newInfo);
       });
-
     });
   };
 })();

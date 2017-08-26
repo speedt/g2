@@ -34,16 +34,13 @@ const redis = require('emag.db').redis;
    * @return
    */
   exports.saveNew = function(newInfo, cb){
-
-    var postData = [
+    mysql.query(sql, [
       utils.replaceAll(uuid.v1(), '-', ''),
       newInfo.title,
       newInfo.content,
       new Date(),
       newInfo.user_id,
-    ];
-
-    mysql.query(sql, postData, cb);
+    ], cb);
   };
 })();
 
@@ -55,14 +52,11 @@ const redis = require('emag.db').redis;
    * @return
    */
   exports.editInfo = function(newInfo, cb){
-
-    var postData = [
+    mysql.query(sql, [
       newInfo.title,
       newInfo.content,
       newInfo.id,
-    ];
-
-    mysql.query(sql, postData, cb);
+    ], cb);
   };
 })();
 
@@ -75,13 +69,10 @@ const redis = require('emag.db').redis;
    * @return
    */
   exports.editLastTime = function(id, cb){
-
-    var postData = [
+    mysql.query(sql, [
       new Date(),
       id,
-    ];
-
-    mysql.query(sql, postData, cb);
+    ], cb);
   };
 })();
 
@@ -92,10 +83,12 @@ const redis = require('emag.db').redis;
    *
    * @return
    */
-  exports.getById = function(id, cb){
-    mysql.query(sql, [id], (err, docs) => {
-      if(err) return cb(err);
-      cb(null, mysql.checkOnly(docs) ? docs[0] : null);
+  exports.getById = function(id){
+    return new Promise((resolve, reject) => {
+      mysql.query(sql, [id], (err, docs) => {
+        if(err) return reject(err);
+        resolve(mysql.checkOnly(docs) ? docs[0] : null);
+      })
     });
   };
 })();

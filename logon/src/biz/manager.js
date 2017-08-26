@@ -92,9 +92,9 @@ const logger = require('log4js').getLogger('biz.manager');
 (() => {
   function p1(logInfo){
     return new Promise((resolve, reject) => {
-      if(!_.isString(logInfo.user_pass)) return reject('INVALID_PARAMS');
+      if(!_.isString(logInfo.user_pass)) return reject('invalid_params');
       logInfo.user_pass = _.trim(logInfo.user_pass);
-      if('' === logInfo.user_pass) return reject('INVALID_PARAMS');
+      if('' === logInfo.user_pass) return reject('invalid_params');
       resolve(logInfo);
     });
   }

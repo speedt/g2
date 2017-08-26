@@ -21,19 +21,12 @@ const redis = require('emag.db').redis;
   const sha1    = '51f34ec6eec067fecc66d20c2117523f88c5effe';
 
   /**
-   * 获取全部前置机id
-   *
-   * front_list.lua
+   * 获取全部前置机id（front_list.lua）
    *
    * @return
    */
-  exports.findAll = function(){
-    return new Promise((resolve, reject) => {
-      redis.evalsha(sha1, numkeys, conf.redis.database, (err, code) => {
-        if(err) return reject(err);
-        resolve(code);
-      });
-    })
+  exports.findAll = function(cb){
+    redis.evalsha(sha1, numkeys, conf.redis.database, cb);
   };
 })();
 

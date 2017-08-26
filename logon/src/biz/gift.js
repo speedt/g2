@@ -57,17 +57,16 @@ const logger = require('log4js').getLogger('biz.gift');
   /**
    * 获取当天的礼品列表
    *
+   * @param user_id
+   * @param gift_type
    * @param curr_date 默认当天
    * @return
    */
   exports.findGiftByDate = function(user_id, gift_type, curr_date, cb){
-
-    var postData = [
+    mysql.query(sql, [
       user_id,
       gift_type || 1,
       curr_date || utils.formatDate(new Date(), 'YYYY-MM-dd'),
-    ];
-
-    mysql.query(sql, postData, cb);
+    ], cb);
   };
 })();

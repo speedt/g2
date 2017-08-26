@@ -31,13 +31,8 @@ const redis = require('emag.db').redis;
   /**
    *
    */
-  exports.findAllByUserId = function(id, trans){
-    return new Promise((resolve, reject) => {
-      (trans || mysql).query(sql, [id], (err, docs) => {
-        if(err) return reject(err);
-        resolve(docs);
-      });
-    });
+  exports.findAllByUserId = function(id, cb){
+    mysql.query(sql, [id], cb);
   };
 })();
 
