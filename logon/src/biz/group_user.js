@@ -131,18 +131,40 @@ const logger = require('log4js').getLogger('biz.group_user');
 })();
 
 (() => {
-  var sql = 'UPDATE g_group_user SET status=?, status_time=? WHERE user_id=?';
-
   /**
-   * 用户状态
-   *
-   * 0、默认
-   * 1、举手
-   * 2、玩家离线
+   * 举手
    *
    * @return
    */
-  exports.editStatus = function(user_id, status, trans){
+  exports.ready = function(user_id, trans){
+    return editStatus(user_id, 1, trans);
+  };
+
+  /**
+   * 强制退出
+   *
+   * @return
+   */
+  exports.forcedSignOut = function(user_id, trans){
+    return editStatus(user_id, 2, trans);
+  };
+
+  /**
+   * 重新上线
+   *
+   * @return
+   */
+  exports.reOnline = function(user_id, trans){
+    return editStatus(user_id, 3, trans);
+  };
+
+  var sql = 'UPDATE g_group_user SET status=?, status_time=? WHERE user_id=?';
+
+  /**
+   *
+   * @return
+   */
+   function editStatus(user_id, status, trans){
     return new Promise((resolve, reject) => {
       (trans || mysql).query(sql, [status, new Date(), user_id], err => {
         if(err) return reject(err);
@@ -154,7 +176,7 @@ const logger = require('log4js').getLogger('biz.group_user');
 
 (() => {
   var sql = 'SELECT '+
-              'c.group_name, c.status group_status, '+
+              'c.group_name, c.status group_status, c.round_id group_round_id, '+
               'b.user_name, b.server_id, b.channel_id, '+
               'a.* '+
             'FROM '+

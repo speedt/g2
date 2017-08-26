@@ -99,6 +99,319 @@ const logger = require('log4js').getLogger('biz.user');
 })();
 
 (() => {
+  /**
+   * 并不是真删，而是改变状态
+   *
+   * @return
+   */
+  exports.del = function(id, cb){
+    this.editStatus(id, 0, cb);
+  };
+
+  var sql = 'UPDATE s_user SET status=?, status_time=? WHERE id=?';
+
+  /**
+   * 编辑用户状态
+   *
+   * @return
+   */
+  exports.editStatus = function(id, status, cb){
+    mysql.query(sql, [status, new Date(), id], cb);
+  };
+})();
+
+(() => {
+  var sql = 'UPDATE s_user SET user_pass=? WHERE id=?';
+
+  /**
+   * 重置密码
+   *
+   * @return
+   */
+  exports.resetPwd = function(id, user_pass, cb){
+    mysql.query(sql, [md5.hex(user_pass || '123456'), id], cb)
+  };
+})();
+
+(() => {
+  var sql = 'UPDATE s_user SET nickname=?, current_score=?, vip=? WHERE id=?';
+
+  /**
+   * 基本信息修改
+   *
+   * @return
+   */
+  exports.editInfo = function(user_info, trans){
+    user_info.current_score = user_info.current_score || 0;
+    user_info.vip           = user_info.vip           || 0;
+
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [
+        user_info.nickname,
+        user_info.current_score,
+        user_info.vip,
+        user_info.id
+      ], err => {
+        if(err) return reject(err);
+        resolve(user_info);
+      });
+    });
+  };
+})();
+
+(() => {
+  const seconds   = 5;  //令牌有效期 5s
+  const numkeys   = 4;
+  const sha1      = '6a63911ac256b0c00cf270c6332119240d52b13e';
+
+  /**
+   * 令牌授权
+   *
+   * @param user
+   * @return 登陆令牌
+   */
+  exports.authorize = function(user){
+    return new Promise((resolve, reject) => {
+      redis.evalsha(sha1, numkeys,
+        conf.redis.database,                   /**/
+        conf.app.client_id,                    /**/
+        user.id,                               /**/
+        utils.replaceAll(uuid.v4(), '-', ''),  /**/
+        seconds, (err, code) => {
+        if(err) return reject(err);
+        resolve(code);
+      });
+    });
+  };
+})();
+
+(() => {
+  const numkeys = 3;
+  const sha1    = '3b248050f9965193d8a4836d6258861a1890017f';
+
+  exports.closeChannel = function(server_id, channel_id){
+    return new Promise((resolve, reject) => {
+      redis.evalsha(sha1, numkeys,
+        conf.redis.database,  /**/
+        server_id,            /**/
+        channel_id,           /**/
+        (err, code) => {
+        if(err) return reject(err);
+        if(!_.isArray(code)) return reject(code);
+        resolve(utils.arrToObj(code));
+      });
+    });
+  };
+})();
+
+(() => {
+  const numkeys = 3;
+  const sha1    = '6df440fb93a747912f3eae2835c8fec8e90788ca';
+
+  /**
+  * 获取用户信息（user_info_byChannelId.lua）
+  *
+  * @return
+  */
+  exports.getByRedisChannelId = function(server_id, channel_id){
+    return new Promise((resolve, reject) => {
+      redis.evalsha(sha1, numkeys,
+        conf.redis.database,  /**/
+        server_id,            /**/
+        channel_id,           /**/
+        (err, code) => {
+        if(err) return reject(err);
+        if(!_.isArray(code)) return reject(code);
+        resolve(utils.arrToObj(code));
+      });
+    });
+  };
+})();
+
+(() => {
+  function p1(user){
+    logger.info('user logout: %j', {
+      log_type:    2,
+      user_id:     user.id,
+      create_time: _.now(),
+    });
+
+    return new Promise((resolve, reject) => {
+      biz.user.clearChannel(user.id)
+      .then(() => resolve(user.id))
+      .catch(reject);
+    });
+  }
+
+  function p2(user){
+    return new Promise((resolve, reject) => {
+      if(!user) return reject('用户不存在');
+      if(!_.isNumber(user.group_user_seat)) return reject('用户不在任何群组');
+
+      p3(user)
+      .then(() => resolve(user.group_id))
+      .catch(reject);
+    });
+  }
+
+  function p3(user){
+    if((0 < user.group_status) && (0 < user.group_user_seat))
+      return biz.group_user.forcedSignOut(user.id);
+    return biz.group_user.delByUserId(user.id);
+  }
+
+  function p4(resolve, docs){
+    var result = [];
+    if(0 === docs.length) return resolve(result);
+    result.push(docs);
+    let data = [];
+    data.push(docs);
+    data.push(docs[0]);
+    result.push(data);
+    resolve(result);
+  }
+
+  /**
+   *
+   * @return
+   */
+  exports.logout = function(server_id, channel_id){
+    return new Promise((resolve, reject) => {
+      biz.user.closeChannel(server_id, channel_id)
+      .then(p1)
+      .then(biz.user.getById)
+      .then(p2)
+      .then(biz.group_user.findAllByGroupId)
+      .then(p4.bind(null, resolve))
+      .catch(reject);
+    });
+  };
+})();
+
+(() => {
+  function p1(user){
+    logger.info('user login: %j', {
+      log_type:    1,
+      user_id:     user.id,
+      create_time: _.now(),
+    });
+
+    return new Promise((resolve, reject) => {
+      mysql.beginTransaction()
+      .then(p2.bind(null, user))
+      .then(() => resolve(user.id))
+      .catch(reject);
+    });
+  }
+
+  function p2(user, trans){
+    return new Promise((resolve, reject) => {
+      editChannel(user, trans)
+      .then(biz.group_user.reOnline.bind(null, user.id, trans))
+      .then(mysql.commitTransaction.bind(null, trans))
+      .then(() => resolve())
+      .catch(p4.bind(null, reject, trans));
+    });
+  }
+
+  function p3(resolve, docs){
+    var result = [];
+    if(0 === docs.length) return resolve(result);
+    result.push(docs);
+    let data = [];
+    data.push(docs);
+    data.push(docs[0]);
+    result.push(data);
+    resolve(result);
+  }
+
+  function p4(reject, trans, err){
+    trans.rollback(() => reject(err));
+  }
+
+  /**
+   * 注册通道
+   *
+   * @return
+   */
+  exports.registerChannel = function(server_id, channel_id){
+    return new Promise((resolve, reject) => {
+      biz.user.getByRedisChannelId(server_id, channel_id)
+      .then(p1)
+      .then(biz.group_user.findAllByUserId)
+      .then(p3.bind(null, resolve))
+      .catch(reject)
+    });
+  };
+
+  var sql = 'UPDATE s_user SET server_id=?, channel_id=? WHERE id=?';
+
+  function editChannel(user_info, trans){
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [
+        user_info.server_id,
+        user_info.channel_id,
+        user_info.id,
+      ], err => {
+        if(err) return reject(err);
+        resolve(user_info);
+      });
+    });
+  }
+
+  /**
+   * 清理通道
+   *
+   * @return
+   */
+  exports.clearChannel = function(id, trans){
+    return editChannel({
+      server_id: '',
+      channel_id: '',
+      id: id,
+    }, trans);
+  };
+})();
+
+(() => {
+  function p1(logInfo, user){
+    return new Promise((resolve, reject) => {
+      if(!user) return reject('用户不存在');
+      if(1 !== user.status) return reject('用户禁用状态');
+      if(md5.hex(logInfo.user_pass) !== user.user_pass)
+        return reject('用户名或密码输入错误');
+      resolve(user);
+    });
+  }
+
+  function p2(user){
+    return new Promise((resolve, reject) => {
+      Promise.all([
+        biz.user.authorize(user),
+        biz.frontend.available(),
+      ])
+      .then(token => resolve(token))
+      .catch(reject);
+    });
+  }
+
+  /**
+   * 用户登陆
+   *
+   * @return
+   */
+  exports.login = function(logInfo /* 用户名及密码 */){
+    return new Promise((resolve, reject) => {
+      biz.user.getByName(logInfo.user_name)
+      .then(p1.bind(null, logInfo))
+      .then(p2)
+      .then(token => resolve(token))
+      .catch(reject);
+    });
+  };
+})();
+
+(() => {
   // 2-10个字符，支持中文，英文大小写、数字、下划线
   var regex_user_name = /^[\u4E00-\u9FA5a-zA-Z0-9_]{2,10}$/;
   // 6-16个字符，支持英文大小写、数字、下划线，区分大小写
@@ -122,7 +435,7 @@ const logger = require('log4js').getLogger('biz.user');
     return new Promise((resolve, reject) => {
       biz.user.getByName(user_info.user_name)
       .then(doc => {
-        if(doc) return reject('exists_user');  /* 用户已存在 */
+        if(doc) return reject('用户名已存在');
         resolve(user_info);
       })
       .catch(reject);
@@ -205,302 +518,6 @@ const logger = require('log4js').getLogger('biz.user');
       .then(p2)
       .then(user_info => resolve(user_info))
       .catch(reject);
-    });
-  };
-})();
-
-(() => {
-  function p1(logInfo, user){
-    return new Promise((resolve, reject) => {
-      if(!user) return reject('用户名或密码输入错误');
-      // 用户状态
-      if(1 !== user.status) return reject('禁止登陆');
-      // 验证密码
-      if(md5.hex(logInfo.user_pass) !== user.user_pass)
-        return reject('用户名或密码输入错误');
-      resolve(user);
-    });
-  }
-
-  function p2(user){
-    return new Promise((resolve, reject) => {
-      Promise.all([
-        biz.user.authorize(user),
-        biz.frontend.available(),
-      ])
-      .then(token => resolve(token))
-      .catch(reject);
-    });
-  }
-
-  /**
-   * 用户登陆
-   *
-   * @return
-   */
-  exports.login = function(logInfo /* 用户名及密码 */){
-    return new Promise((resolve, reject) => {
-      biz.user.getByName(logInfo.user_name)
-      .then(p1.bind(null, logInfo))
-      .then(p2)
-      .then(token => resolve(token))
-      .catch(reject);
-    });
-  };
-})();
-
-(() => {
-  /**
-   * 并不是真删，而是改变状态
-   *
-   * @return
-   */
-  exports.del = function(id, cb){
-    this.editStatus(id, 0, cb);
-  };
-
-  var sql = 'UPDATE s_user SET status=?, status_time=? WHERE id=?';
-
-  /**
-   * 编辑用户状态
-   *
-   * @return
-   */
-  exports.editStatus = function(id, status, cb){
-    mysql.query(sql, [status, new Date(), id], cb);
-  };
-})();
-
-(() => {
-  var sql = 'UPDATE s_user SET user_pass=? WHERE id=?';
-
-  /**
-   * 重置密码
-   *
-   * @return
-   */
-  exports.resetPwd = function(id, user_pass, cb){
-    mysql.query(sql, [md5.hex(user_pass || '123456'), id], cb)
-  };
-})();
-
-(() => {
-  var sql = 'UPDATE s_user SET nickname=?, current_score=?, vip=? WHERE id=?';
-
-  /**
-   * 基本信息修改
-   *
-   * @return
-   */
-  exports.editInfo = function(user, trans){
-    user.current_score = user.current_score || 0;
-    user.vip = user.vip || 0;
-
-    return new Promise((resolve, reject) => {
-      (trans || mysql).query(sql, [
-        user.nickname,
-        user.current_score,
-        user.vip,
-        user.id
-      ], err => {
-        if(err) return reject(err);
-        resolve(user);
-      });
-    });
-  };
-})();
-
-(() => {
-  function p1(user){
-    logger.info('user login: %j', {
-      log_type:    1,
-      user_id:     user.id,
-      create_time: _.now(),
-    });
-
-    return new Promise((resolve, reject) => {
-      mysql.beginTransaction()
-      .then(p2.bind(null, user))
-      .then(() => resolve(user.id))
-      .catch(reject);
-    });
-  }
-
-  function p2(user, trans){
-    return new Promise((resolve, reject) => {
-      p3(user, trans)
-      .then(biz.group_user.editStatus.bind(null, user.id, 1, trans))
-      .then(mysql.commitTransaction.bind(null, trans))
-      .then(() => resolve())
-      .catch(err => {
-        trans.rollback(() => { reject(err); });
-      });
-    });
-  }
-
-  function p3(user, trans){
-    return new Promise((resolve, reject) => {
-      (trans || mysql).query(sql, [
-        user.server_id,
-        user.channel_id,
-        user.id,
-      ], err => {
-        if(err) return reject(err);
-        resolve(user);
-      });
-    });
-  }
-
-  /**
-   * 注册通道
-   *
-   * @return
-   */
-  exports.registerChannel = function(server_id, channel_id){
-    return new Promise((resolve, reject) => {
-      biz.user.getByRedisChannelId(server_id, channel_id)
-      .then(p1)
-      .then(biz.group_user.findAllByUserId)
-      .then(docs => resolve(docs))
-      .catch(reject)
-    });
-  };
-
-  var sql = 'UPDATE s_user SET server_id=?, channel_id=? WHERE id=?';
-
-  /**
-   * 清理通道
-   *
-   * @return
-   */
-  exports.clearChannel = function(user_id, trans){
-    return new Promise((resolve, reject) => {
-      (trans || mysql).query(sql, ['', '', user_id], err => {
-        if(err) return reject(err);
-        resolve();
-      });
-    });
-  };
-})();
-
-(() => {
-  const seconds   = 5;  //令牌有效期 5s
-  const numkeys   = 4;
-  const sha1      = '6a63911ac256b0c00cf270c6332119240d52b13e';
-
-  /**
-   * 令牌授权
-   *
-   * @param user
-   * @return 登陆令牌
-   */
-  exports.authorize = function(user){
-    return new Promise((resolve, reject) => {
-      redis.evalsha(sha1, numkeys,
-        conf.redis.database,                   /**/
-        conf.app.client_id,                    /**/
-        user.id,                               /**/
-        utils.replaceAll(uuid.v4(), '-', ''),  /**/
-        seconds, (err, code) => {
-        if(err) return reject(err);
-        resolve(code);
-      });
-    });
-  };
-})();
-
-(() => {
-  const numkeys = 3;
-  const sha1    = '3b248050f9965193d8a4836d6258861a1890017f';
-
-  exports.closeChannel = function(server_id, channel_id){
-    return new Promise((resolve, reject) => {
-      redis.evalsha(sha1, numkeys,
-        conf.redis.database,  /**/
-        server_id,            /**/
-        channel_id,           /**/
-        (err, code) => {
-        if(err) return reject(err);
-        if(!_.isArray(code)) return reject(code);
-        resolve(utils.arrToObj(code));
-      });
-    });
-  };
-})();
-
-(() => {
-  function p1(user){
-    logger.info('user logout: %j', {
-      log_type:    2,
-      user_id:     user.id,
-      create_time: _.now(),
-    });
-
-    return new Promise((resolve, reject) => {
-      resolve(user.id);
-    });
-  }
-
-  function p2(user){
-    return new Promise((resolve, reject) => {
-      biz.user.clearChannel(user.id)
-      .then(p3.bind(null, user))
-      .then(() => resolve(user.group_id))
-      .catch(reject);
-    });
-  }
-
-  function p3(user){
-    return new Promise((resolve, reject) => {
-      if(!user) return reject('invalid_user_id');
-      if(!_.isNumber(user.group_user_seat)) return reject('group_user_quit');
-
-      p4(user)
-      .then(() => resolve())
-      .catch(reject);
-    });
-  }
-
-  function p4(user){
-    if((0 < user.group_status) && (0 < user.group_user_seat)){
-      return biz.group_user.editStatus(user.id, 2);
-    }
-    return biz.group_user.delByUserId(user.id);
-  }
-
-  /**
-   *
-   * @return
-   */
-  exports.logout = function(server_id, channel_id){
-    return new Promise((resolve, reject) => {
-      biz.user.closeChannel(server_id, channel_id)
-      .then(p1)
-      .then(biz.user.getById)
-      .then(p2)
-      .then(biz.group_user.findAllByGroupId)
-      .then(docs => resolve(docs))
-      .catch(reject);
-    });
-  };
-})();
-
-(() => {
-  const numkeys = 3;
-  const sha1    = '6df440fb93a747912f3eae2835c8fec8e90788ca';
-
-  /**
-  * 获取用户信息（user_info_byChannelId.lua）
-  *
-  * @return
-  */
-  exports.getByRedisChannelId = function(server_id, channel_id){
-    return new Promise((resolve, reject) => {
-      redis.evalsha(sha1, numkeys, conf.redis.database, server_id, channel_id, (err, code) => {
-        if(err) return reject(err);
-        if(!_.isArray(code)) return reject(code);
-        resolve(utils.arrToObj(code));
-      });
     });
   };
 })();
