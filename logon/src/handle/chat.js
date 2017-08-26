@@ -26,7 +26,7 @@ exports.one_for_one = function(send, msg){
   try{ var data = JSON.parse(msg.body);
   }catch(ex){ return; }
 
-  var _data = [data.channelId, JSON.stringify([conf.app.ver, 2002, , _.now(), data.data])];
+  var _data = [data.channelId, JSON.stringify([2002, , _.now(), data.data])];
 
   logger.debug('chat one_for_one: %j', _data);
 
@@ -50,7 +50,7 @@ exports.one_for_one = function(send, msg){
   function p1(send, data, group_users){
     var _data = [];
     _data.push(null);
-    _data.push(JSON.stringify([conf.app.ver, 2004, data.seqId, _.now(), [data.user_id, data.data]]));
+    _data.push(JSON.stringify([2004, data.seqId, _.now(), [data.user_id, data.data]]));
 
     for(let i of group_users){
       if(!i.server_id || !i.channel_id) continue;
@@ -67,7 +67,7 @@ exports.one_for_one = function(send, msg){
 
     var _data = [];
     _data.push(data.channelId);
-    _data.push(JSON.stringify([conf.app.ver, 2004, data.seqId, _.now(), { err: { code: err } }]));
+    _data.push(JSON.stringify([2004, data.seqId, _.now(), , err]));
 
     send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _data, (err, code) => {
       if(err) return logger.error('chat one_for_group:', err);

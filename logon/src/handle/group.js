@@ -22,7 +22,7 @@ const _ = require('underscore');
 
     var _data = [];
     _data.push(null);
-    _data.push(JSON.stringify([conf.app.ver, 3002, data.seqId, _.now(), result[1]]));
+    _data.push(JSON.stringify([3002, data.seqId, _.now(), result[1]]));
 
     for(let i of result[0]){
       if(!i.server_id || !i.channel_id) continue;
@@ -39,7 +39,7 @@ const _ = require('underscore');
 
     var _data = [];
     _data.push(data.channelId);
-    _data.push(JSON.stringify([conf.app.ver, 3002, data.seqId, _.now(), { err: { code: err } }]));
+    _data.push(JSON.stringify([3002, data.seqId, _.now(), , err]));
 
     send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _data, (err, code) => {
       if(err) return logger.error('group search:', err);
@@ -70,7 +70,7 @@ const _ = require('underscore');
 
     var _data = [];
     _data.push(null);
-    _data.push(JSON.stringify([conf.app.ver, 3006, data.seqId, _.now(), result[1]]));
+    _data.push(JSON.stringify([3006, data.seqId, _.now(), result[1]]));
 
     for(let i of result[0]){
       if(!i.server_id || !i.channel_id) continue;
@@ -87,7 +87,7 @@ const _ = require('underscore');
 
     var _data = [];
     _data.push(data.channelId);
-    _data.push(JSON.stringify([conf.app.ver, 3006, data.seqId, _.now(), { err: { code: err } }]));
+    _data.push(JSON.stringify([3006, data.seqId, _.now(), , err]));
 
     send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _data, (err, code) => {
       if(err) return logger.error('group quit:', err);
@@ -115,7 +115,7 @@ const _ = require('underscore');
 
     var _data = [];
     _data.push(null);
-    _data.push(JSON.stringify([conf.app.ver, 3008, data.seqId, _.now(), result[1]]));
+    _data.push(JSON.stringify([3008, data.seqId, _.now(), result[1]]));
 
     for(let i of result[0]){
       if(!i.server_id || !i.channel_id) continue;
@@ -132,7 +132,7 @@ const _ = require('underscore');
 
     var _data = [];
     _data.push(data.channelId);
-    _data.push(JSON.stringify([conf.app.ver, 3008, data.seqId, _.now(), { err: { code: err } }]));
+    _data.push(JSON.stringify([3008, data.seqId, _.now(), , err]));
 
     send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _data, (err, code) => {
       if(err) return logger.error('group entry:', err);
