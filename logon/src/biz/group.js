@@ -305,7 +305,13 @@ const logger = require('log4js').getLogger('biz.group');
 })();
 
 (() => {
-  var sql = 'UPDATE g_group SET status=?, round_id=?, round_time=? WHERE id=?';
+  var sql = 'UPDATE g_group SET '+
+              'status=?, '+
+              'extend_round_id=?, '+
+              'extend_start_time=?, '+
+              'extend_curr_round_pno=?, '+
+              'extend_curr_round_no=? '+
+            'WHERE id=?';
 
   /**
    * 用户状态
@@ -316,17 +322,21 @@ const logger = require('log4js').getLogger('biz.group');
    */
   exports.editReady = function(id, trans){
     var group_info = {
-      status:     1,
-      round_id:   utils.replaceAll(uuid.v4(), '-', ''),
-      round_time: new Date(),
-      id:         id,
+      status:                1,
+      extend_round_id:       utils.replaceAll(uuid.v4(), '-', ''),
+      extend_start_time:     new Date(),  // 开始时间
+      extend_curr_round_pno: 1,  // 当前第n局
+      extend_curr_round_no:  1,  // 当前第n把
+      id:                    id,
     };
 
     return new Promise((resolve, reject) => {
       (trans || mysql).query(sql, [
         group_info.status,
-        group_info.round_id,
-        group_info.round_time,
+        group_info.extend_round_id,
+        group_info.extend_start_time,
+        group_info.extend_curr_round_pno,
+        group_info.extend_curr_round_no,
         group_info.id,
       ], err => {
         if(err) return reject(err);

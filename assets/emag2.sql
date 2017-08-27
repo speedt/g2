@@ -1,16 +1,16 @@
 /*
 Navicat MySQL Data Transfer
 
-Source Server         : 127.0.0.1
+Source Server         : 118.190.89.153
 Source Server Version : 50623
-Source Host           : 127.0.0.1:12306
+Source Host           : 118.190.89.153:12306
 Source Database       : emag2
 
 Target Server Type    : MYSQL
 Target Server Version : 50623
 File Encoding         : 65001
 
-Date: 2017-08-24 19:54:34
+Date: 2017-08-27 22:37:12
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -30,17 +30,32 @@ CREATE TABLE `g_group` (
   `visitor_count` int(11) DEFAULT NULL,
   `extend_fund` int(11) DEFAULT NULL,
   `extend_round_count` int(11) DEFAULT NULL,
-  `extend_current_banker_user_id` varchar(32) DEFAULT NULL,
-  `round_id` varchar(32) DEFAULT NULL,
-  `round_time` datetime DEFAULT NULL,
+  `extend_round_id` varchar(32) DEFAULT NULL,
+  `extend_start_time` datetime DEFAULT NULL,
+  `extend_curr_banker_user_id` varchar(32) DEFAULT NULL COMMENT '当前庄家id',
+  `extend_curr_round_pno` int(11) DEFAULT NULL COMMENT '当前第n局',
+  `extend_curr_round_no` int(11) DEFAULT NULL COMMENT '当前第n把',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of g_group
 -- ----------------------------
-INSERT INTO `g_group` VALUES ('230815', '房间名1503560333780', null, '2017-08-24 15:38:54', '9c012a33aa8b4ecc8aaf20ea149a6f25', '1', null, '6', '1000', '4', null, null, null);
-INSERT INTO `g_group` VALUES ('686725', '房间名1503575532466', null, '2017-08-24 19:52:13', '1', '0', null, '6', '1000', '4', null, null, null);
+INSERT INTO `g_group` VALUES ('706011', '房间名1503844421555', null, '2017-08-27 22:33:10', '9c012a33aa8b4ecc8aaf20ea149a6f25', '0', null, '6', '1000', '4', null, null, null, null, null);
+
+-- ----------------------------
+-- Table structure for `g_group_record`
+-- ----------------------------
+DROP TABLE IF EXISTS `g_group_record`;
+CREATE TABLE `g_group_record` (
+  `id` varchar(32) NOT NULL,
+  `group_id` varchar(32) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of g_group_record
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for `g_group_user`
@@ -59,7 +74,6 @@ CREATE TABLE `g_group_user` (
 -- ----------------------------
 -- Records of g_group_user
 -- ----------------------------
-INSERT INTO `g_group_user` VALUES ('686725', '1', '2017-08-24 19:52:13', '0', null, '1');
 
 -- ----------------------------
 -- Table structure for `s_cfg`
