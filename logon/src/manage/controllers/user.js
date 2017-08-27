@@ -13,22 +13,25 @@ const utils = require('speedt-utils').utils;
 exports.resetPwd = function(req, res, next){
   var query = req.body;
 
-  biz.user.resetPwd(query.id, '123456')
-  .then(() => res.send({}))
-  .catch(next);
+  biz.user.resetPwd(query.id, '123456', err => {
+    if(err) return next(err);
+    res.send({});
+  });
 };
 
 exports.del = function(req, res, next){
   var query = req.body;
 
-  biz.user.del(query.id)
-  .then(() => res.send({}))
-  .catch(next);
+  biz.user.del(query.id, err => {
+    if(err) return next(err);
+    res.send({});
+  });
 };
 
 exports.indexUI = function(req, res, next){
-  biz.user.findAll(1)
-  .then(docs => {
+  biz.user.findAll(1, (err, docs) => {
+    if(err) return next(err);
+
     res.render('user/index', {
       conf: conf,
       data: {
@@ -37,8 +40,7 @@ exports.indexUI = function(req, res, next){
         nav_choose:   ',03,0301,'
       }
     });
-  })
-  .catch(next);
+  });
 };
 
 exports.editUI = function(req, res, next){

@@ -25,8 +25,13 @@ const redis = require('emag.db').redis;
    *
    * @return
    */
-  exports.findAll = function(cb){
-    redis.evalsha(sha1, numkeys, conf.redis.database, cb);
+  exports.findAll = function(){
+    return new Promise((resolve, reject) => {
+      redis.evalsha(sha1, numkeys, conf.redis.database, (err, docs) => {
+        if(err) return reject(err);
+        resolve(docs);
+      });
+    });
   };
 })();
 

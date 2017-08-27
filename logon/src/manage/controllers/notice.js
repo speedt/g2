@@ -53,8 +53,8 @@ exports.add = function(req, res, next){
 exports.editUI = function(req, res, next){
   var id = req.query.id;
 
-  biz.notice.getById(id, function (err, doc){
-    if(err)  return next(err);
+  biz.notice.getById(id)
+  .then(doc => {
     if(!doc) return next(new Error('Not Found'));
 
     res.render('notice/edit', {
@@ -65,7 +65,8 @@ exports.editUI = function(req, res, next){
         nav_choose:   ',04,0401,'
       }
     });
-  });
+  })
+  .catch(next);
 };
 
 exports.edit = function(req, res, next){
@@ -86,28 +87,41 @@ exports.del = function(req, res, next){
   });
 };
 
-exports.send = function(req, res, next){
-  var query = req.body;
+(() => {
+  function p1(notice_id, docs){
+    return new Promise((resolve, reject) => {
+      if(0 === docs.length) return reject(new Error('前置机未启动'));
 
-  biz.frontend.findAll()
-  .then(docs => {
-    if(0 === docs.length) return next(new Error('前置机未启动'));
+      biz.notice.getById(notice_id)
+      .then(p2.bind(null, docs))
+      .then(() => resolve())
+      .catch(reject);
+    });
+  }
 
-    biz.notice.getById(query.id, function (err, doc){
-      if(err)  return next(err);
-      if(!doc) return next(new Error('Not Found'));
+  function p2(frontends, doc){
+    return new Promise((resolve, reject) => {
+      if(!doc) return reject(new Error('Not Found'));
 
       delete doc.user_id;
       delete doc.last_time;
 
-      var data = ['ALL', JSON.stringify([conf.app.ver, 1008, , _.now(), doc])];
+      var _data = ['ALL', JSON.stringify([1008, , _.now(), doc])];
 
-      for(let i of docs){
-        amq.send('/queue/back.send.v3.'+ i, { priority: 8 }, data, (err, code) => { /*  */ });
+      for(let i of frontends){
+        amq.send('/queue/back.send.v3.'+ i, { priority: 8 }, _data, (err, code) => { /*  */ });
       }
 
-      res.send({});
+      resolve();
     });
-  })
-  .catch(next);
-};
+  }
+
+  exports.send = function(req, res, next){
+    var query = req.body;
+
+    biz.frontend.findAll()
+    .then(p1.bind(null, query.id))
+    .then(() => res.send({}))
+    .catch(next);
+  };
+})();
