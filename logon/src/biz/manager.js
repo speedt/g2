@@ -64,10 +64,8 @@ const logger = require('log4js').getLogger('biz.manager');
 (() => {
   function p1(logInfo, user){
     return new Promise((resolve, reject) => {
-      if(!user) return reject('用户名或密码输入错误');
-      // 用户状态
-      if(1 !== user.status) return reject('禁止登陆');
-      // 验证密码
+      if(!user) return reject('用户不存在');
+      if(1 !== user.status) return reject('用户禁用状态');
       if(md5.hex(logInfo.user_pass) !== user.user_pass)
         return reject('用户名或密码输入错误');
       resolve(user);

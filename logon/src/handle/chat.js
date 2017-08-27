@@ -39,7 +39,6 @@ exports.one_for_one = function(send, msg){
   function formVali(data, user){
     return new Promise((resolve, reject) => {
       if(!user) return reject('用户不存在');
-      if(!_.isNumber(user.group_user_seat)) return reject('用户不在任何群组');
       if(!user.group_id) return reject('用户不在任何群组');
 
       data.user_id  = user.id;

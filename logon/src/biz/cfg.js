@@ -37,40 +37,40 @@ exports.findAll = function(status, cb){
   mysql.query(sql, [status], cb);
 };
 
-(() => {
-  var sql = 'INSERT INTO s_cfg (type_, key_, value_, title, create_time, comment, status) VALUES (?, ?, ?, ?, ?, ?, ?)';
+// (() => {
+//   var sql = 'INSERT INTO s_cfg (type_, key_, value_, title, create_time, comment, status) VALUES (?, ?, ?, ?, ?, ?, ?)';
 
-  /**
-   * 新增配置表
-   * 调用后应该群发给所有后置机新增此值
-   *
-   * mysql cfg 写入 redis cfg
-   *
-   * @return
-   */
-  exports.saveNew = function(newInfo, cb){
-    newInfo.create_time = new Date();
-    newInfo.status = newInfo.status || 0;
+//   /**
+//    * 新增配置表
+//    * 调用后应该群发给所有后置机新增此值
+//    *
+//    * mysql cfg 写入 redis cfg
+//    *
+//    * @return
+//    */
+//   exports.saveNew = function(newInfo, cb){
+//     newInfo.create_time = new Date();
+//     newInfo.status = newInfo.status || 0;
 
-    mysql.query(sql, [
-      newInfo.type_,
-      newInfo.key_,
-      newInfo.value_,
-      newInfo.title,
-      newInfo.create_time,
-      newInfo.comment,
-      newInfo.status,
-    ], function (err, status){
-      if(err) return cb(err);
+//     mysql.query(sql, [
+//       newInfo.type_,
+//       newInfo.key_,
+//       newInfo.value_,
+//       newInfo.title,
+//       newInfo.create_time,
+//       newInfo.comment,
+//       newInfo.status,
+//     ], function (err, status){
+//       if(err) return cb(err);
 
-      redis.select(conf.redis.database, function (err){
-        if(err) return cb(err);
-        redis.hset('cfg::'+ newInfo.type_, newInfo.key_, newInfo.value_, redis.print);
-        cb(null, newInfo);
-      });
-    });
-  };
-})();
+//       redis.select(conf.redis.database, function (err){
+//         if(err) return cb(err);
+//         redis.hset('cfg::'+ newInfo.type_, newInfo.key_, newInfo.value_, redis.print);
+//         cb(null, newInfo);
+//       });
+//     });
+//   };
+// })();
 
 (() => {
   var sql = 'UPDATE s_cfg SET value_=? WHERE key_=? AND type_=?';
