@@ -238,6 +238,7 @@ const logger = require('log4js').getLogger('biz.group');
   var sql = 'SELECT '+
               '(SELECT COUNT(1) FROM g_group_user WHERE group_id=a.id) AS group_user_count, '+
               '(SELECT SUM(seat) FROM g_group_user WHERE group_id=a.id) AS group_user_seat_sum, '+
+              '(SELECT SUM(seat) FROM g_group_user WHERE group_id=a.id AND status>0) AS group_user_seat_sum_ready, '+
               'a.* '+
             'FROM '+
               'g_group a '+
@@ -288,7 +289,7 @@ const logger = require('log4js').getLogger('biz.group');
             'FROM '+
               'g_group '+
             'WHERE '+
-              'id IN (SELECT b.id FROM (SELECT (SELECT COUNT(1) FROM g_group_user WHERE group_id=a.id) AS group_user_count, a.* FROM g_group a WHERE a.status=0) b WHERE b.group_user_count=0)';
+              'id IN (SELECT b.id FROM (SELECT (SELECT COUNT(1) FROM g_group_user WHERE group_id=a.id) AS group_user_count, a.* FROM g_group a) b WHERE b.group_user_count=0)';
   /**
    *
    * @return
