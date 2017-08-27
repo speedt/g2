@@ -51,8 +51,8 @@ const logger = require('log4js').getLogger('biz.pushCake');
 
   function p3(trans, group){
     return new Promise((resolve, reject) => {
-      if(3 > group.group_user_seat_sum_ready) return resolve();
       if(0 < group.status) return reject('游戏已经开始');
+      if(3 > group.group_user_seat_sum_ready) return resolve();
       biz.group.editReady(group.id, trans)
       .then(() => resolve())
       .catch(reject);
