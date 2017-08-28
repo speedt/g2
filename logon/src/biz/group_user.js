@@ -156,7 +156,7 @@ const logger = require('log4js').getLogger('biz.group_user');
 
 (() => {
   var sql = 'SELECT '+
-              'c.group_name, c.status group_status, c.extend_round_id group_round_id, '+
+              'c.group_name, c.status group_status, c.extend_round_id group_round_id, c.extend_curr_round_pno group_curr_round_pno, c.extend_curr_round_no group_curr_round_no, c.extend_curr_user_seat group_curr_user_seat, '+
               'b.user_name, b.server_id, b.channel_id, '+
               'a.* '+
             'FROM '+
@@ -183,7 +183,7 @@ const logger = require('log4js').getLogger('biz.group_user');
 
 (() => {
   var sql = 'SELECT '+
-              'c.group_name, c.status group_status, c.extend_round_id group_round_id, '+
+              'c.group_name, c.status group_status, c.extend_round_id group_round_id, c.extend_curr_round_pno group_curr_round_pno, c.extend_curr_round_no group_curr_round_no, c.extend_curr_user_seat group_curr_user_seat, '+
               'b.user_name, b.server_id, b.channel_id, '+
               'a.* '+
             'FROM '+

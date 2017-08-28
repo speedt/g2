@@ -1,16 +1,16 @@
 /*
 Navicat MySQL Data Transfer
 
-Source Server         : 118.190.89.153
+Source Server         : 127.0.0.1
 Source Server Version : 50623
-Source Host           : 118.190.89.153:12306
+Source Host           : 127.0.0.1:12306
 Source Database       : emag2
 
 Target Server Type    : MYSQL
 Target Server Version : 50623
 File Encoding         : 65001
 
-Date: 2017-08-27 22:37:12
+Date: 2017-08-28 16:44:17
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -26,35 +26,44 @@ CREATE TABLE `g_group` (
   `create_time` datetime DEFAULT NULL,
   `create_user_id` varchar(32) DEFAULT NULL,
   `status` int(2) DEFAULT NULL,
-  `status_time` datetime DEFAULT NULL,
+  `start_time` datetime DEFAULT NULL COMMENT '开始时间',
   `visitor_count` int(11) DEFAULT NULL,
-  `extend_fund` int(11) DEFAULT NULL,
-  `extend_round_count` int(11) DEFAULT NULL,
-  `extend_round_id` varchar(32) DEFAULT NULL,
-  `extend_start_time` datetime DEFAULT NULL,
-  `extend_curr_banker_user_id` varchar(32) DEFAULT NULL COMMENT '当前庄家id',
-  `extend_curr_round_pno` int(11) DEFAULT NULL COMMENT '当前第n局',
-  `extend_curr_round_no` int(11) DEFAULT NULL COMMENT '当前第n把',
+  `extend_fund` int(11) DEFAULT NULL COMMENT '组局基金',
+  `extend_round_count` int(2) DEFAULT NULL COMMENT '圈数',
+  `extend_round_id` varchar(32) DEFAULT NULL COMMENT '局id',
+  `extend_curr_banker_user_seat` varchar(32) DEFAULT NULL COMMENT '当前庄家id',
+  `extend_curr_round_pno` int(2) DEFAULT NULL COMMENT '当前第n局',
+  `extend_curr_round_no` int(2) DEFAULT NULL COMMENT '当前第n把',
+  `extend_curr_act` int(2) DEFAULT NULL COMMENT '1摇骰子',
+  `extend_curr_user_seat` int(2) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of g_group
 -- ----------------------------
-INSERT INTO `g_group` VALUES ('706011', '房间名1503844421555', null, '2017-08-27 22:33:10', '9c012a33aa8b4ecc8aaf20ea149a6f25', '0', null, '6', '1000', '4', null, null, null, null, null);
+INSERT INTO `g_group` VALUES ('538252', '房间名1503908115022', null, '2017-08-28 16:15:15', '9c012a33aa8b4ecc8aaf20ea149a6f25', '1', '2017-08-28 16:15:25', '6', '1000', '4', 'ab0621492bdb47758f88ce7e69ebe7a5', null, '1', '1', '1', '1');
 
 -- ----------------------------
--- Table structure for `g_group_record`
+-- Table structure for `g_group_craps`
 -- ----------------------------
-DROP TABLE IF EXISTS `g_group_record`;
-CREATE TABLE `g_group_record` (
-  `id` varchar(32) NOT NULL,
-  `group_id` varchar(32) DEFAULT NULL,
-  PRIMARY KEY (`id`)
+DROP TABLE IF EXISTS `g_group_craps`;
+CREATE TABLE `g_group_craps` (
+  `create_time` datetime DEFAULT NULL,
+  `group_id` varchar(32) NOT NULL DEFAULT '',
+  `craps_1` int(2) DEFAULT NULL,
+  `craps_2` int(2) DEFAULT NULL,
+  `round_id` varchar(32) NOT NULL DEFAULT '',
+  `round_pno` int(2) NOT NULL DEFAULT '0',
+  `round_no` int(2) NOT NULL DEFAULT '0',
+  `user_id` varchar(32) NOT NULL DEFAULT '',
+  `user_seat` int(2) NOT NULL DEFAULT '0',
+  `is_auto` int(2) DEFAULT NULL,
+  PRIMARY KEY (`group_id`,`user_seat`,`round_pno`,`round_no`,`round_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
--- Records of g_group_record
+-- Records of g_group_craps
 -- ----------------------------
 
 -- ----------------------------
@@ -168,7 +177,7 @@ CREATE TABLE `s_user` (
 -- Records of s_user
 -- ----------------------------
 INSERT INTO `s_user` VALUES ('0525822071ab11e7a481015d0a4c1d9e', '吴老肥', '96e79218965eb72c92a549dd5a330112', null, null, '1', null, '吴老肥', '1', '2017-07-26 10:35:00', '', '', '', '', '20066', '0', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null, null);
-INSERT INTO `s_user` VALUES ('1', 'hx', 'e10adc3949ba59abbe56e057f20f883e', 'bbe1c450365b4bbd839d02411167cdea', '080027fffedcde12-0000092b-0000004d-2285f82e79d2f751-a4cc6c40', '1', null, '张三', null, null, null, '1234', null, null, '999755674', '1213', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null, null);
+INSERT INTO `s_user` VALUES ('1', 'hx', 'e10adc3949ba59abbe56e057f20f883e', '', '', '1', null, '张三', null, null, null, '1234', null, null, '999755674', '1213', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null, null);
 INSERT INTO `s_user` VALUES ('2', 'wupeng  ', 'e10adc3949ba59abbe56e057f20f883e', null, null, '1', null, '李四', null, null, null, null, null, null, '998832792', '31231', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null, null);
 INSERT INTO `s_user` VALUES ('2c730630708011e78e22ffc0f87ffa5a', '猫1', '96e79218965eb72c92a549dd5a330112', null, null, '1', null, '', '1', '2017-07-24 22:55:46', '', '', '', '', '30000', '0', '0', '0', '0', '0', '0', '0', '0', '0', null, null, null, null, null, null, null);
 INSERT INTO `s_user` VALUES ('3', 'lixiang', 'e10adc3949ba59abbe56e057f20f883e', null, null, '1', null, '王五', null, null, null, null, null, null, '999989930', '123123', '0', '0', '0', '0', '0', '0', '0', '0', '1', null, null, null, null, null, null);

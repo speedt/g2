@@ -93,21 +93,20 @@ const logger = require('log4js').getLogger('biz.pushCake');
   function p6(first, group){
     setTimeout(() => {
       biz.group_craps.saveNew({
-        group_id:    group.id,
-        round_id:    group.extend_round_id,
-        round_pno:   group.extend_curr_round_pno,
-        round_no:    group.extend_curr_round_no,
-        user_seat:   group.extend_curr_user_seat,
-        is_auto:     0,
+        group_id:    group.group_id,
+        round_id:    group.group_round_id,
+        round_pno:   group.group_curr_round_pno,
+        round_no:    group.group_curr_round_no,
+        user_id:     group.user_id,
+        user_seat:   group.group_curr_user_seat,
+        is_auto:     1,
       })
-      .then(p7)
+      .then(p7.bind(null, first))
       .catch(first);
-    }, 3000);
+    }, 5000);
   }
 
-  function p7(){
-    return new Promise((resolve, reject) => {
-      resolve();
-    });
+  function p7(first, group_craps_info){
+    first(null, group_craps_info);
   }
 })();
