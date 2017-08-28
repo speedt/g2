@@ -63,28 +63,36 @@ const logger = require('log4js').getLogger('biz.pushCake');
     trans.rollback(() => reject(err));
   }
 
-  function p5(resolve, docs){
+  function p5(resolve, first, docs){
     var result = [];
     if(0 === docs.length) return resolve(result);
     result.push(docs);
     let data = [];
     data.push(docs);
-    data.push(docs[0]);
+    let group = docs[0];
+    data.push(group);
     result.push(data);
     resolve(result);
+    if(1 === group.group_status) p6(first, group);
   }
 
   /**
    *
    * @return
    */
-  exports.ready = function(server_id, channel_id){
+  exports.ready = function(server_id, channel_id, first){
     return new Promise((resolve, reject) => {
       biz.user.getByChannelId(server_id, channel_id)
       .then(p1)
       .then(biz.group_user.findAllByGroupId)
-      .then(p5.bind(null, resolve))
+      .then(p5.bind(null, resolve, first))
       .catch(reject);
     });
   };
+
+  function p6(first, group){
+    setTimeout(() => {
+      first(null, group);
+    }, 3000);
+  }
 })();
