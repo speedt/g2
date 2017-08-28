@@ -84,4 +84,5 @@ amq.getClient((err) => {
   amq.injection('/queue/qq.3007', handle.group.entry,  () => {});
 
   amq.injection('/queue/qq.5005', handle.pushCake.ready,  () => {});
+  amq.injection('/queue/qq.5011', handle.pushCake.craps,  () => {});
 });

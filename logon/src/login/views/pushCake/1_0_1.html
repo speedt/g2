@@ -24,6 +24,11 @@
 
     <input type='button' id='_5005_ready' value='举手'><p></p>
 
+    <input type='button' id='_5011_craps_1' value='用户1摇骰子'><p></p>
+    <input type='button' id='_5011_craps_2' value='用户2摇骰子'><p></p>
+    <input type='button' id='_5011_craps_3' value='用户3摇骰子'><p></p>
+    <input type='button' id='_5011_craps_4' value='用户4摇骰子'><p></p>
+
     发送给：
     <input type='text' id='user_id' placeholder='ALL,GROUP,PERSON,...' />
     <input type='text' id='msg' />
@@ -100,6 +105,18 @@ $(function(){
     var p = [
       102,
       5005,
+      Math.random() * 1000,
+      new Date().getTime(),
+      null,
+      null,
+    ];
+    socket.send(JSON.stringify(p));
+  });
+
+  $('#_5011_craps_1').click(function(){
+    var p = [
+      102,
+      5011,
       Math.random() * 1000,
       new Date().getTime(),
       null,

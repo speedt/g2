@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50623
 File Encoding         : 65001
 
-Date: 2017-08-28 16:44:17
+Date: 2017-08-28 16:47:09
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -31,10 +31,10 @@ CREATE TABLE `g_group` (
   `extend_fund` int(11) DEFAULT NULL COMMENT '组局基金',
   `extend_round_count` int(2) DEFAULT NULL COMMENT '圈数',
   `extend_round_id` varchar(32) DEFAULT NULL COMMENT '局id',
-  `extend_curr_banker_user_seat` varchar(32) DEFAULT NULL COMMENT '当前庄家id',
   `extend_curr_round_pno` int(2) DEFAULT NULL COMMENT '当前第n局',
   `extend_curr_round_no` int(2) DEFAULT NULL COMMENT '当前第n把',
   `extend_curr_act` int(2) DEFAULT NULL COMMENT '1摇骰子',
+  `extend_curr_user_seat_banker` int(2) DEFAULT NULL COMMENT '当前庄家id',
   `extend_curr_user_seat` int(2) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -42,7 +42,7 @@ CREATE TABLE `g_group` (
 -- ----------------------------
 -- Records of g_group
 -- ----------------------------
-INSERT INTO `g_group` VALUES ('538252', '房间名1503908115022', null, '2017-08-28 16:15:15', '9c012a33aa8b4ecc8aaf20ea149a6f25', '1', '2017-08-28 16:15:25', '6', '1000', '4', 'ab0621492bdb47758f88ce7e69ebe7a5', null, '1', '1', '1', '1');
+INSERT INTO `g_group` VALUES ('538252', '房间名1503908115022', null, '2017-08-28 16:15:15', '9c012a33aa8b4ecc8aaf20ea149a6f25', '1', '2017-08-28 16:15:25', '6', '1000', '4', 'ab0621492bdb47758f88ce7e69ebe7a5', '1', '1', '1', null, '1');
 
 -- ----------------------------
 -- Table structure for `g_group_craps`

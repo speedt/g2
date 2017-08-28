@@ -110,3 +110,17 @@ const logger = require('log4js').getLogger('biz.pushCake');
     first(null, group_craps_info);
   }
 })();
+
+(() => {
+  /**
+   *
+   */
+  exports.craps = function(server_id, channel_id, next){
+    return new Promise((resolve, reject) => {
+      biz.user.getByChannelId(server_id, channel_id)
+      .then(p1)
+      .then(biz.group_user.findAllByGroupId)
+      .catch(reject);
+    });
+  };
+})();
