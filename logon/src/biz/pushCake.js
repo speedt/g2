@@ -92,7 +92,22 @@ const logger = require('log4js').getLogger('biz.pushCake');
 
   function p6(first, group){
     setTimeout(() => {
-      first(null, group);
+      biz.group_craps.saveNew({
+        group_id:    group.id,
+        round_id:    group.extend_round_id,
+        round_pno:   group.extend_curr_round_pno,
+        round_no:    group.extend_curr_round_no,
+        user_seat:   group.extend_curr_user_seat,
+        is_auto:     0,
+      })
+      .then(p7)
+      .catch(first);
     }, 3000);
+  }
+
+  function p7(){
+    return new Promise((resolve, reject) => {
+      resolve();
+    });
   }
 })();

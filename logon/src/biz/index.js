@@ -5,8 +5,9 @@
  */
 'use strict';
 
-exports.group      = require('./group');
-exports.group_user = require('./group_user');
+exports.group       = require('./group');
+exports.group_user  = require('./group_user');
+exports.group_craps = require('./group_craps');
 
 exports.goods      = require('./goods');
 exports.gift       = require('./gift');

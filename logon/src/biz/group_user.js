@@ -135,7 +135,7 @@ const logger = require('log4js').getLogger('biz.group_user');
    * @return
    */
   exports.reOnline = function(user_id, trans){
-    return editStatus(user_id, 3, trans);
+    return editStatus(user_id, 1, trans);
   };
 
   var sql = 'UPDATE g_group_user SET status=?, status_time=? WHERE user_id=?';
