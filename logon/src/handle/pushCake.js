@@ -55,7 +55,7 @@ const _ = require('underscore');
     try{ var data = JSON.parse(msg.body);
     }catch(ex){ return; }
 
-    biz.pushCake.ready(data.serverId, data.channelId, first.bind(null, send, data))
+    biz.pushCake.ready(data.serverId, data.channelId, next.bind(null, send, data))
     .then(p1.bind(null, send, data))
     .catch(p2.bind(null, send, data));
   };
@@ -63,13 +63,13 @@ const _ = require('underscore');
   /**
    *
    */
-  function first(send, data, err, result){
+  function next(send, data, err, result){
     if(err) return p3(send, data, err);
     p4(send, data, result);
   }
 
   function p3(send, data, err){
-    logger.error('pushCake ready first:', err);
+    logger.error('pushCake ready next:', err);
   }
 
   function p4(send, data, result){

@@ -63,7 +63,7 @@ const logger = require('log4js').getLogger('biz.pushCake');
     trans.rollback(() => reject(err));
   }
 
-  function p5(resolve, first, docs){
+  function p5(resolve, next, docs){
     var result = [];
     if(0 === docs.length) return resolve(result);
     result.push(docs);
@@ -73,24 +73,24 @@ const logger = require('log4js').getLogger('biz.pushCake');
     data.push(group);
     result.push(data);
     resolve(result);
-    if(1 === group.group_status) p6(first, group);
+    if(1 === group.group_status) p6(next, group);
   }
 
   /**
    *
    * @return
    */
-  exports.ready = function(server_id, channel_id, first){
+  exports.ready = function(server_id, channel_id, next){
     return new Promise((resolve, reject) => {
       biz.user.getByChannelId(server_id, channel_id)
       .then(p1)
       .then(biz.group_user.findAllByGroupId)
-      .then(p5.bind(null, resolve, first))
+      .then(p5.bind(null, resolve, next))
       .catch(reject);
     });
   };
 
-  function p6(first, group){
+  function p6(next, group){
     setTimeout(() => {
       biz.group_craps.saveNew({
         group_id:    group.group_id,
@@ -101,13 +101,13 @@ const logger = require('log4js').getLogger('biz.pushCake');
         user_seat:   group.group_curr_user_seat,
         is_auto:     1,
       })
-      .then(p7.bind(null, first))
-      .catch(first);
+      .then(p7.bind(null, next))
+      .catch(next);
     }, 5000);
   }
 
-  function p7(first, group_craps_info){
-    first(null, group_craps_info);
+  function p7(next, group_craps_info){
+    next(null, group_craps_info);
   }
 })();
 
