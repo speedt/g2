@@ -382,3 +382,19 @@ const logger = require('log4js').getLogger('biz.group');
     });
   };
 })();
+
+(() => {
+  var sql = 'UPDATE g_group SET extend_curr_user_seat=? WHERE id=?';
+
+  exports.editNextCraps = function(group_info, trans){
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [
+        group_info.extend_curr_user_seat,
+        group_info.id,
+      ], err => {
+        if(err) return reject(err);
+        resolve(group_info);
+      });
+    });
+  };
+})();

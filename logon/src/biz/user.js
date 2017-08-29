@@ -111,7 +111,6 @@ const logger = require('log4js').getLogger('biz.user');
         if(!_.isNumber(user.group_user_seat)) return reject('用户不在任何群组');
         if(!user.group_id) return reject('用户不在任何群组');
         if(1 > user.group_status) return reject('游戏还未开始');
-        if(user.group_user_seat !== user.group_curr_user_seat) return reject('还没轮到我做动作');
 
         resolve(user);
       });

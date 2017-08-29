@@ -114,6 +114,7 @@ const logger = require('log4js').getLogger('biz.pushCake');
 (() => {
   function p1(user){
     return new Promise((resolve, reject) => {
+      if(user.group_user_seat !== user.group_curr_user_seat) return reject('还没轮到我做动作');
       if(1 !== user.group_curr_act) return reject('不能摇骰子');
 
       mysql.beginTransaction()
@@ -145,18 +146,25 @@ const logger = require('log4js').getLogger('biz.pushCake');
     trans.rollback(() => reject(err));
   }
 
-  function p4(user, trans){
-    return new Promise((resolve, reject) => {
-      if(4 > user.group_curr_user_seat){
-      }else{
-      }
-    });
+  function p4(user, trans, group_craps_info){
+    if(4 > user.group_curr_user_seat){
+      return biz.group.editNextCraps({
+        id: user.group_id,
+        extend_curr_user_seat: user.group_curr_user_seat + 1;
+      }, trans);
+    }
+
+    return Promise.resolve();
   }
 
   /**
+   * 骰子确定谁是庄
+   * 1、如果是1、2、3，则通知下一个人摇骰子并显示当前人的骰子点数
+   * 2、如果是4，则算出此次哪个人（庄）的骰子点数最大，并让这个人再摇骰子，来确定哪个人先起牌
    *
+   * @return
    */
-  exports.craps = function(server_id, channel_id, next){
+  exports.crapsBanker = function(server_id, channel_id){
     return new Promise((resolve, reject) => {
       biz.user.getByChannelIdV2(server_id, channel_id)
       .then(p1)
@@ -166,25 +174,10 @@ const logger = require('log4js').getLogger('biz.pushCake');
 })();
 
 (() => {
-  function p1(group){
-    return new Promise((resolve, reject) => {
-      if(!group) return reject('群组不存在');
-      if(0 === group.group_user_count) return reject('群组关闭');
-      resolve(group);
-    });
-  }
-
-  function p2(next, group){
-
-  }
-
   /**
    *
+   * @return
    */
-  exports.safeCheck = function(group_id, next){
-    biz.group.getById(group_id)
-    .then(p1)
-    .then(p2.bind(null, next))
-    .catch(next);
+  exports.safeCheck = function(){
   };
 })();
