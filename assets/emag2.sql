@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50623
 File Encoding         : 65001
 
-Date: 2017-08-29 16:38:59
+Date: 2017-08-29 19:21:07
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -25,27 +25,26 @@ CREATE TABLE `g_group` (
   `group_type` varchar(32) DEFAULT NULL,
   `create_time` datetime DEFAULT NULL,
   `create_user_id` varchar(32) DEFAULT NULL,
-  `status` int(2) DEFAULT NULL,
-  `start_time` datetime DEFAULT NULL COMMENT '开始时间',
+  `start_time` datetime DEFAULT NULL COMMENT '都举手后的开始时间',
   `visitor_count` int(11) DEFAULT NULL,
-  `extend_fund` int(11) DEFAULT NULL COMMENT '组局基金',
-  `extend_round_count` int(2) DEFAULT NULL COMMENT '圈数',
-  `extend_round_id` varchar(32) DEFAULT NULL COMMENT '局id',
-  `extend_curr_round_pno` int(2) DEFAULT NULL COMMENT '当前第n局',
-  `extend_curr_round_no` int(2) DEFAULT NULL COMMENT '当前第n把',
-  `extend_curr_act` int(2) DEFAULT NULL COMMENT '1摇骰子',
-  `extend_curr_user_seat_banker` int(2) DEFAULT NULL COMMENT '当前庄家id',
-  `extend_curr_user_seat` int(2) DEFAULT NULL,
-  `extend_curr_round_no_first_user_seat` int(2) DEFAULT NULL COMMENT '当前把第一个起牌的人',
-  `extend_task_id` varchar(32) DEFAULT NULL,
-  `extend_opt_last_time` int(11) DEFAULT NULL,
+  `fund` int(11) DEFAULT NULL COMMENT '组局基金',
+  `round_count` int(2) DEFAULT NULL COMMENT '圈数',
+  `round_id` varchar(32) DEFAULT NULL COMMENT '此局id（空则表示没有全部举手）',
+  `curr_round_pno` int(2) DEFAULT NULL COMMENT '当前第n局',
+  `curr_round_no` int(2) DEFAULT NULL COMMENT '当前第n把',
+  `curr_round_no_first_user_seat` int(2) DEFAULT NULL COMMENT '当前把第一个起牌的人',
+  `curr_act` int(2) DEFAULT NULL COMMENT '1摇骰子',
+  `curr_user_seat_banker` int(2) DEFAULT NULL COMMENT '当前庄家id',
+  `curr_user_seat` int(2) DEFAULT NULL,
+  `status` int(2) DEFAULT NULL COMMENT '1正常 0删除',
+  `status_time` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of g_group
 -- ----------------------------
-INSERT INTO `g_group` VALUES ('538252', '房间名1503908115022', null, '2017-08-28 16:15:15', '9c012a33aa8b4ecc8aaf20ea149a6f25', '1', '2017-08-28 16:15:25', '6', '1000', '4', 'ab0621492bdb47758f88ce7e69ebe7a5', '1', '1', '1', null, '1', null, null, null);
+INSERT INTO `g_group` VALUES ('538252', '房间名1503908115022', null, '2017-08-28 16:15:15', '9c012a33aa8b4ecc8aaf20ea149a6f25', '2017-08-28 16:15:25', '6', '1000', '4', 'ab0621492bdb47758f88ce7e69ebe7a5', '1', '1', null, '1', null, '1', null, null);
 
 -- ----------------------------
 -- Table structure for `g_group_craps`
@@ -68,6 +67,8 @@ CREATE TABLE `g_group_craps` (
 -- ----------------------------
 -- Records of g_group_craps
 -- ----------------------------
+INSERT INTO `g_group_craps` VALUES ('2017-08-29 17:25:14', '1', '3', '2', '3', '1', '1', '1', '1', null);
+INSERT INTO `g_group_craps` VALUES ('2017-08-29 17:25:19', '1', '2', '3', '3', '1', '1', '2', '2', null);
 
 -- ----------------------------
 -- Table structure for `g_group_user`
@@ -77,15 +78,18 @@ CREATE TABLE `g_group_user` (
   `group_id` varchar(32) DEFAULT NULL,
   `user_id` varchar(32) NOT NULL,
   `create_time` datetime DEFAULT NULL,
-  `status` int(2) DEFAULT NULL,
-  `status_time` datetime DEFAULT NULL,
-  `seat` int(4) DEFAULT NULL,
+  `is_ready` int(2) DEFAULT NULL COMMENT '是否准备好了',
+  `ready_time` datetime DEFAULT NULL COMMENT '准备好的时间',
+  `seat` int(4) DEFAULT NULL COMMENT '座位号',
+  `is_online` int(2) DEFAULT NULL COMMENT '是否在线',
+  `off_line_time` datetime DEFAULT NULL COMMENT '离线时间',
   PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of g_group_user
 -- ----------------------------
+INSERT INTO `g_group_user` VALUES ('1', '1', null, '1', null, '1', null, null);
 
 -- ----------------------------
 -- Table structure for `s_cfg`

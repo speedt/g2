@@ -32,11 +32,11 @@ const logger = require('log4js').getLogger('biz.group');
       if(!_.isNumber(group_info.visitor_count)) return reject('invalid_params');
       if(6 < group_info.visitor_count || 0 > group_info.visitor_count) return reject('invalid_params');
 
-      if(!_.isNumber(group_info.extend_fund)) return reject('invalid_params');
-      if(999999 < group_info.extend_fund || 0 > group_info.extend_fund) return reject('invalid_params');
+      if(!_.isNumber(group_info.fund)) return reject('invalid_params');
+      if(999999 < group_info.fund || 0 > group_info.fund) return reject('invalid_params');
 
-      if(!_.isNumber(group_info.extend_round_count)) return reject('invalid_params');
-      if(4 < group_info.extend_round_count || 0 > group_info.extend_round_count) return reject('invalid_params');
+      if(!_.isNumber(group_info.round_count)) return reject('invalid_params');
+      if(4 < group_info.round_count || 0 > group_info.round_count) return reject('invalid_params');
 
       resolve(group_info);
     });
@@ -54,7 +54,6 @@ const logger = require('log4js').getLogger('biz.group');
 
   function p2(group_info, user){
     return new Promise((resolve, reject) => {
-      if(!user) return reject('用户不存在');
       if(_.isNumber(user.group_user_seat)) return reject('已经在某个群组中');
 
       group_info.create_user_id = user.id;
@@ -308,13 +307,12 @@ const logger = require('log4js').getLogger('biz.group');
   var sql = 'UPDATE g_group SET '+
               'status=?, '+
               'start_time=?, '+
-              'extend_round_id=?, '+
-              'extend_curr_round_pno=?, '+
-              'extend_curr_round_no=?, '+
-              'extend_curr_act=?, '+
-              'extend_curr_user_seat=? '+
+              'round_id=?, '+
+              'curr_round_pno=?, '+
+              'curr_round_no=?, '+
+              'curr_act=?, '+
+              'curr_user_seat=? '+
             'WHERE id=?';
-
   /**
    * 用户状态
    *
@@ -324,25 +322,25 @@ const logger = require('log4js').getLogger('biz.group');
    */
   exports.editReady = function(id, trans){
     var group_info = {
-      status:                1,
-      start_time:            new Date(),  // 开始时间
-      extend_round_id:       utils.replaceAll(uuid.v4(), '-', ''),
-      extend_curr_round_pno: 1,  // 当前第n局
-      extend_curr_round_no:  1,  // 当前第n把
-      extend_curr_act:       1,  // 摇骰子
-      extend_curr_user_seat: 1,
-      id:                    id,
+      status:         1,
+      start_time:     new Date(),  // 开始时间
+      round_id:       utils.replaceAll(uuid.v4(), '-', ''),
+      curr_round_pno: 1,  // 当前第n局
+      curr_round_no:  1,  // 当前第n把
+      curr_act:       1,  // 摇骰子
+      curr_user_seat: 1,
+      id:             id,
     };
 
     return new Promise((resolve, reject) => {
       (trans || mysql).query(sql, [
         group_info.status,
         group_info.start_time,
-        group_info.extend_round_id,
-        group_info.extend_curr_round_pno,
-        group_info.extend_curr_round_no,
-        group_info.extend_curr_act,
-        group_info.extend_curr_user_seat,
+        group_info.round_id,
+        group_info.curr_round_pno,
+        group_info.curr_round_no,
+        group_info.curr_act,
+        group_info.curr_user_seat,
         group_info.id,
       ], err => {
         if(err) return reject(err);
@@ -353,7 +351,7 @@ const logger = require('log4js').getLogger('biz.group');
 })();
 
 (() => {
-  const sql = 'INSERT INTO g_group (id, group_name, group_type, create_time, create_user_id, status, visitor_count, extend_fund, extend_round_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+  const sql = 'INSERT INTO g_group (id, group_name, group_type, create_time, create_user_id, status, visitor_count, fund, round_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
   /**
    *
@@ -373,8 +371,8 @@ const logger = require('log4js').getLogger('biz.group');
         group_info.create_user_id,
         group_info.status,
         group_info.visitor_count,
-        group_info.extend_fund,
-        group_info.extend_round_count,
+        group_info.fund,
+        group_info.round_count,
       ], err => {
         if(err) return reject(err);
         resolve(group_info);
@@ -384,12 +382,12 @@ const logger = require('log4js').getLogger('biz.group');
 })();
 
 (() => {
-  var sql = 'UPDATE g_group SET extend_curr_user_seat=? WHERE id=?';
+  var sql = 'UPDATE g_group SET curr_user_seat=? WHERE id=?';
 
   exports.editNextCraps = function(group_info, trans){
     return new Promise((resolve, reject) => {
       (trans || mysql).query(sql, [
-        group_info.extend_curr_user_seat,
+        group_info.curr_user_seat,
         group_info.id,
       ], err => {
         if(err) return reject(err);

@@ -54,8 +54,8 @@ const logger = require('log4js').getLogger('biz.user');
 
 (() => {
   var sql = 'SELECT '+
-              'c.id group_id, c.group_name, c.status group_status, '+
-              'b.status group_user_status, b.seat group_user_seat, '+
+              'c.id group_id, c.group_name, c.round_id group_round_id, c.curr_user_seat group_curr_user_seat, c.curr_act group_curr_act, '+
+              'b.is_ready group_user_is_ready, b.seat group_user_seat, b.is_online group_user_is_online, '+
               'a.* '+
             'FROM '+
               '(SELECT * FROM s_user WHERE id=?) a '+
@@ -69,7 +69,8 @@ const logger = require('log4js').getLogger('biz.user');
     return new Promise((resolve, reject) => {
       (trans || mysql).query(sql, [id], (err, docs) => {
         if(err) return reject(err);
-        resolve(mysql.checkOnly(docs) ? docs[0] : null);
+        if(!mysql.checkOnly(docs)) return reject('用户不存在');
+        resolve(docs[0]);
       });
     });
   };
@@ -77,8 +78,8 @@ const logger = require('log4js').getLogger('biz.user');
 
 (() => {
   var sql = 'SELECT '+
-              'c.id group_id, c.group_name, c.status group_status, c.extend_curr_user_seat group_curr_user_seat, c.extend_curr_act group_curr_act, '+
-              'b.status group_user_status, b.seat group_user_seat, '+
+              'c.id group_id, c.group_name, c.round_id group_round_id, c.curr_user_seat group_curr_user_seat, c.curr_act group_curr_act, '+
+              'b.is_ready group_user_is_ready, b.seat group_user_seat, b.is_online group_user_is_online, '+
               'a.* '+
             'FROM '+
               '(SELECT * FROM s_user WHERE server_id=? AND channel_id=?) a '+
@@ -92,25 +93,25 @@ const logger = require('log4js').getLogger('biz.user');
     return new Promise((resolve, reject) => {
       (trans || mysql).query(sql, [server_id, channel_id], (err, docs) => {
         if(err) return reject(err);
-        resolve(mysql.checkOnly(docs) ? docs[0] : null);
+        if(!mysql.checkOnly(docs)) return reject('通道不存在');
+        resolve(docs[0]);
       });
     });
   };
 
   /**
+   * 判断用户是否在群组中
    *
    * @return
    */
-  exports.getByChannelIdV2 = function(server_id, channel_id, trans){
+  exports.getByChannelIdInGroup = function(server_id, channel_id, trans){
     return new Promise((resolve, reject) => {
       (trans || mysql).query(sql, [server_id, channel_id], (err, docs) => {
         if(err) return reject(err);
-        if(!mysql.checkOnly(docs)) return reject('用户不存在');
+        if(!mysql.checkOnly(docs)) return reject('通道不存在');
 
         var user = docs[0];
-        if(!_.isNumber(user.group_user_seat)) return reject('用户不在任何群组');
         if(!user.group_id) return reject('用户不在任何群组');
-        if(1 > user.group_status) return reject('游戏还未开始');
 
         resolve(user);
       });
@@ -265,7 +266,6 @@ const logger = require('log4js').getLogger('biz.user');
 
   function p2(user){
     return new Promise((resolve, reject) => {
-      if(!user) return reject('用户不存在');
       if(!_.isNumber(user.group_user_seat)) return reject('用户不在任何群组');
 
       p3(user)
@@ -455,7 +455,7 @@ const logger = require('log4js').getLogger('biz.user');
     return new Promise((resolve, reject) => {
       biz.user.getByName(user_info.user_name)
       .then(doc => {
-        if(doc) return reject('用户名已存在');
+        if(doc) return reject('用户已存在');
         resolve(user_info);
       })
       .catch(reject);
