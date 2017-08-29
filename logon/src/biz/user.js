@@ -77,7 +77,7 @@ const logger = require('log4js').getLogger('biz.user');
 
 (() => {
   var sql = 'SELECT '+
-              'c.id group_id, c.group_name, c.status group_status, '+
+              'c.id group_id, c.group_name, c.status group_status, c.extend_curr_user_seat group_curr_user_seat, c.extend_curr_act group_curr_act, '+
               'b.status group_user_status, b.seat group_user_seat, '+
               'a.* '+
             'FROM '+
@@ -93,6 +93,27 @@ const logger = require('log4js').getLogger('biz.user');
       (trans || mysql).query(sql, [server_id, channel_id], (err, docs) => {
         if(err) return reject(err);
         resolve(mysql.checkOnly(docs) ? docs[0] : null);
+      });
+    });
+  };
+
+  /**
+   *
+   * @return
+   */
+  exports.getByChannelIdV2 = function(server_id, channel_id, trans){
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [server_id, channel_id], (err, docs) => {
+        if(err) return reject(err);
+        if(!mysql.checkOnly(docs)) return reject('用户不存在');
+
+        var user = docs[0];
+        if(!_.isNumber(user.group_user_seat)) return reject('用户不在任何群组');
+        if(!user.group_id) return reject('用户不在任何群组');
+        if(1 > user.group_status) return reject('游戏还未开始');
+        if(user.group_user_seat !== user.group_curr_user_seat) return reject('还没轮到我做动作');
+
+        resolve(user);
       });
     });
   };

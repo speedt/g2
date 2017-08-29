@@ -93,13 +93,13 @@ const logger = require('log4js').getLogger('biz.pushCake');
   function p6(next, group){
     setTimeout(() => {
       biz.group_craps.saveNew({
-        group_id:    group.group_id,
-        round_id:    group.group_round_id,
-        round_pno:   group.group_curr_round_pno,
-        round_no:    group.group_curr_round_no,
-        user_id:     group.user_id,
-        user_seat:   group.group_curr_user_seat,
-        is_auto:     1,
+        group_id:  group.group_id,
+        round_id:  group.group_round_id,
+        round_pno: group.group_curr_round_pno,
+        round_no:  group.group_curr_round_no,
+        user_id:   group.user_id,
+        user_seat: group.group_curr_user_seat,
+        is_auto:   1,
       })
       .then(p7.bind(null, next))
       .catch(next);
@@ -112,15 +112,79 @@ const logger = require('log4js').getLogger('biz.pushCake');
 })();
 
 (() => {
+  function p1(user){
+    return new Promise((resolve, reject) => {
+      if(1 !== user.group_curr_act) return reject('不能摇骰子');
+
+      mysql.beginTransaction()
+      .then(p2.bind(null, user))
+      .then(() => resolve(user))
+      .catch(reject);
+    });
+  }
+
+  function p2(user, trans){
+    return new Promise((resolve, reject) => {
+      biz.group_craps.saveNew({
+        group_id:  user.group_id,
+        round_id:  user.group_round_id,
+        round_pno: user.group_curr_round_pno,
+        round_no:  user.group_curr_round_no,
+        user_id:   user.user_id,
+        user_seat: user.group_curr_user_seat,
+        is_auto:   0,
+      }, trans)
+      .then(p4.bind(null, user, trans))
+      .then(mysql.commitTransaction.bind(null, trans))
+      .then(() => resolve())
+      .catch(p3.bind(null, reject, trans));
+    });
+  }
+
+  function p3(reject, trans, err){
+    trans.rollback(() => reject(err));
+  }
+
+  function p4(user, trans){
+    return new Promise((resolve, reject) => {
+      if(4 > user.group_curr_user_seat){
+      }else{
+      }
+    });
+  }
+
   /**
    *
    */
   exports.craps = function(server_id, channel_id, next){
     return new Promise((resolve, reject) => {
-      biz.user.getByChannelId(server_id, channel_id)
+      biz.user.getByChannelIdV2(server_id, channel_id)
       .then(p1)
-      .then(biz.group_user.findAllByGroupId)
       .catch(reject);
     });
+  };
+})();
+
+(() => {
+  function p1(group){
+    return new Promise((resolve, reject) => {
+      if(!group) return reject('群组不存在');
+      if(0 === group.group_user_count) return reject('群组关闭');
+      resolve(group);
+    });
+  }
+
+  function p2(next, group){
+
+  }
+
+  /**
+   *
+   */
+  exports.safeCheck = function(group_id, next){
+    biz.group.getById(group_id)
+    .then(p1)
+    .then(p2.bind(null, next))
+    .catch(next);
   };
 })();

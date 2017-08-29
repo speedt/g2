@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50623
 File Encoding         : 65001
 
-Date: 2017-08-28 16:47:09
+Date: 2017-08-29 14:56:38
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -36,13 +36,15 @@ CREATE TABLE `g_group` (
   `extend_curr_act` int(2) DEFAULT NULL COMMENT '1摇骰子',
   `extend_curr_user_seat_banker` int(2) DEFAULT NULL COMMENT '当前庄家id',
   `extend_curr_user_seat` int(2) DEFAULT NULL,
+  `extend_task_id` varchar(32) DEFAULT NULL COMMENT '后置机任务id',
+  `extend_opt_last_time` int(11) DEFAULT NULL COMMENT '上次操作时间',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of g_group
 -- ----------------------------
-INSERT INTO `g_group` VALUES ('538252', '房间名1503908115022', null, '2017-08-28 16:15:15', '9c012a33aa8b4ecc8aaf20ea149a6f25', '1', '2017-08-28 16:15:25', '6', '1000', '4', 'ab0621492bdb47758f88ce7e69ebe7a5', '1', '1', '1', null, '1');
+INSERT INTO `g_group` VALUES ('180783', '房间名1503910173859', null, '2017-08-28 16:49:34', '9c012a33aa8b4ecc8aaf20ea149a6f25', '1', '2017-08-28 16:49:54', '6', '1000', '4', '738b9ddae647420fb0cde68745e1efad', '1', '1', '1', null, '1', null, null);
 
 -- ----------------------------
 -- Table structure for `g_group_craps`
@@ -65,6 +67,7 @@ CREATE TABLE `g_group_craps` (
 -- ----------------------------
 -- Records of g_group_craps
 -- ----------------------------
+INSERT INTO `g_group_craps` VALUES ('2017-08-28 16:49:59', '180783', '3', '2', '738b9ddae647420fb0cde68745e1efad', '1', '1', '9c012a33aa8b4ecc8aaf20ea149a6f25', '1', '1');
 
 -- ----------------------------
 -- Table structure for `g_group_user`
@@ -83,6 +86,8 @@ CREATE TABLE `g_group_user` (
 -- ----------------------------
 -- Records of g_group_user
 -- ----------------------------
+INSERT INTO `g_group_user` VALUES ('180783', '1', '2017-08-28 16:49:53', '2', '2017-08-28 16:50:54', '2');
+INSERT INTO `g_group_user` VALUES ('180783', '9c012a33aa8b4ecc8aaf20ea149a6f25', '2017-08-28 16:49:34', '2', '2017-08-28 16:50:54', '1');
 
 -- ----------------------------
 -- Table structure for `s_cfg`
