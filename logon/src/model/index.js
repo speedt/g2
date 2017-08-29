@@ -4,3 +4,6 @@
  * MIT Licensed
  */
 'use strict';
+
+exports.room     = require('./room');
+exports.roomPool = require('./roomPool');
