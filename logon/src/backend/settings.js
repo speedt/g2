@@ -8,7 +8,7 @@
 module.exports = {
   app: {
     ver: 104,
-    id: process.env.BACK_ID || '1',
+    id: process.env.BACKEND_ID || '1',
     name: 'foreworld.net',
     resHost: '127.0.0.1',
   },
