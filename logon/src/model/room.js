@@ -47,7 +47,7 @@ pro.release = function(){
 
 pro.entry = function(user){
   var self = this;
-  if(self.users[user.id]) return new Error('已经进入该房间');
+  if(self.users[user.id]) throw new Error('已经进入该房间');
 
   self.users[user.id] = user;
 

@@ -29,71 +29,6 @@ const roomPool = require('emag.model').roomPool;
 const logger = require('log4js').getLogger('biz.group');
 
 /**
- * 创建群组
- *
- * @return
- */
-(() => {
-  function formVali(group_info){
-    return new Promise((resolve, reject) => {
-      if(!_.isNumber(group_info.visitor_count)) return reject('invalid_params');
-      if(6 < group_info.visitor_count || 0 > group_info.visitor_count) return reject('invalid_params');
-
-      if(!_.isNumber(group_info.fund)) return reject('invalid_params');
-      if(999999 < group_info.fund || 0 > group_info.fund) return reject('invalid_params');
-
-      if(!_.isNumber(group_info.round_count)) return reject('invalid_params');
-      if(4 < group_info.round_count || 0 > group_info.round_count) return reject('invalid_params');
-
-      resolve(group_info);
-    });
-  }
-
-  function p1(server_id, channel_id, group_info){
-    return new Promise((resolve, reject) => {
-      biz.user.getByChannelId(server_id, channel_id)
-      .then(p2.bind(null, group_info))
-      .then(doc => resolve(doc))
-      .catch(reject);
-    });
-  }
-
-  function p2(group_info, user){
-    return new Promise((resolve, reject) => {
-      biz.user.clearFreeGroupById(user.group_id)
-      .then(group_id => {
-        if(group_id) return Promise.reject('请先退出');
-        return Promise.resolve();
-      })
-      .then(biz.user.createGroup.bind(null, user.id))
-      .then(p3.bind(null, group_info, user))
-      .then(group_info => resolve(group_info))
-      .catch(reject);
-    });
-  }
-
-  function p3(group_info, user, user_info){
-    group_info.id = user_info.group_id;
-    group_info.create_user_id = user.id;
-
-    var room = roomPool.create(group_info);
-    if(!room) return Promise.reject('创建群组失败');
-    room.entry(group_info);
-
-    return Promise.resolve(group_info);
-  }
-
-  exports.search = function(server_id, channel_id, group_info){
-    return new Promise((resolve, reject) => {
-      formVali(group_info)
-      .then(p1.bind(null, server_id, channel_id))
-      .then(group_info => resolve(group_info))
-      .catch(reject);
-    });
-  };
-})();
-
-/**
  * 退出群组
  *
  * @return
@@ -365,6 +300,94 @@ const logger = require('log4js').getLogger('biz.group');
         if(err) return reject(err);
         resolve(group_info);
       });
+    });
+  };
+})();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(() => {
+  function formVali(group_info){
+    return new Promise((resolve, reject) => {
+      if(!_.isNumber(group_info.visitor_count)) return reject('invalid_params');
+      if(6 < group_info.visitor_count || 0 > group_info.visitor_count) return reject('invalid_params');
+
+      if(!_.isNumber(group_info.fund)) return reject('invalid_params');
+      if(999999 < group_info.fund || 0 > group_info.fund) return reject('invalid_params');
+
+      if(!_.isNumber(group_info.round_count)) return reject('invalid_params');
+      if(4 < group_info.round_count || 0 > group_info.round_count) return reject('invalid_params');
+
+      resolve(group_info);
+    });
+  }
+
+  function p1(server_id, channel_id, group_info){
+    return new Promise((resolve, reject) => {
+      biz.user.getByChannelId(server_id, channel_id)
+      .then(p2.bind(null, group_info))
+      .then(() => resolve())
+      .catch(reject);
+    });
+  }
+
+  function p2(group_info, user){
+    if(user.group_id) return Promise.reject('请先退出');
+
+    return new Promise((resolve, reject) => {
+      biz.user.createGroup(group_info, user)
+      .then(() => resolve())
+      .catch(reject);
+    });
+  }
+
+  /**
+   * 创建群组
+   *
+   * @return
+   */
+  exports.search = function(server_id, channel_id, group_info){
+    return new Promise((resolve, reject) => {
+      formVali(group_info)
+      .then(p1.bind(null, server_id, channel_id))
+      .then(biz.user.getByChannelId.bind(null, server_id, channel_id))
+      .then(user => resolve(user))
+      .catch(reject);
     });
   };
 })();

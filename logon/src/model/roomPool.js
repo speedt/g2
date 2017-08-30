@@ -28,19 +28,15 @@ var rooms = {};
 
 res.create = function(room_info){
   if(!room_info) return;
-  if(this.get(room_info.id)) return;
+  if(rooms[room_info.id]) return;
 
   var room = new Room(room_info);
   rooms[room.id] = room;
   return room;
 };
 
-res.get = function(id){
-  return rooms[id];
-};
-
 res.release = function(id){
-  var room = this.get(id);
+  var room = rooms[id];
   if(!room) return;
   if(!room.release()) return;
   delete rooms[id];
