@@ -48,12 +48,15 @@ pro.release = function(){
 pro.entry = function(user){
   var self = this;
   if(self.users[user.id]) throw new Error('已经进入该房间');
+  if(9 < _.size(self.users)) throw new Error('房间满员');
 
   self.users[user.id] = user;
 
   if(0 === user.seat) return;
 
   self.players[user.seat] = user.id;
+
+  return user;
 };
 
 pro.quit = function(user_id){

@@ -507,20 +507,18 @@ const logger = require('log4js').getLogger('biz.user');
 })();
 
 (() => {
-  var sql = 'UPDATE s_user SET backend_id=?, group_id=?, group_entry_time=?, seat=? WHERE id=?';
+  var sql = 'UPDATE s_user SET backend_id=?, group_id=?, group_entry_time=? WHERE id=?';
 
   function p1(user, group_id){
     user.backend_id = conf.app.id;
     user.group_id = group_id;
     user.group_entry_time = new Date();
-    user.seat = 1;
 
     return new Promise((resolve, reject) => {
       (trans || mysql).query(sql, [
         user.backend_id,
         user.group_id,
         user.group_entry_time,
-        user.seat,
         user.id,
       ], err => {
         if(err) return reject(err);
@@ -571,7 +569,6 @@ const logger = require('log4js').getLogger('biz.user');
         user.backend_id,
         user.group_id,
         user.group_entry_time,
-        user.seat,
         user.id,
       ], err => {
         if(err) return reject(err);
@@ -589,7 +586,7 @@ const logger = require('log4js').getLogger('biz.user');
     var user_info = {
       backend_id: '',
       group_id: '',
-      group_entry_time: new Date(),
+      group_entry_time: null,
       seat: 0,
       id: user_id,
     };
@@ -599,7 +596,6 @@ const logger = require('log4js').getLogger('biz.user');
         user.backend_id,
         user.group_id,
         user.group_entry_time,
-        user.seat,
         user.id,
       ], err => {
         if(err) return reject(err);
