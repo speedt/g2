@@ -42,5 +42,5 @@ pro.init = function(opts){
   return self;
 };
 
-pro.clearAll = function(){
+pro.release = function(){
 };

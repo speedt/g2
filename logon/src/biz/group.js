@@ -24,6 +24,8 @@ const _  = require('underscore');
 _.str    = require('underscore.string');
 _.mixin(_.str.exports());
 
+const roomPool = require('emag.model').roomPool;
+
 const logger = require('log4js').getLogger('biz.group');
 
 (() => {
@@ -46,69 +48,34 @@ const logger = require('log4js').getLogger('biz.group');
     return new Promise((resolve, reject) => {
       biz.user.getByChannelId(server_id, channel_id)
       .then(p2.bind(null, group_info))
-      .then(p3)
-      .then(group_id => resolve(group_id))
+      .then(group_info => resolve(group_info))
       .catch(reject);
     });
   }
 
   function p2(group_info, user){
     return new Promise((resolve, reject) => {
-      if(_.isNumber(user.group_user_seat)) return reject('已经在某个群组中');
+      biz.user.clearFreeGroupById(user.group_id, (err, group_id) => {
+        if(err) return reject(err);
+        if(group_id) return reject('已经在某个群组中');
 
-      group_info.create_user_id = user.id;
-      resolve(group_info);
+        biz.user.genFreeGroupId((err, group_id) => {
+          if(err) return reject(err);
+
+          group_info.id = group_id;
+          group_info.create_user_id = user.id;
+
+          var room = roomPool.create(group_info);
+
+          if(!room) return reject('创建群组失败');
+
+          biz.user.createGroup(group_info, (err, doc) => {
+            if(err) return reject(err);
+            resolve(doc);
+          });
+        });
+      });
     });
-  }
-
-  function p3(group_info){
-    return new Promise((resolve, reject) => {
-      biz.group.clearFree()
-      .then(biz.group.genFreeId)
-      .then(p4.bind(null, group_info))
-      .then(group_id => resolve(group_id))
-      .catch(reject);
-    });
-  }
-
-  function p4(group_info, group_id){
-    group_info.id = group_id;
-
-    return new Promise((resolve, reject) => {
-      mysql.beginTransaction()
-      .then(p5.bind(null, group_info))
-      .then(() => resolve(group_id))
-      .catch(reject);
-    });
-  }
-
-  function p5(group_info, trans){
-    return new Promise((resolve, reject) => {
-      biz.group.saveNew(group_info, trans)
-      .then(biz.group_user.saveNew.bind(null, {
-        group_id: group_info.id,
-        user_id:  group_info.create_user_id,
-        seat:     1,
-      }, trans))
-      .then(mysql.commitTransaction.bind(null, trans))
-      .then(() => resolve())
-      .catch(p6.bind(null, reject, trans));
-    });
-  }
-
-  function p6(reject, trans, err){
-    trans.rollback(() => reject(err));
-  }
-
-  function p7(resolve, docs){
-    var result = [];
-    if(0 === docs.length) return resolve(result);
-    result.push(docs);
-    let data = [];
-    data.push(docs);
-    data.push(docs[0]);
-    result.push(data);
-    resolve(result);
   }
 
   /**
@@ -119,8 +86,7 @@ const logger = require('log4js').getLogger('biz.group');
     return new Promise((resolve, reject) => {
       formVali(group_info)
       .then(p1.bind(null, server_id, channel_id))
-      .then(biz.group_user.findAllByGroupId)
-      .then(p7.bind(null, resolve))
+      .then(group_info => resolve(group_info))
       .catch(reject);
     });
   };

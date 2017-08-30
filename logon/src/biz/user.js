@@ -25,6 +25,8 @@ const _  = require('underscore');
 _.str    = require('underscore.string');
 _.mixin(_.str.exports());
 
+const roomPool = require('emag.model').roomPool;
+
 const logger = require('log4js').getLogger('biz.user');
 
 (() => {
@@ -47,6 +49,22 @@ const logger = require('log4js').getLogger('biz.user');
       (trans || mysql).query(sql, [user_name], (err, docs) => {
         if(err) return reject(err);
         resolve(mysql.checkOnly(docs) ? docs[0] : null);
+      });
+    });
+  };
+})();
+
+(() => {
+  var sql = 'SELECT a.* FROM s_user a WHERE a.group_id=? ORDER BY a.group_entry_time ASC';
+  /**
+   *
+   * @return
+   */
+  exports.findAllByGroupId = function(id, trans){
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [id], (err, docs) => {
+        if(err) return reject(err);
+        resolve(docs);
       });
     });
   };
@@ -77,14 +95,17 @@ const logger = require('log4js').getLogger('biz.user');
 })();
 
 (() => {
-  var sql = 'SELECT '+
-              'c.id group_id, c.group_name, c.round_id group_round_id, c.curr_user_seat group_curr_user_seat, c.curr_act group_curr_act, '+
-              'b.is_ready group_user_is_ready, b.seat group_user_seat, b.is_online group_user_is_online, '+
-              'a.* '+
-            'FROM '+
-              '(SELECT * FROM s_user WHERE server_id=? AND channel_id=?) a '+
-              'LEFT JOIN g_group_user b ON (b.user_id=a.id) '+
-              'LEFT JOIN g_group c ON (b.group_id=c.id)';
+  // var sql = 'SELECT '+
+  //             'c.id group_id, c.group_name, c.round_id group_round_id, c.curr_user_seat group_curr_user_seat, c.curr_act group_curr_act, '+
+  //             'b.is_ready group_user_is_ready, b.seat group_user_seat, b.is_online group_user_is_online, '+
+  //             'a.* '+
+  //           'FROM '+
+  //             '(SELECT * FROM s_user WHERE server_id=? AND channel_id=?) a '+
+  //             'LEFT JOIN g_group_user b ON (b.user_id=a.id) '+
+  //             'LEFT JOIN g_group c ON (b.group_id=c.id)';
+
+  var sql = 'SELECT a.* FROM s_user WHERE server_id=? AND channel_id=?';
+
   /**
    *
    * @return
@@ -99,24 +120,24 @@ const logger = require('log4js').getLogger('biz.user');
     });
   };
 
-  /**
-   * 判断用户是否在群组中
-   *
-   * @return
-   */
-  exports.getByChannelIdInGroup = function(server_id, channel_id, trans){
-    return new Promise((resolve, reject) => {
-      (trans || mysql).query(sql, [server_id, channel_id], (err, docs) => {
-        if(err) return reject(err);
-        if(!mysql.checkOnly(docs)) return reject('通道不存在');
+  // /**
+  //  * 判断用户是否在群组中
+  //  *
+  //  * @return
+  //  */
+  // exports.getByChannelIdInGroup = function(server_id, channel_id, trans){
+  //   return new Promise((resolve, reject) => {
+  //     (trans || mysql).query(sql, [server_id, channel_id], (err, docs) => {
+  //       if(err) return reject(err);
+  //       if(!mysql.checkOnly(docs)) return reject('通道不存在');
 
-        var user = docs[0];
-        if(!user.group_id) return reject('用户不在任何群组');
+  //       var user = docs[0];
+  //       if(!user.group_id) return reject('用户不在任何群组');
 
-        resolve(user);
-      });
-    });
-  };
+  //       resolve(user);
+  //     });
+  //   });
+  // };
 })();
 
 (() => {
@@ -207,16 +228,14 @@ const logger = require('log4js').getLogger('biz.user');
       create_time: _.now(),
     });
 
-    return new Promise((resolve, reject) => {
-      biz.user.clearChannel(user.id)
-      .then(() => resolve(user.id))
-      .catch(reject);
-    });
+    return biz.user.clearChannel(user.id);
   }
 
   function p2(user){
     return new Promise((resolve, reject) => {
       if(!_.isNumber(user.group_user_seat)) return reject('用户不在任何群组');
+
+      if(!user.group_id)
 
       p3(user)
       .then(() => resolve(user.group_id))
@@ -239,6 +258,11 @@ const logger = require('log4js').getLogger('biz.user');
     data.push(docs[0]);
     result.push(data);
     resolve(result);
+  }
+
+
+  function p2(user){
+    return biz.user.findAllByGroupId(user.group_id);
   }
 
   /**
@@ -284,43 +308,9 @@ const logger = require('log4js').getLogger('biz.user');
 
 (() => {
   function p1(user){
-    logger.info('user login: %j', {
-      log_type:    1,
-      user_id:     user.id,
-      create_time: _.now(),
-    });
-
     return new Promise((resolve, reject) => {
-      mysql.beginTransaction()
-      .then(p2.bind(null, user))
-      .then(() => resolve(user.id))
-      .catch(reject);
+      resolve(user.group_id);
     });
-  }
-
-  function p2(user, trans){
-    return new Promise((resolve, reject) => {
-      editChannel(user, trans)
-      .then(biz.group_user.reOnline.bind(null, user.id, trans))
-      .then(mysql.commitTransaction.bind(null, trans))
-      .then(() => resolve())
-      .catch(p4.bind(null, reject, trans));
-    });
-  }
-
-  function p3(resolve, docs){
-    var result = [];
-    if(0 === docs.length) return resolve(result);
-    result.push(docs);
-    let data = [];
-    data.push(docs);
-    data.push(docs[0]);
-    result.push(data);
-    resolve(result);
-  }
-
-  function p4(reject, trans, err){
-    trans.rollback(() => reject(err));
   }
 
   /**
@@ -331,9 +321,10 @@ const logger = require('log4js').getLogger('biz.user');
   exports.registerChannel = function(server_id, channel_id){
     return new Promise((resolve, reject) => {
       biz.user.getByRedisChannelId(server_id, channel_id)
+      .then(editChannel)
       .then(p1)
-      .then(biz.group_user.findAllByUserId)
-      .then(p3.bind(null, resolve))
+      .then(biz.user.findAllByGroupId)
+      .then(docs => resolve(docs))
       .catch(reject)
     });
   };
@@ -516,6 +507,52 @@ const logger = require('log4js').getLogger('biz.user');
       .then(p2)
       .then(user_info => resolve(user_info))
       .catch(reject);
+    });
+  };
+})();
+
+(() => {
+  function p1(cb, trans){
+    var id = _.random(100000, 999999);
+    biz.user.findAllByGroupId(id, trans)
+    .then(docs => {
+      if(0 === docs.length) return p1(cb, trans);
+      cb(null, id);
+    })
+    .catch(cb);
+  }
+
+  /**
+   * 生成空闲Id
+   *
+   * @return
+   */
+  exports.genFreeGroupId = function(trans){
+    return new Promise((resolve, reject) => {
+      p1((err, id) => {
+        if(err) return reject(err);
+        resolve(id);
+      }, trans);
+    });
+  };
+})();
+
+(() => {
+  var sql = 'UPDATE s_user SET group_id=? WHERE group_id=?';
+
+  /**
+   * 清理空闲的群组
+   *
+   * @return
+   */
+  exports.clearFreeGroupById = function(group_id, trans){
+    if(!group_id) return Promise.resolve();
+    var room = roomPool.get(group_id);
+    if(room) return Promise.resolve(group_id);
+
+    (trans || mysql).query(sql, ['', group_id], err => {
+      if(err) return reject(err);
+      resolve();
     });
   };
 })();

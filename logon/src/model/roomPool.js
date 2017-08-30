@@ -21,28 +21,21 @@ const _  = require('underscore');
 _.str    = require('underscore.string');
 _.mixin(_.str.exports());
 
+var Room = require('./room');
+
 const logger = require('log4js').getLogger('model.roomPool');
 
 var res = module.exports = {};
 
 var rooms = {};
 
-var free = [];
+res.create = function(group_info){
+  if(!group_info) return;
+  if(this.get(group_info.id)) return;
 
-res.create = function(){
-  logger.debug('%s::%s', free.length, _.size(rooms));
-
-  var newRoom = free.shift();
-
-  if(newRoom){
-    newRoom.id = utils.replaceAll(uuid.v1(), '-', '');
-    rooms[newRoom.id] = newRoom;
-    return newRoom;
-  }
-
-  newRoom = { id: utils.replaceAll(uuid.v1(), '-', '') };
-  rooms[newRoom.id] = newRoom;
-  return newRoom;
+  var room = new Room(group_info);
+  rooms[room.id] = room;
+  return room;
 };
 
 res.get = function(id){
@@ -52,6 +45,6 @@ res.get = function(id){
 res.release = function(id){
   var room = this.get(id);
   if(!room) return;
-  free.push(room);
+  room.release();
   delete rooms[id];
 };
