@@ -30,13 +30,13 @@ var Method = function(opts){
   var self           = this;
   self.id            = opts.id;
   self.name          = opts.name || ('Room '+ opts.id);
-  self.fund          = opts.fund;
-  self.round_count   = opts.round_count;
-  self.visitor_count = opts.visitor_count;
-  self._round_id     = utils.replaceAll(uuid.v4(), '-', '');
-  self._players      = {};
-  self._visitors     = {};
-  self._users        = {};
+  self.fund          = opts.fund;  // 组局基金
+  self.round_count   = opts.round_count;  // 圈数
+  self.visitor_count = opts.visitor_count;  // 游客人数
+  self.round_id      = utils.replaceAll(uuid.v4(), '-', '');
+  self.players       = {};
+  self.users         = {};
+  self.ready_count   = 0;  // 举手人数
 };
 
 var pro = Method.prototype;
@@ -46,36 +46,30 @@ pro.release = function(){
 };
 
 pro.entry = function(user){
-  this._users[user.id] = user;
+  var self = this;
+  // 判断是否已经在房间内
+  if(self.users[user.id]) return;
 
-  if(0 < user.seat){
-    this._players[user.seat] = user.id;
-  }else{
-    this._visitors[user.id] = user;
-  }
+  self.users[user.id] = user;
+
+  if(0 === user.seat) return;
+
+  self.players[user.seat] = user.id;
 };
 
 pro.quit = function(user_id){
   var self = this;
 
-  var user = self.getUser(user_id);
+  var user = self.users[user_id];
   if(!user) return;
 
-  delete self._users[user.id];
-
   if(0 < user.seat){
-    delete self._players[user.seat];
-  }else{
-    delete self._visitors[user.id];
+    delete self.players[user.seat];
   }
 
-  return self;
+  delete self.users[user_id];
 };
 
-pro.getUsers = function(){
-  return this._users;
-};
-
-pro.getUser = function(user_id){
-  return this._users[user_id];
+pro.get = function(user_id){
+  return this.users[user_id];
 }

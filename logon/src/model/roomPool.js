@@ -26,11 +26,11 @@ var res = module.exports = {};
 
 var rooms = {};
 
-res.create = function(group_info){
-  if(!group_info) return;
-  if(this.get(group_info.id)) return;
+res.create = function(room_info){
+  if(!room_info) return;
+  if(this.get(room_info.id)) return;
 
-  var room = new Room(group_info);
+  var room = new Room(room_info);
   rooms[room.id] = room;
   return room;
 };
