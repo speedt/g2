@@ -30,6 +30,52 @@ const roomPool = require('emag.model').roomPool;
 const logger = require('log4js').getLogger('biz.user');
 
 (() => {
+  function p1(cb, trans){
+    var id = _.random(100000, 999999);
+    biz.user.findAllByGroupId(id, trans)
+    .then(docs => {
+      if(0 === docs.length) return p1(cb, trans);
+      cb(null, id);
+    })
+    .catch(cb);
+  }
+
+  /**
+   * 生成空闲的群组Id
+   *
+   * @return
+   */
+  exports.genFreeGroupId = function(trans){
+    return new Promise((resolve, reject) => {
+      p1((err, id) => {
+        if(err) return reject(err);
+        resolve(id);
+      }, trans);
+    });
+  };
+})();
+
+(() => {
+  var sql = 'UPDATE s_user SET group_id=? WHERE group_id=?';
+
+  /**
+   * 清理空闲的群组
+   *
+   * @return
+   */
+  exports.clearFreeGroupById = function(group_id, trans){
+    if(!group_id) return Promise.resolve();
+    var room = roomPool.get(group_id);
+    if(room) return Promise.resolve(group_id);
+
+    (trans || mysql).query(sql, ['', group_id], err => {
+      if(err) return reject(err);
+      resolve();
+    });
+  };
+})();
+
+(() => {
   var sql = 'SELECT a.* FROM s_user a WHERE a.status=? ORDER BY a.create_time DESC';
 
   exports.findAll = function(status, cb){
@@ -362,7 +408,7 @@ const logger = require('log4js').getLogger('biz.user');
   function p1(logInfo, user){
     return new Promise((resolve, reject) => {
       if(!user) return reject('用户不存在');
-      if(1 !== user.status) return reject('用户禁用状态');
+      if(1 !== user.status) return reject('禁用状态');
       if(md5.hex(logInfo.user_pass) !== user.user_pass)
         return reject('用户名或密码输入错误');
       resolve(user);
@@ -430,12 +476,12 @@ const logger = require('log4js').getLogger('biz.user');
   var sql = 'INSERT INTO s_user (id, user_name, user_pass, status, create_time, mobile, weixin, current_score, nickname, vip, consume_count, win_count, lose_count, win_score_count, lose_score_count, line_gone_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
   function p2(user_info){
-    user_info.id = utils.replaceAll(uuid.v1(), '-', '');
-    user_info.user_pass = md5.hex(user_info.user_pass);
-    user_info.status = 1;
-    user_info.create_time = new Date();
-    user_info.current_score = 0;
-    user_info.nickname = user_info.user_name;
+    user_info.id               = utils.replaceAll(uuid.v1(), '-', '');
+    user_info.user_pass        = md5.hex(user_info.user_pass);
+    user_info.status           = 1;
+    user_info.create_time      = new Date();
+    user_info.current_score    = 0;
+    user_info.nickname         = user_info.user_name;
     user_info.vip              = 0;
     user_info.consume_count    = 0;
     user_info.win_count        = 0;
@@ -481,52 +527,6 @@ const logger = require('log4js').getLogger('biz.user');
       .then(p2)
       .then(user_info => resolve(user_info))
       .catch(reject);
-    });
-  };
-})();
-
-(() => {
-  function p1(cb, trans){
-    var id = _.random(100000, 999999);
-    biz.user.findAllByGroupId(id, trans)
-    .then(docs => {
-      if(0 === docs.length) return p1(cb, trans);
-      cb(null, id);
-    })
-    .catch(cb);
-  }
-
-  /**
-   * 生成空闲的群组Id
-   *
-   * @return
-   */
-  exports.genFreeGroupId = function(trans){
-    return new Promise((resolve, reject) => {
-      p1((err, id) => {
-        if(err) return reject(err);
-        resolve(id);
-      }, trans);
-    });
-  };
-})();
-
-(() => {
-  var sql = 'UPDATE s_user SET group_id=? WHERE group_id=?';
-
-  /**
-   * 清理空闲的群组
-   *
-   * @return
-   */
-  exports.clearFreeGroupById = function(group_id, trans){
-    if(!group_id) return Promise.resolve();
-    var room = roomPool.get(group_id);
-    if(room) return Promise.resolve(group_id);
-
-    (trans || mysql).query(sql, ['', group_id], err => {
-      if(err) return reject(err);
-      resolve();
     });
   };
 })();
