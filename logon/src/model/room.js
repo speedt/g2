@@ -60,11 +60,18 @@ pro.quit = function(user_id){
   var self = this;
 
   var user = self.users[user_id];
-  if(!user) return;
+  if(!user) return true;
+
+  if((3 < self.ready_count) && (0 < user.seat)){
+    user.is_quit = 1;
+    user.quit_time = new Date().getTime();
+    return false;
+  }
 
   if(0 < user.seat){
     delete self.players[user.seat];
   }
 
   delete self.users[user_id];
+  return true;
 };

@@ -28,55 +28,6 @@ const roomPool = require('emag.model').roomPool;
 
 const logger = require('log4js').getLogger('biz.group');
 
-/**
- * 退出群组
- *
- * @return
- */
-(() => {
-  function p1(user){
-    return new Promise((resolve, reject) => {
-      if(!_.isNumber(user.group_user_seat)) return reject('用户不在任何群组');
-
-      p2(user)
-      .then(() => resolve(user.group_id))
-      .catch(reject);
-    });
-  }
-
-  function p2(user){
-    if((0 < user.group_status) && (0 < user.group_user_seat))
-      return biz.group_user.forcedSignOut(user.id);
-    return biz.group_user.delByUserId(user.id);
-  }
-
-  function p3(resolve, docs){
-    var result = [];
-    if(0 === docs.length) return resolve(result);
-    result.push(docs);
-    let data = [];
-    data.push(docs);
-    data.push(docs[0]);
-    result.push(data);
-    resolve(result);
-  }
-
-  /**
-   * 退出群组
-   *
-   * @return
-   */
-  exports.quit = function(server_id, channel_id){
-    return new Promise((resolve, reject) => {
-      biz.user.getByChannelId(server_id, channel_id)
-      .then(p1)
-      .then(biz.group_user.findAllByGroupId)
-      .then(p3.bind(null, resolve))
-      .catch(reject);
-    });
-  };
-})();
-
 (() => {
   function p1(group){
     return new Promise((resolve, reject) => {
@@ -385,6 +336,51 @@ const logger = require('log4js').getLogger('biz.group');
     return new Promise((resolve, reject) => {
       formVali(group_info)
       .then(p1.bind(null, server_id, channel_id))
+      .then(biz.user.getByChannelId.bind(null, server_id, channel_id))
+      .then(user => resolve(user))
+      .catch(reject);
+    });
+  };
+})();
+
+(() => {
+  function p1(user){
+    if(!user.group_id) return Promise.reject('用户不在任何群组');
+
+    return new Promise((resolve, reject) => {
+      biz.user.clearFreeGroupById(user.group_id)
+      .then(p2)
+      .then(p3.bind(null, user))
+      .then(() => resolve())
+      .catch(reject);
+    });
+  }
+
+  function p2(group_id){
+    if(!group_id) return Promise.reject('用户不在任何群组');
+    return Promise.resolve();
+  }
+
+  function p3(user){
+    var room = roomPool.get(user.group_id);
+    if(!room) return Promise.reject('房间不存在');
+
+    if(room.quit(user.id)){
+      return biz.user.quitGroup(user.id);
+    }
+
+    return Promise.resolve();
+  }
+
+  /**
+   * 退出群组
+   *
+   * @return
+   */
+  exports.quit = function(server_id, channel_id){
+    return new Promise((resolve, reject) => {
+      biz.user.getByChannelId(server_id, channel_id)
+      .then(p1)
       .then(biz.user.getByChannelId.bind(null, server_id, channel_id))
       .then(user => resolve(user))
       .catch(reject);
