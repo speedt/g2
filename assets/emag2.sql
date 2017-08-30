@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50623
 File Encoding         : 65001
 
-Date: 2017-08-29 20:49:57
+Date: 2017-08-30 08:08:20
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -151,7 +151,7 @@ CREATE TABLE `s_user` (
   `user_pass` varchar(32) DEFAULT NULL,
   `server_id` varchar(32) DEFAULT NULL,
   `channel_id` varchar(128) DEFAULT NULL,
-  `back_id` varchar(32) DEFAULT NULL,
+  `backend_id` varchar(32) DEFAULT NULL,
   `status` int(2) DEFAULT NULL,
   `status_time` datetime DEFAULT NULL,
   `nickname` varchar(32) DEFAULT NULL,

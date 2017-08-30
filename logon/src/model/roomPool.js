@@ -55,20 +55,3 @@ res.release = function(id){
   free.push(room);
   delete rooms[id];
 };
-
-function p1(cb){
-  var id = _.random(100000, 999999);
-  if(this.get(id)) return p1(cb);
-  cb(id);
-}
-
-/**
- * 生成空闲Id
- *
- * @return
- */
-function genFreeId(){
-  return new Promise((resolve, reject) => {
-    p1(id => resolve(id));
-  });
-};

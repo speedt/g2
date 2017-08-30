@@ -181,60 +181,10 @@ const logger = require('log4js').getLogger('biz.user');
 })();
 
 (() => {
-  const seconds   = 5;  //令牌有效期 5s
-  const numkeys   = 4;
-  const sha1      = '6a63911ac256b0c00cf270c6332119240d52b13e';
-
-  /**
-   * 令牌授权
-   *
-   * @param user
-   * @return 登陆令牌
-   */
-  exports.authorize = function(user){
-    return new Promise((resolve, reject) => {
-      redis.evalsha(sha1, numkeys,
-        conf.redis.database,                   /**/
-        conf.app.client_id,                    /**/
-        user.id,                               /**/
-        utils.replaceAll(uuid.v4(), '-', ''),  /**/
-        seconds, (err, code) => {
-        if(err) return reject(err);
-        resolve(code);
-      });
-    });
-  };
-})();
-
-(() => {
   const numkeys = 3;
   const sha1    = '3b248050f9965193d8a4836d6258861a1890017f';
 
   exports.closeChannel = function(server_id, channel_id){
-    return new Promise((resolve, reject) => {
-      redis.evalsha(sha1, numkeys,
-        conf.redis.database,  /**/
-        server_id,            /**/
-        channel_id,           /**/
-        (err, code) => {
-        if(err) return reject(err);
-        if(!_.isArray(code)) return reject(code);
-        resolve(utils.arrToObj(code));
-      });
-    });
-  };
-})();
-
-(() => {
-  const numkeys = 3;
-  const sha1    = '6df440fb93a747912f3eae2835c8fec8e90788ca';
-
-  /**
-  * 获取用户信息（user_info_byChannelId.lua）
-  *
-  * @return
-  */
-  exports.getByRedisChannelId = function(server_id, channel_id){
     return new Promise((resolve, reject) => {
       redis.evalsha(sha1, numkeys,
         conf.redis.database,  /**/
@@ -304,6 +254,30 @@ const logger = require('log4js').getLogger('biz.user');
       .then(biz.group_user.findAllByGroupId)
       .then(p4.bind(null, resolve))
       .catch(reject);
+    });
+  };
+})();
+
+(() => {
+  const numkeys = 3;
+  const sha1    = '6df440fb93a747912f3eae2835c8fec8e90788ca';
+
+  /**
+  * 获取用户信息（user_info_byChannelId.lua）
+  *
+  * @return
+  */
+  exports.getByRedisChannelId = function(server_id, channel_id){
+    return new Promise((resolve, reject) => {
+      redis.evalsha(sha1, numkeys,
+        conf.redis.database,  /**/
+        server_id,            /**/
+        channel_id,           /**/
+        (err, code) => {
+        if(err) return reject(err);
+        if(!_.isArray(code)) return reject(code);
+        resolve(utils.arrToObj(code));
+      });
     });
   };
 })();
@@ -394,6 +368,32 @@ const logger = require('log4js').getLogger('biz.user');
 })();
 
 (() => {
+  const seconds   = 5;  //令牌有效期 5s
+  const numkeys   = 4;
+  const sha1      = '6a63911ac256b0c00cf270c6332119240d52b13e';
+
+  /**
+   * 令牌授权
+   *
+   * @param user
+   * @return 登陆令牌
+   */
+  exports.authorize = function(user){
+    return new Promise((resolve, reject) => {
+      redis.evalsha(sha1, numkeys,
+        conf.redis.database,                   /**/
+        conf.app.client_id,                    /**/
+        user.id,                               /**/
+        utils.replaceAll(uuid.v4(), '-', ''),  /**/
+        seconds, (err, code) => {
+        if(err) return reject(err);
+        resolve(code);
+      });
+    });
+  };
+})();
+
+(() => {
   function p1(logInfo, user){
     return new Promise((resolve, reject) => {
       if(!user) return reject('用户不存在');
@@ -462,24 +462,14 @@ const logger = require('log4js').getLogger('biz.user');
     });
   }
 
-  var sql = 'INSERT INTO s_user (id, user_name, user_pass, status, sex, create_time, mobile, qq, weixin, email, current_score, tool_1, tool_2, tool_3, tool_4, tool_5, tool_6, tool_7, tool_8, tool_9, nickname, vip, consume_count, win_count, lose_count, win_score_count, lose_score_count, line_gone_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+  var sql = 'INSERT INTO s_user (id, user_name, user_pass, status, create_time, mobile, weixin, current_score, nickname, vip, consume_count, win_count, lose_count, win_score_count, lose_score_count, line_gone_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
   function p2(user_info){
     user_info.id = utils.replaceAll(uuid.v1(), '-', '');
     user_info.user_pass = md5.hex(user_info.user_pass);
     user_info.status = 1;
-    user_info.sex = user_info.sex || 1;
     user_info.create_time = new Date();
     user_info.current_score = 0;
-    user_info.tool_1 = 0;
-    user_info.tool_2 = 0;
-    user_info.tool_3 = 0;
-    user_info.tool_4 = 0;
-    user_info.tool_5 = 0;
-    user_info.tool_6 = 0;
-    user_info.tool_7 = 0;
-    user_info.tool_8 = 0;
-    user_info.tool_9 = 0;
     user_info.nickname = user_info.user_name;
     user_info.vip              = 0;
     user_info.consume_count    = 0;
@@ -495,22 +485,10 @@ const logger = require('log4js').getLogger('biz.user');
         user_info.user_name,
         user_info.user_pass,
         user_info.status,
-        user_info.sex,
         user_info.create_time,
         user_info.mobile,
-        user_info.qq,
         user_info.weixin,
-        user_info.email,
         user_info.current_score,
-        user_info.tool_1,
-        user_info.tool_2,
-        user_info.tool_3,
-        user_info.tool_4,
-        user_info.tool_5,
-        user_info.tool_6,
-        user_info.tool_7,
-        user_info.tool_8,
-        user_info.tool_9,
         user_info.nickname,
         user_info.vip,
         user_info.consume_count,
