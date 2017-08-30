@@ -11,9 +11,6 @@ const conf = require(path.join(cwd, 'settings'));
 
 const uuid = require('node-uuid');
 
-const md5   = require('speedt-utils').md5;
-const utils = require('speedt-utils').utils;
-
 const cfg = require('emag.cfg');
 const biz = require('emag.biz');
 
@@ -45,6 +42,6 @@ res.get = function(id){
 res.release = function(id){
   var room = this.get(id);
   if(!room) return;
-  room.release();
+  if(!room.release()) return;
   delete rooms[id];
 };

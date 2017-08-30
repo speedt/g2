@@ -11,7 +11,6 @@ const conf = require(path.join(cwd, 'settings'));
 
 const uuid = require('node-uuid');
 
-const md5   = require('speedt-utils').md5;
 const utils = require('speedt-utils').utils;
 
 const cfg = require('emag.cfg');
@@ -28,19 +27,18 @@ module.exports = function(opts){
 }
 
 var Method = function(opts){
-  var self      = this;
-  self.players  = {};
-  self.visitors = {};
-  self.init(opts);
+  var self         = this;
+  self.id          = opts.id;
+  self.name        = opts.name;
+  self.fund        = opts.fund;
+  self.round_count = opts.round_count;
+  self.round_id    = utils.replaceAll(uuid.v4(), '-', '');
+  self.players     = {};
+  self.visitors    = {};
 };
 
 var pro = Method.prototype;
 
-pro.init = function(opts){
-  var self = this;
-  self.id  = opts.id;
-  return self;
-};
-
 pro.release = function(){
+  return true;
 };
