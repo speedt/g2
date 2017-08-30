@@ -47,8 +47,7 @@ pro.release = function(){
 
 pro.entry = function(user){
   var self = this;
-  // 判断是否已经在房间内
-  if(self.users[user.id]) return;
+  if(self.users[user.id]) return new Error('已经进入该房间');
 
   self.users[user.id] = user;
 
@@ -69,7 +68,3 @@ pro.quit = function(user_id){
 
   delete self.users[user_id];
 };
-
-pro.get = function(user_id){
-  return this.users[user_id];
-}
