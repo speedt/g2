@@ -29,69 +29,6 @@ const roomPool = require('emag.model').roomPool;
 const logger = require('log4js').getLogger('biz.group');
 
 (() => {
-  function p1(group){
-    return new Promise((resolve, reject) => {
-      if(!group) return reject('群组不存在');
-      if(0 === group.group_user_count) return reject('群组关闭');
-      // 玩家数+游客数
-      var group_user_count = 4 + (group.visitor_count - 0);
-      logger.debug('group user count: %s::%s', group.group_user_count, group_user_count);
-      if(group.group_user_count >= group_user_count) return reject('群组满员');
-
-      resolve({
-        group_id: group.id,
-        seat:     biz.group_user.getSeatNum(group.group_user_seat_sum),
-      });
-    });
-  }
-
-  function p2(server_id, channel_id, group_user_info){
-    return new Promise((resolve, reject) => {
-      biz.user.getByChannelId(server_id, channel_id)
-      .then(p3.bind(null, group_user_info))
-      .then(biz.group_user.saveNew)
-      .then(() => resolve(group_user_info.group_id))
-      .catch(reject);
-    });
-  }
-
-  function p3(group_user_info, user){
-    return new Promise((resolve, reject) => {
-      if(!user) return reject('用户不存在');
-      if(_.isNumber(user.group_user_seat)) return reject('已经在某个群组中');
-      group_user_info.user_id = user.id;
-      resolve(group_user_info);
-    });
-  }
-
-  function p4(resolve, docs){
-    var result = [];
-    if(0 === docs.length) return resolve(result);
-    result.push(docs);
-    let data = [];
-    data.push(docs);
-    data.push(docs[0]);
-    result.push(data);
-    resolve(result);
-  }
-
-  /**
-   *
-   * @return
-   */
-  exports.entry = function(server_id, channel_id, group_id){
-    return new Promise((resolve, reject) => {
-      biz.group.getById(group_id)
-      .then(p1)
-      .then(p2.bind(null, server_id, channel_id))
-      .then(biz.group_user.findAllByGroupId)
-      .then(p4.bind(null, resolve))
-      .catch(reject);
-    });
-  };
-})();
-
-(() => {
   var sql = 'SELECT '+
               '(SELECT COUNT(1) FROM g_group_user WHERE group_id=a.id) AS group_user_count, '+
               '(SELECT SUM(seat) FROM g_group_user WHERE group_id=a.id) AS group_user_seat_sum, '+
@@ -381,6 +318,34 @@ const logger = require('log4js').getLogger('biz.group');
     return new Promise((resolve, reject) => {
       biz.user.getByChannelId(server_id, channel_id)
       .then(p1)
+      .then(biz.user.getByChannelId.bind(null, server_id, channel_id))
+      .then(user => resolve(user))
+      .catch(reject);
+    });
+  };
+})();
+
+(() => {
+  function p1(group_id, user){
+    if(user.group_id) return Promise.reject('请先退出');
+
+    var room = roomPool.get(group_id);
+    if(!room) return Promise.reject('房间不存在');
+
+    room.entry(user);
+
+    return Promise.resolve();
+  }
+
+  /**
+   *
+   * @return
+   */
+  exports.entry = function(server_id, channel_id, group_id){
+    return new Promise((resolve, reject) => {
+      biz.user.getByChannelId(server_id, channel_id)
+      .then(p1.bind(null, group_id))
+      .then(biz.user.entryGroup)
       .then(biz.user.getByChannelId.bind(null, server_id, channel_id))
       .then(user => resolve(user))
       .catch(reject);

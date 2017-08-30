@@ -561,6 +561,30 @@ const logger = require('log4js').getLogger('biz.user');
    *
    * @return
    */
+  exports.entryGroup = function(user_info, trans){
+    user_info.backend_id = conf.app.id;
+    user_info.group_entry_time = new Date();
+    user_info.seat = 0;
+
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [
+        user.backend_id,
+        user.group_id,
+        user.group_entry_time,
+        user.seat,
+        user.id,
+      ], err => {
+        if(err) return reject(err);
+        resolve();
+      })
+    });
+  };
+
+  /**
+   * 创建群组
+   *
+   * @return
+   */
   exports.quitGroup = function(user_id, trans){
     var user_info = {
       backend_id: '',
