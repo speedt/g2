@@ -28,6 +28,11 @@ const roomPool = require('emag.model').roomPool;
 
 const logger = require('log4js').getLogger('biz.group');
 
+/**
+ * 创建群组
+ *
+ * @return
+ */
 (() => {
   function formVali(group_info){
     return new Promise((resolve, reject) => {
@@ -48,40 +53,36 @@ const logger = require('log4js').getLogger('biz.group');
     return new Promise((resolve, reject) => {
       biz.user.getByChannelId(server_id, channel_id)
       .then(p2.bind(null, group_info))
-      .then(group_info => resolve(group_info))
+      .then(doc => resolve(doc))
       .catch(reject);
     });
   }
 
   function p2(group_info, user){
     return new Promise((resolve, reject) => {
-      biz.user.clearFreeGroupById(user.group_id, (err, group_id) => {
-        if(err) return reject(err);
-        if(group_id) return reject('已经在某个群组中');
-
-        biz.user.genFreeGroupId((err, group_id) => {
-          if(err) return reject(err);
-
-          group_info.id = group_id;
-          group_info.create_user_id = user.id;
-
-          var room = roomPool.create(group_info);
-
-          if(!room) return reject('创建群组失败');
-
-          biz.user.createGroup(group_info, (err, doc) => {
-            if(err) return reject(err);
-            resolve(doc);
-          });
-        });
-      });
+      biz.user.clearFreeGroupById(user.group_id)
+      .then(group_id => {
+        if(group_id) return Promise.reject('请先退出');
+        return Promise.resolve();
+      })
+      .then(biz.user.createGroup.bind(null, user.id))
+      .then(p3.bind(null, group_info, user))
+      .then(group_info => resolve(group_info))
+      .catch(reject);
     });
   }
 
-  /**
-   *
-   * @return
-   */
+  function p3(group_info, user, user_info){
+    group_info.id = user_info.group_id;
+    group_info.create_user_id = user.id;
+
+    var room = roomPool.create(group_info);
+    if(!room) return Promise.reject('创建群组失败');
+    room.entry(group_info);
+
+    return Promise.resolve(group_info);
+  }
+
   exports.search = function(server_id, channel_id, group_info){
     return new Promise((resolve, reject) => {
       formVali(group_info)
@@ -92,10 +93,14 @@ const logger = require('log4js').getLogger('biz.group');
   };
 })();
 
+/**
+ * 退出群组
+ *
+ * @return
+ */
 (() => {
   function p1(user){
     return new Promise((resolve, reject) => {
-      if(!user) return reject('用户不存在');
       if(!_.isNumber(user.group_user_seat)) return reject('用户不在任何群组');
 
       p2(user)
@@ -122,6 +127,7 @@ const logger = require('log4js').getLogger('biz.group');
   }
 
   /**
+   * 退出群组
    *
    * @return
    */

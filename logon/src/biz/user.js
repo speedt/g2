@@ -30,11 +30,74 @@ const roomPool = require('emag.model').roomPool;
 const logger = require('log4js').getLogger('biz.user');
 
 (() => {
+  var sql = 'SELECT a.* FROM s_user WHERE server_id=? AND channel_id=?';
+
+  /**
+   * 获取用户
+   *
+   * @param server_id
+   * @param channel_id
+   * @return
+   */
+  exports.getByChannelId = function(server_id, channel_id, trans){
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [server_id, channel_id], (err, docs) => {
+        if(err) return reject(err);
+        if(!mysql.checkOnly(docs)) return reject('通道不存在');
+        resolve(docs[0]);
+      });
+    });
+  };
+})();
+
+(() => {
+  var sql = 'UPDATE s_user SET group_id=? WHERE group_id=?';
+
+  /**
+   * 清理空闲的群组
+   *
+   * @return
+   */
+  exports.clearFreeGroupById = function(group_id, trans){
+    if(!group_id) return Promise.reject('群组id不能为空');
+
+    var room = roomPool.get(group_id);
+    if(room) return Promise.resolve(group_id);
+
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, ['', group_id], err => {
+        if(err) return reject(err);
+        resolve();
+      });
+    });
+  };
+})();
+
+(() => {
+  var sql = 'SELECT a.* FROM s_user a WHERE a.group_id=? ORDER BY a.group_entry_time ASC';
+
+  /**
+   * 获取群组的全部用户
+   *
+   * @param id 群组id
+   * @return
+   */
+  exports.findAllByGroupId = function(id, trans){
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [id], (err, docs) => {
+        if(err) return reject(err);
+        resolve(docs);
+      });
+    });
+  };
+})();
+
+(() => {
   function p1(cb, trans){
     var id = _.random(100000, 999999);
     biz.user.findAllByGroupId(id, trans)
     .then(docs => {
-      if(0 === docs.length) return p1(cb, trans);
+      if(0 < docs.length) return p1(cb, trans);
       cb(null, id);
     })
     .catch(cb);
@@ -56,24 +119,71 @@ const logger = require('log4js').getLogger('biz.user');
 })();
 
 (() => {
-  var sql = 'UPDATE s_user SET group_id=? WHERE group_id=?';
+  var sql = 'UPDATE s_user SET backend_id=?, group_id=?, group_entry_time=?, seat=? WHERE id=?';
 
-  /**
-   * 清理空闲的群组
-   *
-   * @return
-   */
-  exports.clearFreeGroupById = function(group_id, trans){
-    if(!group_id) return Promise.resolve();
-    var room = roomPool.get(group_id);
-    if(room) return Promise.resolve(group_id);
+  function p1(user_id, group_id){
+    var user_info = {
+      backend_id: conf.app.id,
+      group_id: group_id,
+      group_entry_time: new Date(),
+      seat: 1,
+      id: user_id,
+    };
 
-    (trans || mysql).query(sql, ['', group_id], err => {
-      if(err) return reject(err);
-      resolve();
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [
+        user_info.backend_id,
+        user_info.group_id,
+        user_info.group_entry_time,
+        user_info.id,
+      ], err => {
+        if(err) return reject(err);
+        resolve(user_info);
+      })
+    });
+  }
+
+  exports.createGroup = function(user_id, trans){
+    return new Promise((resolve, reject) => {
+      biz.user.genFreeGroupId()
+      .then(p1.bind(null, user_id))
+      .then(user_info => resolve(user_info))
+      .catch(reject);
     });
   };
 })();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 (() => {
   var sql = 'SELECT a.* FROM s_user a WHERE a.status=? ORDER BY a.create_time DESC';
@@ -101,25 +211,6 @@ const logger = require('log4js').getLogger('biz.user');
 })();
 
 (() => {
-  var sql = 'SELECT a.* FROM s_user a WHERE a.group_id=? ORDER BY a.group_entry_time ASC';
-
-  /**
-   * 获取群组全部用户
-   *
-   * @param id 群组id
-   * @return
-   */
-  exports.findAllByGroupId = function(id, trans){
-    return new Promise((resolve, reject) => {
-      (trans || mysql).query(sql, [id], (err, docs) => {
-        if(err) return reject(err);
-        resolve(docs);
-      });
-    });
-  };
-})();
-
-(() => {
   var sql = 'SELECT a.* FROM s_user WHERE id=?';
 
   /**
@@ -133,27 +224,6 @@ const logger = require('log4js').getLogger('biz.user');
       (trans || mysql).query(sql, [id], (err, docs) => {
         if(err) return reject(err);
         if(!mysql.checkOnly(docs)) return reject('用户不存在');
-        resolve(docs[0]);
-      });
-    });
-  };
-})();
-
-(() => {
-  var sql = 'SELECT a.* FROM s_user WHERE server_id=? AND channel_id=?';
-
-  /**
-   * 获取用户
-   *
-   * @param server_id
-   * @param channel_id
-   * @return
-   */
-  exports.getByChannelId = function(server_id, channel_id, trans){
-    return new Promise((resolve, reject) => {
-      (trans || mysql).query(sql, [server_id, channel_id], (err, docs) => {
-        if(err) return reject(err);
-        if(!mysql.checkOnly(docs)) return reject('通道不存在');
         resolve(docs[0]);
       });
     });
@@ -327,12 +397,6 @@ const logger = require('log4js').getLogger('biz.user');
 })();
 
 (() => {
-  function p1(user){
-    return new Promise((resolve, reject) => {
-      resolve(user.group_id);
-    });
-  }
-
   /**
    * 注册通道
    *
@@ -342,9 +406,7 @@ const logger = require('log4js').getLogger('biz.user');
     return new Promise((resolve, reject) => {
       biz.user.getByRedisChannelId(server_id, channel_id)
       .then(editChannel)
-      .then(p1)
-      .then(biz.user.findAllByGroupId)
-      .then(docs => resolve(docs))
+      .then(user => resolve(user))
       .catch(reject)
     });
   };
@@ -371,9 +433,9 @@ const logger = require('log4js').getLogger('biz.user');
    */
   exports.clearChannel = function(id, trans){
     return editChannel({
-      server_id: '',
+      server_id:  '',
       channel_id: '',
-      id: id,
+      id:         id,
     }, trans);
   };
 })();
