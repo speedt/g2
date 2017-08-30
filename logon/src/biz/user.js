@@ -56,8 +56,11 @@ const logger = require('log4js').getLogger('biz.user');
 
 (() => {
   var sql = 'SELECT a.* FROM s_user a WHERE a.group_id=? ORDER BY a.group_entry_time ASC';
+
   /**
+   * 获取群组全部用户
    *
+   * @param id 群组id
    * @return
    */
   exports.findAllByGroupId = function(id, trans){
@@ -71,16 +74,12 @@ const logger = require('log4js').getLogger('biz.user');
 })();
 
 (() => {
-  var sql = 'SELECT '+
-              'c.id group_id, c.group_name, c.round_id group_round_id, c.curr_user_seat group_curr_user_seat, c.curr_act group_curr_act, '+
-              'b.is_ready group_user_is_ready, b.seat group_user_seat, b.is_online group_user_is_online, '+
-              'a.* '+
-            'FROM '+
-              '(SELECT * FROM s_user WHERE id=?) a '+
-              'LEFT JOIN g_group_user b ON (b.user_id=a.id) '+
-              'LEFT JOIN g_group c ON (b.group_id=c.id)';
+  var sql = 'SELECT a.* FROM s_user WHERE id=?';
+
   /**
+   * 获取用户
    *
+   * @param id 用户id
    * @return
    */
   exports.getById = function(id, trans){
@@ -95,19 +94,13 @@ const logger = require('log4js').getLogger('biz.user');
 })();
 
 (() => {
-  // var sql = 'SELECT '+
-  //             'c.id group_id, c.group_name, c.round_id group_round_id, c.curr_user_seat group_curr_user_seat, c.curr_act group_curr_act, '+
-  //             'b.is_ready group_user_is_ready, b.seat group_user_seat, b.is_online group_user_is_online, '+
-  //             'a.* '+
-  //           'FROM '+
-  //             '(SELECT * FROM s_user WHERE server_id=? AND channel_id=?) a '+
-  //             'LEFT JOIN g_group_user b ON (b.user_id=a.id) '+
-  //             'LEFT JOIN g_group c ON (b.group_id=c.id)';
-
   var sql = 'SELECT a.* FROM s_user WHERE server_id=? AND channel_id=?';
 
   /**
+   * 获取用户
    *
+   * @param server_id
+   * @param channel_id
    * @return
    */
   exports.getByChannelId = function(server_id, channel_id, trans){
@@ -119,25 +112,6 @@ const logger = require('log4js').getLogger('biz.user');
       });
     });
   };
-
-  // /**
-  //  * 判断用户是否在群组中
-  //  *
-  //  * @return
-  //  */
-  // exports.getByChannelIdInGroup = function(server_id, channel_id, trans){
-  //   return new Promise((resolve, reject) => {
-  //     (trans || mysql).query(sql, [server_id, channel_id], (err, docs) => {
-  //       if(err) return reject(err);
-  //       if(!mysql.checkOnly(docs)) return reject('通道不存在');
-
-  //       var user = docs[0];
-  //       if(!user.group_id) return reject('用户不在任何群组');
-
-  //       resolve(user);
-  //     });
-  //   });
-  // };
 })();
 
 (() => {
@@ -523,7 +497,7 @@ const logger = require('log4js').getLogger('biz.user');
   }
 
   /**
-   * 生成空闲Id
+   * 生成空闲的群组Id
    *
    * @return
    */
