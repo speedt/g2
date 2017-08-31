@@ -112,3 +112,79 @@ const logger = require('log4js').getLogger('biz.pushCake');
     });
   };
 })();
+
+(() => {
+  function p1(user){
+    if(!user.group_id) return Promise.reject('用户不在任何群组');
+
+    var room = roomPool.get(user.group_id);
+    if(!room) return Promise.reject('房间不存在');
+
+    room.bankerBet(user.id);
+
+    return Promise.resolve(user);
+  }
+
+  /**
+   * 庄家下注
+   *
+   * @return
+   */
+  exports.bankerBet = function(server_id, channel_id, next){
+    return new Promise((resolve, reject) => {
+      biz.user.getByChannelId(server_id, channel_id)
+      .then(p1)
+      .then(user => resolve(user))
+      .catch(reject);
+    });
+  };
+})();
+
+(() => {
+  function p1(user){
+    if(!user.group_id) return Promise.reject('用户不在任何群组');
+
+    var room = roomPool.get(user.group_id);
+    if(!room) return Promise.reject('房间不存在');
+
+    room.noBankerBet(user.id);
+
+    return Promise.resolve(user);
+  }
+
+  /**
+   * 庄家下注
+   *
+   * @return
+   */
+  exports.noBankerBet = function(server_id, channel_id, next){
+    return new Promise((resolve, reject) => {
+      biz.user.getByChannelId(server_id, channel_id)
+      .then(p1)
+      .then(user => {
+        cb(user, next);
+        resolve(user);
+      })
+      .catch(reject);
+    });
+  };
+
+  function cb(user, next){
+    if(!user.group_id) return Promise.reject('用户不在任何群组');
+
+    var room = roomPool.get(user.group_id);
+    if(!room) return Promise.reject('房间不存在');
+
+    var count = 0;
+
+    for(let i of _.values(room.users)){
+      if(0 < i.bet) count++;
+    }
+
+    if(!(3 < count)) return;
+
+    setTimeout(function(){
+      console.log('5000--------------');
+    }, 5000);
+  }
+})();
