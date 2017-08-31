@@ -29,6 +29,7 @@ module.exports = function(opts){
 var Method = function(opts){
   var self                      = this;
   self.opts                     = opts || {};
+  self.seat_no                  = { 1: 1, 2: 2, 4: 3, 8: 4 };  // 座位号对应关系
   self.id                       = opts.id;
   self.name                     = opts.name          || ('Room '+ opts.id);
   self.fund                     = opts.fund          || 1000;  // 组局基金
@@ -42,13 +43,45 @@ var Method = function(opts){
   self.round_pno                = 1;  // 当前第n局
   self.round_no                 = 1;  // 当前第n把
   self.round_no_first_user_seat = 1;  // 当前第一个起牌的人
-  self.user_seat_banker         = 1;  // 当前庄家座位
   self.user_seat                = 1;  // 当前准备行动的座位
   self.craps_result             = {}; // 骰子 { 1: [1, 2], 2: [3, 4]}
   self.act_status               = 0;  // 0默认 1摇骰子 2确定庄家，等庄在摇骰子
+  self.user_seat_banker         = 1;  // 当前庄家座位
+  self.user_seat_banker_craps   = []; // 庄家摇骰子结果
 };
 
 var pro = Method.prototype;
+
+(() => {
+  function firstSeat(){
+    var self = this;
+    var n = (self.user_seat_banker_craps - 0) + (self.user_seat_banker_craps - 0);
+    var m = (n - 0 - 1 + self.seat_no[self.user_seat_banker]) % 4;
+    return (0 === m) ? 4 : m;
+  }
+
+  /**
+   * 庄家摇骰子
+   *
+   * @return
+   */
+  pro.crapsBanker = function(user_id){
+    var self = this;
+
+    if(2 !== self.act_status) return;  // 庄家摇骰子
+
+    var user = self.users[user_id];
+    if(!user) return;  // 用户不存在，不能摇骰子
+    if(self.user_seat_banker !== user.seat) return;  // 你不是庄
+
+    self.user_seat_banker_craps = [
+      _.random(1, 6),
+      _.random(1, 6),
+    ];
+
+    self.round_no_first_user_seat = firstSeat.call(self);
+  };
+})();
 
 (() => {
   function maxCraps(){
@@ -71,7 +104,7 @@ var pro = Method.prototype;
   }
 
   /**
-   * 摇骰子
+   * 4人摇骰子
    *
    * @return
    */
@@ -97,6 +130,7 @@ var pro = Method.prototype;
       // 最大的骰子，并设置庄家位置
       self.user_seat_banker = maxCraps.call(self);
       self.act_status = 2;
+      self.craps_result = [];  // 重置骰子
     }
 
     return craps_result;

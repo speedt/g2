@@ -60,7 +60,7 @@ const logger = require('log4js').getLogger('biz.pushCake');
     var room = roomPool.get(user.group_id);
     if(!room) return Promise.reject('房间不存在');
 
-    if(1 !== room.act_status) return Promise.reject('不能摇骰子');
+    if(1 !== room.act_status) return Promise.reject('4人摇骰子');
 
     var user = room.users[user.id];
 
@@ -72,10 +72,38 @@ const logger = require('log4js').getLogger('biz.pushCake');
   }
 
   /**
+   * 4人摇骰子
    *
    * @return
    */
   exports.craps = function(server_id, channel_id, next){
+    return new Promise((resolve, reject) => {
+      biz.user.getByChannelId(server_id, channel_id)
+      .then(p1)
+      .then(user => resolve(user))
+      .catch(reject);
+    });
+  };
+})();
+
+(() => {
+  function p1(user){
+    if(!user.group_id) return Promise.reject('用户不在任何群组');
+
+    var room = roomPool.get(user.group_id);
+    if(!room) return Promise.reject('房间不存在');
+
+    room.crapsBanker(user.id);
+
+    return Promise.resolve(user);
+  }
+
+  /**
+   * 庄家摇骰子，确定谁先接牌
+   *
+   * @return
+   */
+  exports.crapsBanker = function(server_id, channel_id, next){
     return new Promise((resolve, reject) => {
       biz.user.getByChannelId(server_id, channel_id)
       .then(p1)
