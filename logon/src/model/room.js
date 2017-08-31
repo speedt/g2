@@ -45,7 +45,7 @@ var Method = function(opts){
   self.round_no_first_user_seat = 1;  // 当前第一个起牌的人
   self.user_seat_banker         = 1;  // 当前庄家座位
   self.user_seat                = 1;  // 当前准备行动的座位
-  self.craps                    = {};  // 骰子 { 1: [1, 2], 2: [3, 4]}
+  self.craps_result             = {};  // 骰子 { 1: [1, 2], 2: [3, 4]}
 };
 
 var pro = Method.prototype;
@@ -56,12 +56,12 @@ pro.craps = function(user_id){
   var user = self.users[user_id];
   if(!user) throw new Error('用户不存在，不能摇骰子');
 
-  var craps_result = self.craps[user.seat];
+  var craps_result = self.craps_result[user.seat];
 
   // 摇过骰子则返回
   if(craps_result) return craps_result;
 
-  craps_result = self.craps[user.seat] = [
+  craps_result = self.craps_result[user.seat] = [
     _.random(1, 6),
     _.random(1, 6),
   ];

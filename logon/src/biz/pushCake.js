@@ -66,7 +66,7 @@ const logger = require('log4js').getLogger('biz.pushCake');
 
     if(!user) return Promise.reject('你不在此房间');
 
-    if(1 === user.act_status) return Promise.reject('你已经摇过骰子了');
+    room.craps(user.id);
 
     return Promise.resolve(user);
   }

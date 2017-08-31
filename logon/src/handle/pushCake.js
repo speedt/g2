@@ -77,7 +77,7 @@ const roomPool = require('emag.model').roomPool;
 
     var _data = [];
     _data.push(null);
-    _data.push(JSON.stringify([5012, data.seqId, _.now(), room]));
+    _data.push(JSON.stringify([5013, data.seqId, _.now(), room.craps_result]));
 
     for(let i of _.values(room.users)){
       if(!i.server_id || !i.channel_id) continue;
@@ -94,7 +94,7 @@ const roomPool = require('emag.model').roomPool;
 
     var _data = [];
     _data.push(data.channelId);
-    _data.push(JSON.stringify([5012, data.seqId, _.now(), , err]));
+    _data.push(JSON.stringify([5013, data.seqId, _.now(), , err]));
 
     send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _data, (err, code) => {
       if(err) return logger.error('pushCake craps:', err);
