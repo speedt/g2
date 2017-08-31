@@ -29,42 +29,6 @@ const roomPool = require('emag.model').roomPool;
 
 const logger = require('log4js').getLogger('biz.user');
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 (() => {
   var sql = 'SELECT a.* FROM s_user a WHERE a.status=? ORDER BY a.create_time DESC';
 
@@ -135,12 +99,39 @@ const logger = require('log4js').getLogger('biz.user');
 })();
 
 (() => {
-  const numkeys = 3;
-  const sha1    = '3b248050f9965193d8a4836d6258861a1890017f';
-
-  exports.closeChannel = function(server_id, channel_id){
+  function p1(server_id, channel_id, user){
     return new Promise((resolve, reject) => {
-      redis.evalsha(sha1, numkeys,
+      biz.user.closeChannel(server_id, channel_id)
+      .then(p2.bind(null, user))
+      .then(() => resolve(user));
+      .catch(reject);
+    });
+  }
+
+  function p2(user){
+    if(!user.group_id) return Promise.resolve();
+    var room = roomPool.get(user.group_id);
+    if(!room) return Promise.resolve();
+    room.quit(user.id);
+    return Promise.resolve();
+  }
+
+  /**
+   *
+   * @return
+   */
+  exports.logout = function(server_id, channel_id){
+    return new Promise((resolve, reject) => {
+      biz.user.getByChannelId(server_id, channel_id)
+      .then(p1)
+      .then(user => resolve(user))
+      .catch(reject);
+    });
+  };
+
+  function closeChannel(server_id, channel_id){
+    return new Promise((resolve, reject) => {
+      redis.evalsha('3b248050f9965193d8a4836d6258861a1890017f', 3,
         conf.redis.database,  /**/
         server_id,            /**/
         channel_id,           /**/
@@ -150,136 +141,8 @@ const logger = require('log4js').getLogger('biz.user');
         resolve(utils.arrToObj(code));
       });
     });
-  };
+  }
 })();
-
-(() => {
-  function p1(user){
-    logger.info('user logout: %j', {
-      log_type:    2,
-      user_id:     user.id,
-      create_time: _.now(),
-    });
-
-    return biz.user.clearChannel(user.id);
-  }
-
-  function p2(user){
-    return new Promise((resolve, reject) => {
-      if(!_.isNumber(user.group_user_seat)) return reject('用户不在任何群组');
-
-      if(!user.group_id)
-
-      p3(user)
-      .then(() => resolve(user.group_id))
-      .catch(reject);
-    });
-  }
-
-  function p3(user){
-    if((0 < user.group_status) && (0 < user.group_user_seat))
-      return biz.group_user.forcedSignOut(user.id);
-    return biz.group_user.delByUserId(user.id);
-  }
-
-  function p4(resolve, docs){
-    var result = [];
-    if(0 === docs.length) return resolve(result);
-    result.push(docs);
-    let data = [];
-    data.push(docs);
-    data.push(docs[0]);
-    result.push(data);
-    resolve(result);
-  }
-
-
-  function p2(user){
-    return biz.user.findAllByGroupId(user.group_id);
-  }
-
-  /**
-   *
-   * @return
-   */
-  exports.logout = function(server_id, channel_id){
-    return new Promise((resolve, reject) => {
-      biz.user.closeChannel(server_id, channel_id)
-      .then(p1)
-      .then(biz.user.getById)
-      .then(p2)
-      .then(biz.group_user.findAllByGroupId)
-      .then(p4.bind(null, resolve))
-      .catch(reject);
-    });
-  };
-})();
-
-(() => {
-  const seconds   = 5;  //令牌有效期 5s
-  const numkeys   = 4;
-  const sha1      = '6a63911ac256b0c00cf270c6332119240d52b13e';
-
-  /**
-   * 令牌授权
-   *
-   * @param user
-   * @return 登陆令牌
-   */
-  exports.authorize = function(user){
-    return new Promise((resolve, reject) => {
-      redis.evalsha(sha1, numkeys,
-        conf.redis.database,                   /**/
-        conf.app.client_id,                    /**/
-        user.id,                               /**/
-        utils.replaceAll(uuid.v4(), '-', ''),  /**/
-        seconds, (err, code) => {
-        if(err) return reject(err);
-        resolve(code);
-      });
-    });
-  };
-})();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 (() => {
   function p1(logInfo, user){
@@ -334,67 +197,13 @@ const logger = require('log4js').getLogger('biz.user');
 })();
 
 (() => {
-  var sql = 'SELECT a.* FROM s_user a WHERE a.user_name=?';
+  function p1(user){
+    if(!user.group_id) return Promise.resolve();
 
-  /**
-   *
-   * @return
-   */
-  exports.getByName = function(user_name, trans){
-    return new Promise((resolve, reject) => {
-      (trans || mysql).query(sql, [user_name], (err, docs) => {
-        if(err) return reject(err);
-        resolve(mysql.checkOnly(docs) ? docs[0] : null);
-      });
-    });
-  };
-})();
+    var room = roomPool.get(user.group_id);
+    if(!room) return Promise.resolve();
 
-(() => {
-  const numkeys = 3;
-  const sha1    = '6df440fb93a747912f3eae2835c8fec8e90788ca';
-
-  /**
-  * 获取用户信息（user_info_byChannelId.lua）
-  *
-  * @return
-  */
-  exports.getByRedisChannelId = function(server_id, channel_id){
-    return new Promise((resolve, reject) => {
-      redis.evalsha(sha1, numkeys,
-        conf.redis.database,  /**/
-        server_id,            /**/
-        channel_id,           /**/
-        (err, code) => {
-        if(err) return reject(err);
-        if(!_.isArray(code)) return reject(code);
-        resolve(utils.arrToObj(code));
-      });
-    });
-  };
-})();
-
-(() => {
-  function p1(user_info){
-    return new Promise((resolve, reject) => {
-      biz.user.getById(user_info.id)
-      .then(p2)
-      .then(() => resolve())
-      .catch(reject);
-    });
-  }
-
-  function p2(user){
-    return new Promise((resolve, reject) => {
-      biz.user.clearFreeGroupById(user.group_id)
-      .then(p3)
-      .then(() => resolve())
-      .catch(reject)
-    });
-  }
-
-  function p3(group_id){
-    if(!group_id) return Promise.resolve();
+    return Promise.resolve(room.reEntry(user.id));
   }
 
   /**
@@ -406,6 +215,7 @@ const logger = require('log4js').getLogger('biz.user');
     return new Promise((resolve, reject) => {
       biz.user.getByRedisChannelId(server_id, channel_id)
       .then(editChannel)
+      .then(biz.user.getByChannelId.bind(null, server_id, channel_id))
       .then(p1)
       .then(biz.user.getByChannelId.bind(null, server_id, channel_id))
       .then(user => resolve(user))
@@ -463,154 +273,6 @@ const logger = require('log4js').getLogger('biz.user');
 })();
 
 (() => {
-  var sql = 'UPDATE s_user SET group_id=? WHERE group_id=?';
-
-  /**
-   * 清理空闲的群组
-   *
-   * @return
-   */
-  exports.clearFreeGroupById = function(group_id, trans){
-    if(!group_id) return Promise.reject('群组id不能为空');
-
-    var room = roomPool.get(group_id);
-    if(room) return Promise.resolve(group_id);
-
-    return new Promise((resolve, reject) => {
-      (trans || mysql).query(sql, ['', group_id], err => {
-        if(err) return reject(err);
-        resolve();
-      });
-    });
-  };
-})();
-
-(() => {
-  var sql = 'SELECT a.* FROM s_user WHERE server_id=? AND channel_id=?';
-
-  /**
-   * 获取用户
-   *
-   * @param server_id
-   * @param channel_id
-   * @return
-   */
-  exports.getByChannelId = function(server_id, channel_id, trans){
-    return new Promise((resolve, reject) => {
-      (trans || mysql).query(sql, [server_id, channel_id], (err, docs) => {
-        if(err) return reject(err);
-        if(!mysql.checkOnly(docs)) return reject('通道不存在');
-        resolve(docs[0]);
-      });
-    });
-  };
-})();
-
-(() => {
-
-  function p1(user, group_id){
-    user.backend_id = conf.app.id;
-    user.group_id = group_id;
-    user.group_entry_time = new Date();
-
-    return new Promise((resolve, reject) => {
-      (trans || mysql).query(sql, [
-        user.backend_id,
-        user.group_id,
-        user.group_entry_time,
-        user.id,
-      ], err => {
-        if(err) return reject(err);
-        resolve(user);
-      })
-    });
-  }
-
-  function p2(group_info, user){
-    group_info.id = user.group_id;
-    group_info.create_user_id = user.id;
-
-    var room = roomPool.create(group_info);
-    if(!room) return Promise.reject('创建群组失败');
-
-    room.entry(user);
-
-    return Promise.resolve();
-  }
-
-  /**
-   * 创建群组
-   *
-   * @return
-   */
-  exports.createGroup = function(group_info, user, trans){
-    return new Promise((resolve, reject) => {
-      biz.user.genFreeGroupId()
-      .then(p1.bind(null, user))
-      .then(p2.bind(null, group_info))
-      .then(() => resolve())
-      .catch(reject);
-    });
-  };
-
-  /**
-   * 创建群组
-   *
-   * @return
-   */
-  exports.entryGroup = function(user_info, trans){
-    user_info.backend_id = conf.app.id;
-    user_info.group_entry_time = new Date();
-    user_info.seat = 0;
-
-    return new Promise((resolve, reject) => {
-      (trans || mysql).query(sql, [
-        user.backend_id,
-        user.group_id,
-        user.group_entry_time,
-        user.id,
-      ], err => {
-        if(err) return reject(err);
-        resolve();
-      })
-    });
-  };
-
-
-  var sql = 'UPDATE s_user SET backend_id=?, group_id=?, group_entry_time=? WHERE id=?';
-
-  function editGroup(user_info, trans){
-    return new Promise((resolve, reject) => {
-      (trans || mysql).query(sql, [
-        user_info.backend_id,
-        user_info.group_id,
-        user_info.group_entry_time,
-        user_info.id,
-      ], err => {
-        if(err) return reject(err);
-        resolve(user_info);
-      })
-    });
-  }
-
-  /**
-   * 创建群组
-   *
-   * @return
-   */
-  exports.quitGroup = function(user_id, trans){
-    var user_info = {
-      backend_id: '',
-      group_id: '',
-      group_entry_time: null,
-      id: user_id,
-    };
-
-    return editGroup(user_info, trans);
-  };
-})();
-
-(() => {
   function p1(cb, trans){
     var id = _.random(100000, 999999);
     biz.user.findAllByGroupId(id, trans)
@@ -650,6 +312,23 @@ const logger = require('log4js').getLogger('biz.user');
       (trans || mysql).query(sql, [id], (err, docs) => {
         if(err) return reject(err);
         resolve(docs);
+      });
+    });
+  };
+})();
+
+(() => {
+  var sql = 'SELECT a.* FROM s_user a WHERE a.user_name=?';
+
+  /**
+   *
+   * @return
+   */
+  exports.getByName = function(user_name, trans){
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [user_name], (err, docs) => {
+        if(err) return reject(err);
+        resolve(mysql.checkOnly(docs) ? docs[0] : null);
       });
     });
   };
@@ -740,6 +419,110 @@ const logger = require('log4js').getLogger('biz.user');
       .then(p2)
       .then(user_info => resolve(user_info))
       .catch(reject);
+    });
+  };
+})();
+
+(() => {
+  var sql = 'SELECT a.* FROM s_user WHERE server_id=? AND channel_id=?';
+
+  /**
+   * 获取用户
+   *
+   * @param server_id
+   * @param channel_id
+   * @return
+   */
+  exports.getByChannelId = function(server_id, channel_id, trans){
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [server_id, channel_id], (err, docs) => {
+        if(err) return reject(err);
+        if(!mysql.checkOnly(docs)) return reject('通道不存在');
+        resolve(docs[0]);
+      });
+    });
+  };
+})();
+
+(() => {
+  /**
+   * entry群组
+   *
+   * @return
+   */
+  exports.entryGroup = function(user_info, trans){
+    user_info.backend_id = conf.app.id;
+    user_info.group_entry_time = new Date().getTime();
+
+    return editGroup(user_info, trans);
+  };
+
+
+  var sql = 'UPDATE s_user SET backend_id=?, group_id=?, group_entry_time=? WHERE id=?';
+
+  /**
+   * 创建群组
+   *
+   * @return
+   */
+  exports.createGroup = function(user_info, trans){
+    user_info.backend_id = conf.app.id;
+    user_info.group_entry_time = new Date().getTime();
+
+    return editGroup(user_info, trans);
+  };
+
+  function editGroup(user_info, trans){
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [
+        user_info.backend_id,
+        user_info.group_id,
+        user_info.group_entry_time,
+        user_info.id,
+      ], err => {
+        if(err) return reject(err);
+        resolve(user_info);
+      })
+    });
+  }
+
+  /**
+   * 创建群组
+   *
+   * @return
+   */
+  exports.quitGroup = function(user_id, trans){
+    var user_info = {
+      backend_id: '',
+      group_id: '',
+      group_entry_time: new Date().getTime(),
+      id: user_id,
+    };
+
+    return editGroup(user_info, trans);
+  };
+})();
+
+(() => {
+  const numkeys = 3;
+  const sha1    = '6df440fb93a747912f3eae2835c8fec8e90788ca';
+
+  /**
+  * 获取用户信息（user_info_byChannelId.lua）
+  *
+  * @return
+  */
+  exports.getByRedisChannelId = function(server_id, channel_id){
+    return new Promise((resolve, reject) => {
+      redis.evalsha(sha1, numkeys,
+        conf.redis.database,  /**/
+        server_id,            /**/
+        channel_id,           /**/
+        (err, code) => {
+        if(err) return reject(err);
+        if(!_.isArray(code)) return reject(code);
+        resolve(utils.arrToObj(code));
+      });
     });
   };
 })();

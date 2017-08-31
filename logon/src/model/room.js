@@ -31,12 +31,13 @@ var Method = function(opts){
   self.id            = opts.id;
   self.name          = opts.name          || ('Room '+ opts.id);
   self.fund          = opts.fund          || 1000;  // 组局基金
-  self.round_count   = opts.round_count   || 6;  // 圈数
-  self.visitor_count = opts.visitor_count || 6;  // 游客人数
+  self.round_count   = opts.round_count   || 6;     // 圈数
+  self.visitor_count = opts.visitor_count || 6;     // 游客人数
   self.round_id      = utils.replaceAll(uuid.v4(), '-', '');
   self.players       = {};
   self.users         = {};
   self.ready_count   = 0;  // 举手人数
+  self.create_time   = new Date().getTime();
 };
 
 var pro = Method.prototype;
@@ -87,6 +88,20 @@ pro.entry = function(user){
  *
  * @return
  */
+pro.reEntry = function(user_id){
+  var user = this.users[user_id];
+
+  if(!user) return;
+  if(0 === user.seat) return;
+
+  user.is_quit = 0;
+  user.quit_time = null;
+}
+
+/**
+ *
+ * @return
+ */
 pro.quit = function(user_id){
   var self = this;
 
@@ -114,9 +129,12 @@ pro.quit = function(user_id){
 pro.ready = function(user_id){
   var self = this;
 
+  if(3 < self.ready_count) return self.ready_count;
+
   var user = self.users[user_id];
   if(!user) return self.ready_count;
 
+  if(0 === user.seat) return self.ready_count;
   if(1 === user.ready_status) return self.ready_count;
 
   user.ready_status = 1;

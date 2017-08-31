@@ -28,6 +28,7 @@ var rooms = {};
 
 res.create = function(room_info){
   if(!room_info) return;
+  if(!room_info.id) return;
   if(rooms[room_info.id]) return;
 
   var room = new Room(room_info);
@@ -40,5 +41,9 @@ res.release = function(id){
   if(!room) return true;
   if(!room.release()) return false;
   delete rooms[id];
-  return true
+  return true;
 };
+
+res.get = function(id){
+  return rooms[id];
+}

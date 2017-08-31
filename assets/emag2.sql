@@ -1,16 +1,16 @@
 /*
 Navicat MySQL Data Transfer
 
-Source Server         : g-1
+Source Server         : 127.0.0.1
 Source Server Version : 50623
-Source Host           : 127.0.0.01:12306
+Source Host           : 127.0.0.1:12306
 Source Database       : emag2
 
 Target Server Type    : MYSQL
 Target Server Version : 50623
 File Encoding         : 65001
 
-Date: 2017-08-31 00:00:22
+Date: 2017-08-31 10:27:45
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -179,7 +179,7 @@ CREATE TABLE `s_user` (
   `lose_score_count` int(11) DEFAULT NULL COMMENT '失败（总分）',
   `line_gone_count` int(11) DEFAULT NULL COMMENT '掉线（次数）',
   `group_id` varchar(6) DEFAULT NULL COMMENT '群组id',
-  `group_entry_time` datetime DEFAULT NULL,
+  `group_entry_time` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
