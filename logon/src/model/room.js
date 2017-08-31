@@ -45,7 +45,7 @@ var Method = function(opts){
   self.round_no_first_user_seat = 1;  // 当前第一个起牌的人
   self.user_seat                = 1;  // 当前准备行动的座位
   self.craps_result             = {}; // 骰子 { 1: [1, 2], 2: [3, 4]}
-  self.act_status               = 0;  // 0默认 1摇骰子 2庄家设置锅底 3确定庄家，等庄在摇骰子
+  self.act_status               = 0;  // 0默认 1摇骰子 2庄家设置锅底 3确定庄家，等庄在摇骰子 4闲家下注
   self.user_seat_banker         = 1;  // 当前庄家座位
   self.user_seat_banker_craps   = []; // 庄家摇骰子结果
 };
@@ -57,8 +57,43 @@ var pro = Method.prototype;
  *
  * @return
  */
-pro.bankerBet = function(){
-  // TODO
+pro.bankerBet = function(user_id, bet){
+  var self = this;
+
+  if(2 !== self.act_status) return;  // 庄家下注
+
+  var user = self.users[user_id];
+  if(!user) return;  // 用户不存在
+  if(self.user_seat_banker !== user.seat) return;  // 你不是庄
+
+  user.bet = bet;
+
+  self.act_status = 3;
+};
+
+/**
+ * 闲家下注
+ *
+ * @return
+ */
+pro.noBankerBet = function(user_id, bet){
+  var self = this;
+
+  if(4 !== self.act_status) return;  // 庄家下注
+
+  var user = self.users[user_id];
+  if(!user) return;  // 用户不存在
+  if(self.user_seat_banker === user.seat) return;  // 你不是闲家
+
+  user.bet = bet;
+
+  var count = 0;
+
+  for(let i of _.values(self.users)){
+    if(0 < i.bet) count++;
+  }
+
+  if(3 < count) self.act_status = 5;
 };
 
 (() => {
@@ -77,7 +112,7 @@ pro.bankerBet = function(){
   pro.crapsBanker = function(user_id){
     var self = this;
 
-    if(2 !== self.act_status) return;  // 庄家摇骰子
+    if(3 !== self.act_status) return;  // 庄家摇骰子
 
     var user = self.users[user_id];
     if(!user) return;  // 用户不存在，不能摇骰子
@@ -90,7 +125,7 @@ pro.bankerBet = function(){
 
     self.round_no_first_user_seat = firstSeat.call(self);
 
-    self.act_status = 3;
+    self.act_status = 4;
   };
 })();
 
