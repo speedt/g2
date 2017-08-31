@@ -45,7 +45,7 @@ var Method = function(opts){
   self.round_no_first_user_seat = 1;  // 当前第一个起牌的人
   self.user_seat                = 1;  // 当前准备行动的座位
   self.craps_result             = {}; // 骰子 { 1: [1, 2], 2: [3, 4]}
-  self.act_status               = 0;  // 0默认 1摇骰子 2庄家设置锅底 3确定庄家，等庄在摇骰子 4闲家下注
+  self.act_status               = 0;  // 0默认 1摇骰子 2庄家设置锅底 3确定庄家，等庄在摇骰子 4闲家下注 5开始发牌
   self.user_seat_banker         = 1;  // 当前庄家座位
   self.user_seat_banker_craps   = []; // 庄家摇骰子结果
 };
