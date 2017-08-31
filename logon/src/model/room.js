@@ -116,7 +116,7 @@ pro.quit = function(user_id){
   }
 
   if(0 < user.seat){
-    self.ready_count--;
+    if(1 === user.ready_status) self.ready_count--;
     delete self.players[user.seat];
   }
 
