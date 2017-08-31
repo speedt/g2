@@ -155,7 +155,7 @@ const logger = require('log4js').getLogger('biz.pushCake');
   }
 
   /**
-   * 庄家下注
+   * 闲家下注
    *
    * @return
    */
@@ -186,7 +186,11 @@ const logger = require('log4js').getLogger('biz.pushCake');
     if(!(3 < count)) return;
 
     setTimeout(function(){
-      console.log('5000--------------');
+
+      room.liangpai();
+
+      next(user);
+
     }, 5000);
   }
 })();

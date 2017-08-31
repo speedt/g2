@@ -373,6 +373,7 @@ const logger = require('log4js').getLogger('biz.user');
     user_info.win_score_count  = 0;
     user_info.lose_score_count = 0;
     user_info.line_gone_count  = 0;
+    user_info.yuanbao          = 0;
 
     return new Promise((resolve, reject) => {
       mysql.query(sql, [
