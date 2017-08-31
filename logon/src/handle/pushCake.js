@@ -77,7 +77,7 @@ const roomPool = require('emag.model').roomPool;
 
     var _data = [];
     _data.push(null);
-    _data.push(JSON.stringify([5014, data.seqId, _.now(), room.craps_result]));
+    _data.push(JSON.stringify([5014, data.seqId, _.now(), room]));
 
     for(let i of _.values(room.users)){
       if(!i.server_id || !i.channel_id) continue;
@@ -126,7 +126,7 @@ const roomPool = require('emag.model').roomPool;
 
     var _data = [];
     _data.push(null);
-    _data.push(JSON.stringify([5016, data.seqId, _.now(), [room.user_seat_banker, room.round_no_first_user_seat, room.user_seat_banker_craps]]));
+    _data.push(JSON.stringify([5016, data.seqId, _.now(), room]));
 
     for(let i of _.values(room.users)){
       if(!i.server_id || !i.channel_id) continue;

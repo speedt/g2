@@ -52,6 +52,16 @@ var Method = function(opts){
 
 var pro = Method.prototype;
 
+function se(){
+  var self = this;
+  switch(self.user_seat){
+    case 1: self.user_seat = 2; break;
+    case 2: self.user_seat = 4; break;
+    case 4: self.user_seat = 8; break;
+    case 8: self.user_seat = 1; break;
+  }
+}
+
 /**
  * 庄家下注
  *
@@ -179,6 +189,8 @@ pro.noBankerBet = function(user_id, bet){
       self.craps_result = [];  // 重置骰子
     }
 
+    se.call(self);
+
     return craps_result;
   };
 })();
@@ -287,6 +299,8 @@ pro.ready = function(user_id){
   if(3 < (++self.ready_count)){
     self.act_status = 1;
   }
+
+  se.call(self);
 
   return self.ready_count;
 };
