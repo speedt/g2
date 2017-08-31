@@ -39,7 +39,7 @@ const logger = require('log4js').getLogger('biz.group');
 
     return new Promise((resolve, reject) => {
       biz.user.entryGroup(user)
-      .then(room.entry)
+      .then(room.entry.bind(room))
       .then(() => resolve())
       .catch(reject);
     });
@@ -135,13 +135,30 @@ const logger = require('log4js').getLogger('biz.group');
   function p1(user){
     if(!user.group_id) return Promise.reject('用户不在任何群组');
 
+    var user_info = {
+      group_id: user.group_id,
+      id:       user.id,
+    };
+
     var room = roomPool.get(user.group_id);
 
-    if(!room) return biz.user.quitGroup(user.id);
+    if(!room){
+      return new Promise((resolve, reject) => {
+        biz.user.quitGroup(user.id)
+        .then(() => resolve(user_info))
+        .catch(reject);
+      });
+    }
 
-    if(room.quit(user.id)) return biz.user.quitGroup(user.id);
+    if(room.quit(user.id)){
+      return new Promise((resolve, reject) => {
+        biz.user.quitGroup(user.id)
+        .then(() => resolve(user_info))
+        .catch(reject);
+      });
+    }
 
-    return Promise.resolve();
+    return Promise.resolve(user_info);
   }
 
   /**
@@ -153,7 +170,6 @@ const logger = require('log4js').getLogger('biz.group');
     return new Promise((resolve, reject) => {
       biz.user.getByChannelId(server_id, channel_id)
       .then(p1)
-      .then(biz.user.getByChannelId.bind(null, server_id, channel_id))
       .then(user => resolve(user))
       .catch(reject);
     });
