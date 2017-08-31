@@ -507,7 +507,6 @@ const logger = require('log4js').getLogger('biz.user');
 })();
 
 (() => {
-  var sql = 'UPDATE s_user SET backend_id=?, group_id=?, group_entry_time=? WHERE id=?';
 
   function p1(user, group_id){
     user.backend_id = conf.app.id;
@@ -577,6 +576,23 @@ const logger = require('log4js').getLogger('biz.user');
     });
   };
 
+
+  var sql = 'UPDATE s_user SET backend_id=?, group_id=?, group_entry_time=? WHERE id=?';
+
+  function editGroup(user_info, trans){
+    return new Promise((resolve, reject) => {
+      (trans || mysql).query(sql, [
+        user_info.backend_id,
+        user_info.group_id,
+        user_info.group_entry_time,
+        user_info.id,
+      ], err => {
+        if(err) return reject(err);
+        resolve(user_info);
+      })
+    });
+  }
+
   /**
    * 创建群组
    *
@@ -587,21 +603,10 @@ const logger = require('log4js').getLogger('biz.user');
       backend_id: '',
       group_id: '',
       group_entry_time: null,
-      seat: 0,
       id: user_id,
     };
 
-    return new Promise((resolve, reject) => {
-      (trans || mysql).query(sql, [
-        user.backend_id,
-        user.group_id,
-        user.group_entry_time,
-        user.id,
-      ], err => {
-        if(err) return reject(err);
-        resolve();
-      })
-    });
+    return editGroup(user_info, trans);
   };
 })();
 

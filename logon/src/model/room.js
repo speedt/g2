@@ -29,10 +29,10 @@ module.exports = function(opts){
 var Method = function(opts){
   var self           = this;
   self.id            = opts.id;
-  self.name          = opts.name || ('Room '+ opts.id);
-  self.fund          = opts.fund;  // 组局基金
-  self.round_count   = opts.round_count;  // 圈数
-  self.visitor_count = opts.visitor_count;  // 游客人数
+  self.name          = opts.name          || ('Room '+ opts.id);
+  self.fund          = opts.fund          || 1000;  // 组局基金
+  self.round_count   = opts.round_count   || 6;  // 圈数
+  self.visitor_count = opts.visitor_count || 6;  // 游客人数
   self.round_id      = utils.replaceAll(uuid.v4(), '-', '');
   self.players       = {};
   self.users         = {};
@@ -41,24 +41,52 @@ var Method = function(opts){
 
 var pro = Method.prototype;
 
+/**
+ *
+ * @return
+ */
 pro.release = function(){
+  var self = this;
+
+  if(3 < self.ready_count) return false;
+
+  for(let i of _.keys(self.players)){
+    delete self.players[i];
+  }
+
+  for(let i of _.keys(self.users)){
+    delete self.users[i];
+  }
+
   return true;
 };
 
+/**
+ *
+ * @return
+ */
 pro.entry = function(user){
+  if(!user) return Promise.reject('invalid_params');
+  if(!user.id) return Promise.reject('invalid_params');
   var self = this;
-  if(self.users[user.id]) throw new Error('已经进入该房间');
-  if(9 < _.size(self.users)) throw new Error('房间满员');
+  if(self.users[user.id]) return Promise.reject('已经进入该房间');
+  if((self.visitor_count - 0 + 3) < _.size(self.users)) return Promise.reject('房间满员');
+
+  user.seat = getSeatNum.call(self);
 
   self.users[user.id] = user;
 
-  if(0 === user.seat) return;
+  if(0 < user.seat){
+    self.players[user.seat] = user.id;
+  }
 
-  self.players[user.seat] = user.id;
-
-  return user;
+  return Promise.resolve(user);
 };
 
+/**
+ *
+ * @return
+ */
 pro.quit = function(user_id){
   var self = this;
 
@@ -78,3 +106,61 @@ pro.quit = function(user_id){
   delete self.users[user_id];
   return true;
 };
+
+/**
+ *
+ * @return
+ */
+pro.ready = function(user_id){
+  var self = this;
+
+  var user = self.users[user_id];
+  if(!user) return self.ready_count;
+
+  if(1 === user.ready_status) return self.ready_count;
+
+  user.ready_status = 1;
+
+  return ++self.ready_count;
+};
+
+/**
+ *
+ * @return
+ */
+function getSeatNum(){
+  switch(seatCount.call(this)){
+    case 0:  return 1;
+    case 1:  return 2;  // base
+    case 2:  return 1;  // base
+    case 3:  return 4;
+    case 4:  return 1;  // base
+    case 5:  return 2;
+    case 6:  return 1;
+    case 7:  return 8;
+    case 8:  return 1;  // base
+    case 9:  return 2;
+    case 10: return 1;
+    case 11: return 4;
+    case 12: return 1;
+    case 13: return 2;
+    case 14: return 1;
+    default: return 0;
+  }
+}
+
+/**
+ *
+ * @return
+ */
+function seatCount(){
+  var arr = _.keys(this.players);
+
+  var count = 0;
+
+  for(let i of arr){
+    count += (i - 0);
+  }
+
+  return count;
+}

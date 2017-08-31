@@ -284,23 +284,11 @@ const logger = require('log4js').getLogger('biz.group');
   function p1(user){
     if(!user.group_id) return Promise.reject('用户不在任何群组');
 
-    return new Promise((resolve, reject) => {
-      biz.user.clearFreeGroupById(user.group_id)
-      .then(p2)
-      .then(p3.bind(null, user))
-      .then(() => resolve())
-      .catch(reject);
-    });
-  }
-
-  function p2(group_id){
-    if(!group_id) return Promise.reject('用户不在任何群组');
-    return Promise.resolve();
-  }
-
-  function p3(user){
     var room = roomPool.get(user.group_id);
-    if(!room) return Promise.reject('房间不存在');
+
+    if(!room){
+      return biz.user.quitGroup(user.id);
+    }
 
     if(room.quit(user.id)){
       return biz.user.quitGroup(user.id);

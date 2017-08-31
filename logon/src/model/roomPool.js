@@ -37,7 +37,8 @@ res.create = function(room_info){
 
 res.release = function(id){
   var room = rooms[id];
-  if(!room) return;
-  if(!room.release()) return;
+  if(!room) return true;
+  if(!room.release()) return false;
   delete rooms[id];
+  return true
 };
