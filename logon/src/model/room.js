@@ -33,7 +33,7 @@ var Method = function(opts){
   self.id                       = opts.id;
   self.name                     = opts.name          || ('Room '+ opts.id);
   self.fund                     = opts.fund          || 1000;  // 组局基金
-  self.round_count              = opts.round_count   || 6;     // 圈数
+  self.round_count              = opts.round_count   || 4;     // 圈数
   self.visitor_count            = opts.visitor_count || 6;     // 游客人数
   self.round_id                 = utils.replaceAll(uuid.v4(), '-', '');
   self.players                  = {};
@@ -70,13 +70,24 @@ function se(){
 pro.bankerBet = function(user_id, bet){
   var self = this;
 
+  console.log('----')
+
   if(2 !== self.act_status) return;  // 庄家下注
+
+
+  console.log('++++')
+
 
   var user = self.users[user_id];
   if(!user) return;  // 用户不存在
   if(self.user_seat_banker !== user.seat) return;  // 你不是庄
 
+  console.log('===')
+
+
   user.bet = bet;
+
+  console.log(user)
 
   self.act_status = 3;
 };
@@ -285,6 +296,9 @@ pro.quit = function(user_id){
  */
 pro.ready = function(user_id){
   var self = this;
+
+  if(self.round_count < self.round_pno) return;
+  if(4 < self.round_no) return;
 
   if(3 < self.ready_count) return self.ready_count;
 

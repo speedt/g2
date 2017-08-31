@@ -208,6 +208,8 @@ const roomPool = require('emag.model').roomPool;
     try{ var data = JSON.parse(msg.body);
     }catch(ex){ return; }
 
+    console.log(data)
+
     biz.pushCake.bankerBet(data.serverId, data.channelId, data.data)
     .then(p1.bind(null, send, data))
     .catch(p2.bind(null, send, data));

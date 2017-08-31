@@ -114,11 +114,13 @@ const logger = require('log4js').getLogger('biz.pushCake');
 })();
 
 (() => {
-  function p1(user){
+  function p1(bet, user){
     if(!user.group_id) return Promise.reject('用户不在任何群组');
 
     var room = roomPool.get(user.group_id);
     if(!room) return Promise.reject('房间不存在');
+
+    console.log(bet)
 
     room.bankerBet(user.id, bet);
 
@@ -133,7 +135,7 @@ const logger = require('log4js').getLogger('biz.pushCake');
   exports.bankerBet = function(server_id, channel_id, bet, next){
     return new Promise((resolve, reject) => {
       biz.user.getByChannelId(server_id, channel_id)
-      .then(p1)
+      .then(p1.bind(null, bet))
       .then(user => resolve(user))
       .catch(reject);
     });
@@ -141,7 +143,7 @@ const logger = require('log4js').getLogger('biz.pushCake');
 })();
 
 (() => {
-  function p1(user){
+  function p1(bet, user){
     if(!user.group_id) return Promise.reject('用户不在任何群组');
 
     var room = roomPool.get(user.group_id);
@@ -160,7 +162,7 @@ const logger = require('log4js').getLogger('biz.pushCake');
   exports.noBankerBet = function(server_id, channel_id, bet, next){
     return new Promise((resolve, reject) => {
       biz.user.getByChannelId(server_id, channel_id)
-      .then(p1)
+      .then(p1.bind(null, bet))
       .then(user => {
         cb(user, next);
         resolve(user);
