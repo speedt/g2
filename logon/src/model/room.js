@@ -90,13 +90,15 @@ pro.entry = function(user){
  *
  * @return
  */
-pro.reEntry = function(user_id){
-  var user = this.users[user_id];
+pro.reEntry = function(user){
+  var _user = this.users[user.id];
 
-  if(!user) return;
-  if(0 === user.seat) return;
+  if(!_user) return;
+  if(0 === _user.seat) return;
 
-  user.is_quit = 0;
+  _user.is_quit = 0;
+  _user.server_id = user.server_id;
+  _user.channel_id = user.channel_id;
 }
 
 /**

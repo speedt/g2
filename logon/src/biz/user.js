@@ -195,7 +195,7 @@ const logger = require('log4js').getLogger('biz.user');
     var room = roomPool.get(user.group_id);
     if(!room) return Promise.resolve();
 
-    return Promise.resolve(room.reEntry(user.id));
+    return Promise.resolve(room.reEntry(user));
   }
 
   /**
