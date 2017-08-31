@@ -76,19 +76,22 @@ const roomPool = require('emag.model').roomPool;
 })();
 
 (() => {
-  function p1(send, data, result){
-    if(0 === result.length) return;
+  function p1(send, data, user){
+    if(!user) return;
+
+    var room = roomPool.get(user.group_id);
+    if(0 === _.size(room.users)) return;
 
     var _data = [];
     _data.push(null);
-    _data.push(JSON.stringify([3006, data.seqId, _.now(), result[1]]));
+    _data.push(JSON.stringify([3006, data.seqId, _.now(), user]));
 
-    for(let i of result[0]){
+    for(let i of _.values(room.users)){
       if(!i.server_id || !i.channel_id) continue;
       _data.splice(0, 1, i.channel_id);
 
       send('/queue/back.send.v3.'+ i.server_id, { priority: 9 }, _data, (err, code) => {
-        if(err) return logger.error('channel close:', err);
+        if(err) return logger.error('group entry:', err);
       });
     }
   }

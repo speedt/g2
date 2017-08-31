@@ -66,6 +66,7 @@ const roomPool = require('emag.model').roomPool;
     if(!user) return;
 
     var room = roomPool.get(user.group_id);
+    if(!room) return;
     if(0 === _.size(room.users)) return;
 
     var _data = [];
@@ -114,6 +115,7 @@ const roomPool = require('emag.model').roomPool;
     if(!user) return;
 
     var room = roomPool.get(user.group_id);
+    if(!room) return;
     if(0 === _.size(room.users)) return;
 
     var _data = [];
