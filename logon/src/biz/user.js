@@ -99,21 +99,12 @@ const logger = require('log4js').getLogger('biz.user');
 })();
 
 (() => {
-  function p1(server_id, channel_id, user){
-    return new Promise((resolve, reject) => {
-      biz.user.closeChannel(server_id, channel_id)
-      .then(p2.bind(null, user))
-      .then(() => resolve(user));
-      .catch(reject);
-    });
-  }
-
-  function p2(user){
+  function p1(user){
     if(!user.group_id) return Promise.resolve();
     var room = roomPool.get(user.group_id);
     if(!room) return Promise.resolve();
     room.quit(user.id);
-    return Promise.resolve();
+    return Promise.resolve(user);
   }
 
   /**
@@ -122,7 +113,8 @@ const logger = require('log4js').getLogger('biz.user');
    */
   exports.logout = function(server_id, channel_id){
     return new Promise((resolve, reject) => {
-      biz.user.getByChannelId(server_id, channel_id)
+      closeChannel(server_id, channel_id)
+      .then(biz.user.getByChannelId.bind(null, server_id, channel_id))
       .then(p1)
       .then(user => resolve(user))
       .catch(reject);
@@ -424,7 +416,7 @@ const logger = require('log4js').getLogger('biz.user');
 })();
 
 (() => {
-  var sql = 'SELECT a.* FROM s_user WHERE server_id=? AND channel_id=?';
+  var sql = 'SELECT a.* FROM s_user a WHERE a.server_id=? AND a.channel_id=?';
 
   /**
    * 获取用户
@@ -433,9 +425,9 @@ const logger = require('log4js').getLogger('biz.user');
    * @param channel_id
    * @return
    */
-  exports.getByChannelId = function(server_id, channel_id, trans){
+  exports.getByChannelId = function(server_id, channel_id){
     return new Promise((resolve, reject) => {
-      (trans || mysql).query(sql, [server_id, channel_id], (err, docs) => {
+      mysql.query(sql, [server_id, channel_id], (err, docs) => {
         if(err) return reject(err);
         if(!mysql.checkOnly(docs)) return reject('通道不存在');
         resolve(docs[0]);

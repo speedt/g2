@@ -17,6 +17,8 @@ const logger = require('log4js').getLogger('handle.channel');
 
 const _ = require('underscore');
 
+const roomPool = require('emag.model').roomPool;
+
 (() => {
   function p1(send, data, result){
     if(0 < result.length){
@@ -68,7 +70,6 @@ const _ = require('underscore');
     var data = { serverId: s[0], channelId: s[1] };
 
     biz.user.registerChannel(data.serverId, data.channelId)
-    .then(p1.bind(null, send, data))
     .then(p3.bind(null, send, data))
     .catch(p2.bind(null, send, data));
   };

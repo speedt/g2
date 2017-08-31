@@ -150,7 +150,7 @@ const logger = require('log4js').getLogger('biz.pushCake');
     if(4 > user.group_curr_user_seat){
       return biz.group.editNextCraps({
         id: user.group_id,
-        extend_curr_user_seat: user.group_curr_user_seat + 1;
+        extend_curr_user_seat: user.group_curr_user_seat + 1,
       }, trans);
     }
 
