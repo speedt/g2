@@ -69,7 +69,9 @@ pro.release = function(){
 pro.entry = function(user){
   if(!user) return Promise.reject('invalid_params');
   if(!user.id) return Promise.reject('invalid_params');
+
   var self = this;
+
   if(self.users[user.id]) return Promise.reject('已经进入该房间');
   if((self.visitor_count - 0 + 3) < _.size(self.users)) return Promise.reject('房间满员');
 
@@ -95,7 +97,6 @@ pro.reEntry = function(user_id){
   if(0 === user.seat) return;
 
   user.is_quit = 0;
-  user.quit_time = null;
 }
 
 /**
@@ -115,6 +116,7 @@ pro.quit = function(user_id){
   }
 
   if(0 < user.seat){
+    self.ready_count--;
     delete self.players[user.seat];
   }
 
