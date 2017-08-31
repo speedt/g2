@@ -39,35 +39,69 @@ var Method = function(opts){
   self.users                    = {};
   self.ready_count              = 0;  // 举手人数
   self.create_time              = new Date().getTime();
-  self.act_status               = 0;  // 0默认 1摇骰子
   self.round_pno                = 1;  // 当前第n局
   self.round_no                 = 1;  // 当前第n把
   self.round_no_first_user_seat = 1;  // 当前第一个起牌的人
   self.user_seat_banker         = 1;  // 当前庄家座位
   self.user_seat                = 1;  // 当前准备行动的座位
-  self.craps_result             = {};  // 骰子 { 1: [1, 2], 2: [3, 4]}
+  self.craps_result             = {}; // 骰子 { 1: [1, 2], 2: [3, 4]}
+  self.act_status               = 0;  // 0默认 1摇骰子 2确定庄家，等庄在摇骰子
 };
 
 var pro = Method.prototype;
 
-pro.craps = function(user_id){
-  var self = this;
+(() => {
+  function maxCraps(){
+    var self = this;
 
-  var user = self.users[user_id];
-  if(!user) throw new Error('用户不存在，不能摇骰子');
+    var max  = 0;
+    var seat = 0;
 
-  var craps_result = self.craps_result[user.seat];
+    for(let i in self.craps_result){
+      let m = (self.craps_result[i][0] - 0) + (self.craps_result[i][1] - 0);
+      if(11 < m) return i;
 
-  // 摇过骰子则返回
-  if(craps_result) return craps_result;
+      if(max <= m){
+        max = m;
+        seat = i;
+      }
+    }
 
-  craps_result = self.craps_result[user.seat] = [
-    _.random(1, 6),
-    _.random(1, 6),
-  ];
+    return seat;
+  }
 
-  return craps_result;
-};
+  /**
+   * 摇骰子
+   *
+   * @return
+   */
+  pro.craps = function(user_id){
+    var self = this;
+
+    var user = self.users[user_id];
+    if(!user) return;  // 用户不存在，不能摇骰子
+    if(0 === user.seat) return;  // 你是游客
+
+    var craps_result = self.craps_result[user.seat];
+
+    // 摇过骰子则返回
+    if(craps_result) return craps_result;
+
+    craps_result = self.craps_result[user.seat] = [
+      _.random(1, 6),
+      _.random(1, 6),
+    ];
+
+    // 如果摇骰子的人为4人
+    if(3 < _.size(self.craps_result)){
+      // 最大的骰子，并设置庄家位置
+      self.user_seat_banker = maxCraps.call(self);
+      self.act_status = 2;
+    }
+
+    return craps_result;
+  };
+})();
 
 /**
  *

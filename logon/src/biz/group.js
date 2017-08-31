@@ -125,7 +125,10 @@ const logger = require('log4js').getLogger('biz.group');
       formVali(group_info)
       .then(p1.bind(null, server_id, channel_id))
       .then(biz.user.getByChannelId.bind(null, server_id, channel_id))
-      .then(user => resolve(user))
+      .then(user => {
+        user.seat = 1;
+        resolve(user);
+      })
       .catch(reject);
     });
   };
