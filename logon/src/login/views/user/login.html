@@ -79,8 +79,11 @@ function push(){
     dataType: 'JSON',
     data: data,
     success: function(data){
-      console.debug(data);
-      if(data.error) return alert(data.error.code);
+      console.log(data);
+      if(data.error){
+        alert(data.error.code +' '+ data.error.msg);
+        return;
+      }
       location.href = '$!{conf.html.virtualPath}?code='+ data.data[0] +'&s='+ data.data[1];
     },
     error: function(){

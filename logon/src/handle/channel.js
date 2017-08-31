@@ -20,25 +20,6 @@ const _ = require('underscore');
 const roomPool = require('emag.model').roomPool;
 
 (() => {
-  function p1(send, data, result){
-    if(0 < result.length){
-      var _data = [];
-      _data.push(null);
-      _data.push(JSON.stringify([3008, data.seqId, _.now(), result[1]]));
-
-      for(let i of result[0]){
-        if(!i.server_id || !i.channel_id) continue;
-        _data.splice(0, 1, i.channel_id);
-
-        send('/queue/back.send.v3.'+ i.server_id, { priority: 9 }, _data, (err, code) => {
-          if(err) return logger.error('channel open:', err);
-        });
-      }
-    }
-
-    return new Promise((resolve, reject) => resolve());
-  }
-
   function p2(send, data, err){
     if('string' !== typeof err) return logger.error('channel open:', err);
 
@@ -60,6 +41,29 @@ const roomPool = require('emag.model').roomPool;
     return new Promise((resolve, reject) => resolve());
   }
 
+  function p1(send, data, user){
+    if(!user) return;
+
+    var room = roomPool.get(user.group_id);
+    if(!room) return;
+    if(0 === _.size(room.users)) return;
+
+    var _data = [];
+    _data.push(null);
+    _data.push(JSON.stringify([3010, data.seqId, _.now(), user]));
+
+    for(let i of _.values(room.users)){
+      if(!i.server_id || !i.channel_id) continue;
+      _data.splice(0, 1, i.channel_id);
+
+      send('/queue/back.send.v3.'+ i.server_id, { priority: 9 }, _data, (err, code) => {
+        if(err) return logger.error('group entry:', err);
+      });
+    }
+
+    return new Promise((resolve, reject) => resolve());
+  }
+
   /**
    *
    */
@@ -70,6 +74,7 @@ const roomPool = require('emag.model').roomPool;
     var data = { serverId: s[0], channelId: s[1] };
 
     biz.user.registerChannel(data.serverId, data.channelId)
+    .then(p1.bind(null, send, data))
     .then(p3.bind(null, send, data))
     .catch(p2.bind(null, send, data));
   };
@@ -80,6 +85,7 @@ const roomPool = require('emag.model').roomPool;
     if(!user) return;
 
     var room = roomPool.get(user.group_id);
+    if(!room) return;
     if(0 === _.size(room.users)) return;
 
     var _data = [];

@@ -94,11 +94,11 @@ pro.reEntry = function(user){
   var _user = this.users[user.id];
 
   if(!_user) return;
-  if(0 === _user.seat) return;
 
-  _user.is_quit = 0;
   _user.server_id = user.server_id;
   _user.channel_id = user.channel_id;
+
+  if(0 < _user.seat) _user.is_quit = 0;
 }
 
 /**
