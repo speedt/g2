@@ -77,7 +77,7 @@ const roomPool = require('emag.model').roomPool;
 
     var _data = [];
     _data.push(null);
-    _data.push(JSON.stringify([5013, data.seqId, _.now(), room.craps_result]));
+    _data.push(JSON.stringify([5014, data.seqId, _.now(), room.craps_result]));
 
     for(let i of _.values(room.users)){
       if(!i.server_id || !i.channel_id) continue;
@@ -94,7 +94,7 @@ const roomPool = require('emag.model').roomPool;
 
     var _data = [];
     _data.push(data.channelId);
-    _data.push(JSON.stringify([5013, data.seqId, _.now(), , err]));
+    _data.push(JSON.stringify([5014, data.seqId, _.now(), , err]));
 
     send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _data, (err, code) => {
       if(err) return logger.error('pushCake craps:', err);
@@ -111,6 +111,56 @@ const roomPool = require('emag.model').roomPool;
     }catch(ex){ return; }
 
     biz.pushCake.craps(data.serverId, data.channelId)
+    .then(p1.bind(null, send, data))
+    .catch(p2.bind(null, send, data));
+  };
+})();
+
+
+(() => {
+  function p1(send, data, user){
+    if(!user) return;
+
+    var room = roomPool.get(user.group_id);
+    if(!room) return;
+    if(0 === _.size(room.users)) return;
+
+    var _data = [];
+    _data.push(null);
+    _data.push(JSON.stringify([5016, data.seqId, _.now(), [room.user_seat_banker, room.round_no_first_user_seat, room.user_seat_banker_craps]]));
+
+    for(let i of _.values(room.users)){
+      if(!i.server_id || !i.channel_id) continue;
+      _data.splice(0, 1, i.channel_id);
+
+      send('/queue/back.send.v3.'+ i.server_id, { priority: 9 }, _data, (err, code) => {
+        if(err) return logger.error('pushCake crapsBanker:', err);
+      });
+    }
+  }
+
+  function p2(send, data, err){
+    if('string' !== typeof err) return logger.error('pushCake crapsBanker:', err);
+
+    var _data = [];
+    _data.push(data.channelId);
+    _data.push(JSON.stringify([5016, data.seqId, _.now(), , err]));
+
+    send('/queue/back.send.v3.'+ data.serverId, { priority: 9 }, _data, (err, code) => {
+      if(err) return logger.error('pushCake crapsBanker:', err);
+    });
+  }
+
+  /**
+   *
+   */
+  exports.crapsBanker = function(send, msg){
+    if(!_.isString(msg.body)) return logger.error('pushCake crapsBanker empty');
+
+    try{ var data = JSON.parse(msg.body);
+    }catch(ex){ return; }
+
+    biz.pushCake.crapsBanker(data.serverId, data.channelId)
     .then(p1.bind(null, send, data))
     .catch(p2.bind(null, send, data));
   };

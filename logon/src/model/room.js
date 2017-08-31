@@ -45,12 +45,21 @@ var Method = function(opts){
   self.round_no_first_user_seat = 1;  // 当前第一个起牌的人
   self.user_seat                = 1;  // 当前准备行动的座位
   self.craps_result             = {}; // 骰子 { 1: [1, 2], 2: [3, 4]}
-  self.act_status               = 0;  // 0默认 1摇骰子 2确定庄家，等庄在摇骰子
+  self.act_status               = 0;  // 0默认 1摇骰子 2庄家设置锅底 3确定庄家，等庄在摇骰子
   self.user_seat_banker         = 1;  // 当前庄家座位
   self.user_seat_banker_craps   = []; // 庄家摇骰子结果
 };
 
 var pro = Method.prototype;
+
+/**
+ * 庄家下注
+ *
+ * @return
+ */
+pro.bankerBet = function(){
+  // TODO
+};
 
 (() => {
   function firstSeat(){
@@ -80,6 +89,8 @@ var pro = Method.prototype;
     ];
 
     self.round_no_first_user_seat = firstSeat.call(self);
+
+    self.act_status = 3;
   };
 })();
 
