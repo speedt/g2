@@ -21,59 +21,22 @@ const redis = require('emag.db').redis;
 const cfg = require('emag.cfg');
 const biz = require('emag.biz');
 
+const roomPool = require('emag.model').roomPool;
+
 const logger = require('log4js').getLogger('biz.pushCake');
 
 (() => {
   function p1(user){
-    return new Promise((resolve, reject) => {
-      if(!user) return reject('用户不存在');
-      if(!user.group_id) return reject('不在任何群组');
-      if(0 < user.group_user_status) return reject('已经举过手了');
-      if(0 === user.group_user_seat) return reject('你是钓鱼的');
+    if(!user.group_id) return Promise.reject('用户不在任何群组');
 
-      mysql.beginTransaction()
-      .then(p2.bind(null, user))
-      .then(() => resolve(user.group_id))
-      .catch(reject);
-    });
-  }
+    var room = roomPool.get(user.group_id);
+    if(!room) return Promise.reject('房间不存在');
 
-  function p2(user, trans){
-    return new Promise((resolve, reject) => {
-      biz.group_user.ready(user.id, trans)
-      .then(biz.group.getById.bind(null, user.group_id, trans))
-      .then(p3.bind(null, trans))
-      .then(mysql.commitTransaction.bind(null, trans))
-      .then(() => resolve())
-      .catch(p4.bind(null, reject, trans));
-    });
-  }
+    var ready_count = room.ready(user.id);
 
-  function p3(trans, group){
-    return new Promise((resolve, reject) => {
-      if(0 < group.status) return reject('游戏已经开始');
-      if(3 > group.group_user_seat_sum_ready) return resolve();
-      biz.group.editReady(group.id, trans)
-      .then(() => resolve())
-      .catch(reject);
-    });
-  }
+    if(3 < ready_count) return Promise.resolve(user);
 
-  function p4(reject, trans, err){
-    trans.rollback(() => reject(err));
-  }
-
-  function p5(resolve, next, docs){
-    var result = [];
-    if(0 === docs.length) return resolve(result);
-    result.push(docs);
-    let data = [];
-    data.push(docs);
-    let group = docs[0];
-    data.push(group);
-    result.push(data);
-    resolve(result);
-    if(1 === group.group_status) p6(next, group);
+    return Promise.resolve(user);
   }
 
   /**
@@ -84,8 +47,7 @@ const logger = require('log4js').getLogger('biz.pushCake');
     return new Promise((resolve, reject) => {
       biz.user.getByChannelId(server_id, channel_id)
       .then(p1)
-      .then(biz.group_user.findAllByGroupId)
-      .then(p5.bind(null, resolve, next))
+      .then(user => resolve(user))
       .catch(reject);
     });
   };

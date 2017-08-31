@@ -27,17 +27,24 @@ module.exports = function(opts){
 }
 
 var Method = function(opts){
-  var self           = this;
-  self.id            = opts.id;
-  self.name          = opts.name          || ('Room '+ opts.id);
-  self.fund          = opts.fund          || 1000;  // 组局基金
-  self.round_count   = opts.round_count   || 6;     // 圈数
-  self.visitor_count = opts.visitor_count || 6;     // 游客人数
-  self.round_id      = utils.replaceAll(uuid.v4(), '-', '');
-  self.players       = {};
-  self.users         = {};
-  self.ready_count   = 0;  // 举手人数
-  self.create_time   = new Date().getTime();
+  var self                      = this;
+  self.opts                     = opts || {};
+  self.id                       = opts.id;
+  self.name                     = opts.name          || ('Room '+ opts.id);
+  self.fund                     = opts.fund          || 1000;  // 组局基金
+  self.round_count              = opts.round_count   || 6;     // 圈数
+  self.visitor_count            = opts.visitor_count || 6;     // 游客人数
+  self.round_id                 = utils.replaceAll(uuid.v4(), '-', '');
+  self.players                  = {};
+  self.users                    = {};
+  self.ready_count              = 0;  // 举手人数
+  self.create_time              = new Date().getTime();
+  self.act_status               = 0;  // 0默认 1摇骰子
+  self.round_pno                = 1;  // 当前第n局
+  self.round_no                 = 1;  // 当前第n把
+  self.round_no_first_user_seat = 1;  // 当前把第一个起牌的人
+  self.user_seat_banker         = 1;  // 当前庄家座位
+  self.user_seat                = 1;  //当前准备行动的座位
 };
 
 var pro = Method.prototype;
@@ -136,14 +143,18 @@ pro.ready = function(user_id){
   if(3 < self.ready_count) return self.ready_count;
 
   var user = self.users[user_id];
-  if(!user) return self.ready_count;
+  if(!user) throw new Error('用户不存在，不能举手');
 
   if(0 === user.seat) return self.ready_count;
   if(1 === user.ready_status) return self.ready_count;
 
   user.ready_status = 1;
 
-  return ++self.ready_count;
+  if(3 < (++self.ready_count)){
+    self.act_status = 1;
+  }
+
+  return self.ready_count;
 };
 
 /**
