@@ -42,9 +42,9 @@ var Method = function(opts){
   self.act_status               = 0;  // 0默认 1摇骰子
   self.round_pno                = 1;  // 当前第n局
   self.round_no                 = 1;  // 当前第n把
-  self.round_no_first_user_seat = 1;  // 当前把第一个起牌的人
+  self.round_no_first_user_seat = 1;  // 当前第一个起牌的人
   self.user_seat_banker         = 1;  // 当前庄家座位
-  self.user_seat                = 1;  //当前准备行动的座位
+  self.user_seat                = 1;  // 当前准备行动的座位
 };
 
 var pro = Method.prototype;
