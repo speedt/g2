@@ -120,7 +120,7 @@ const roomPool = require('emag.model').roomPool;
 
     var _data = [];
     _data.push(null);
-    _data.push(JSON.stringify([3008, data.seqId, _.now(), user]));
+    _data.push(JSON.stringify([3008, data.seqId, _.now(), room.users]));
 
     for(let i of _.values(room.users)){
       if(!i.server_id || !i.channel_id) continue;
