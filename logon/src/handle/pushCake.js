@@ -208,7 +208,7 @@ const roomPool = require('emag.model').roomPool;
     try{ var data = JSON.parse(msg.body);
     }catch(ex){ return; }
 
-    biz.pushCake.bankerBet(data.serverId, data.channelId)
+    biz.pushCake.bankerBet(data.serverId, data.channelId, data.data)
     .then(p1.bind(null, send, data))
     .catch(p2.bind(null, send, data));
   };
@@ -257,7 +257,7 @@ const roomPool = require('emag.model').roomPool;
     try{ var data = JSON.parse(msg.body);
     }catch(ex){ return; }
 
-    biz.pushCake.noBankerBet(data.serverId, data.channelId)
+    biz.pushCake.noBankerBet(data.serverId, data.channelId, data.data)
     .then(p1.bind(null, send, data))
     .catch(p2.bind(null, send, data));
   };

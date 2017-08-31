@@ -186,7 +186,7 @@ pro.noBankerBet = function(user_id, bet){
       // 最大的骰子，并设置庄家位置
       self.user_seat_banker = maxCraps.call(self);
       self.act_status = 2;
-      self.craps_result = [];  // 重置骰子
+      // self.craps_result = [];  // 重置骰子
     }
 
     se.call(self);
