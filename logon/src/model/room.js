@@ -36,7 +36,8 @@ var Method = function(opts){
   self.id                       = opts.id;
   self.name                     = opts.name          || ('Room '+ opts.id);
   self.fund                     = opts.fund          || 1000;  // 组局基金
-  self.round_count              = opts.round_count   || 4;     // 圈数
+  // self.round_count              = opts.round_count   || 4;     // 圈数
+  self.round_count              = 1;     // 圈数
   self.visitor_count            = opts.visitor_count || 6;     // 游客人数
   self.round_id                 = utils.replaceAll(uuid.v4(), '-', '');
   self.players                  = {};
@@ -438,7 +439,7 @@ pro.liangpai = function(){
 
   // 入库
 
-  for(let i of _.values(room.users)){
+  for(let i of _.values(self.users)){
     if(0 < i.bet){
 
       mysql.query(sql, [
@@ -460,7 +461,10 @@ pro.liangpai = function(){
 
   self.round_no++;
 
-  if(4 < self.round_pno) self.round_pno++;
+  if(4 < self.round_no) self.ready_count = 0;
+  // if(4 < self.round_no) self.round_pno++;
+
+  if(4 < self.round_pno) self.ready_count = 0;
 
   self.act_status = 3;
 }
