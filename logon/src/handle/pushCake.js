@@ -283,5 +283,12 @@ const roomPool = require('emag.model').roomPool;
         if(err) return logger.error('pushCake noBankerBet:', err);
       });
     }
+
+    for(let i of _.values(room.users)){
+      if(room.user_seat_banker != i.seat){
+        i.bet = 0;
+        i.bet2 = i.bet;
+      }
+    }
   }
 })();

@@ -468,10 +468,10 @@ pro.liangpai = function(){
 
   self.act_status = 3;
 
-  for(let i of _.values(self.users)){
-    i.bet = 0;
-    i.bet2 = i.bet;
-  }
+  // for(let i of _.values(self.users)){
+  //   i.bet = 0;
+  //   i.bet2 = i.bet;
+  // }
 }
 
 var sql = 'insert into g_group_result (id, group_id, create_time, user_id, round_id, round_pno, round_no, bet, bet2, seat) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
