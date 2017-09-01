@@ -288,6 +288,8 @@ const roomPool = require('emag.model').roomPool;
       if(room.user_seat_banker != i.seat){
         i.bet = 0;
         i.bet2 = i.bet;
+      }else{
+        i.bet = i.bet2;
       }
     }
   }
